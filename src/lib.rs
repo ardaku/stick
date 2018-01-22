@@ -150,8 +150,10 @@ impl Joystick {
 	/// Connect to a Joystick, with optional custom button/axis mapping.
 	/// If custom mapping, always map A, B, C, D, MainX and MainY.
 	pub fn new(map: Option<Map>) -> Joystick {
-		let joystick = NativeJoystick::create();
+		// TODO: mut
+		let mut joystick = NativeJoystick::new();
 		let (n_axis, n_buttons, is_out) = joystick.map();
+		let (n_axis, n_buttons) = (n_axis as usize, n_buttons as usize);
 
 		if is_out {
 			return Joystick {
@@ -350,9 +352,11 @@ impl Joystick {
 
 			is_out
 		} else {
-			self.joystick = NativeJoystick::create();
+			self.joystick = NativeJoystick::new();
 			self.name = self.joystick.name();
 			let (n_axis, n_buttons, is_out) = self.joystick.map();
+			let (n_axis, n_buttons) =
+				(n_axis as usize, n_buttons as usize);
 
 			if is_out == false {
 				self.map = Map::new(&self.name);

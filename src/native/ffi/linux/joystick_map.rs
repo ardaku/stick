@@ -8,7 +8,7 @@ extern {
 	fn ioctl(fd: i32, request: usize, v: *mut i32) -> i32;
 }
 
-pub fn joystick_map(fd: i32) -> (usize, usize, bool) {
+pub fn joystick_map(fd: i32) -> (u32, u32, bool) {
 	let mut num_axis = 0;
 	let mut num_buttons = 0;
 
@@ -19,5 +19,5 @@ pub fn joystick_map(fd: i32) -> (usize, usize, bool) {
 		return (0, 0, true)
 	}
 
-	(num_axis as usize, num_buttons as usize, false)
+	(num_axis as u32, num_buttons as u32, false)
 }

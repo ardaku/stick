@@ -13,7 +13,7 @@ mod joystick_poll_event;
 
 pub struct Joystick { pub native: i32 }
 impl Joystick {
-	pub fn create() -> Joystick {
+	pub fn new() -> Joystick {
 		let joystick = joystick_create::joystick_create();
 
 		if joystick != -1 {
@@ -23,7 +23,7 @@ impl Joystick {
 		Joystick { native: joystick }
 	}
 
-	pub fn map(&self) -> (usize, usize, bool) {
+	pub fn map(&self) -> (u32, u32, bool) {
 		joystick_map::joystick_map(self.native)
 	}
 
