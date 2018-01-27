@@ -16,30 +16,40 @@ pub use self::map::Map;
 /// A Gamepad/Joystick Button
 #[derive(PartialEq, Copy, Clone)]
 pub enum Button {
-	/// A Button / Main Button (Missle)
-	A,
-	/// B Button / Secondary Button
-	B,
-	/// C (X) Button / Side Button
-	C,
-	/// D (Y) Button / Trigger
-	D,
-	/// L (left) Button
-	L,
-	/// R (right) Button
-	R,
-	/// Z Button
-	Z,
-	/// Start Button
-	Start,
-	/// DPAD Up Button
+	/// Accept (A Button / Left Top Button - Missle / PS Circle)
+	Accept,
+	/// Cancel (B Button / Right Top Button / PS X)
+	Cancel,
+	/// Execute (X Button / Side Button / PS Triangle)
+	Execute,
+	/// Trigger (Y Button / Trigger / PS Square)
+	Trigger,
+	/// Left Function Button (0: L Trigger, 1: LZ / L bumper).  0 is
+	/// farthest away from user, incrementing as buttons get closer.
+	L(u8),
+	/// Right Function Button (0: R Trigger, 1: Z / RZ / R Button). 0 is
+	/// farthest away from user, incrementing as buttons get closer.
+	R(u8),
+	/// Pause Menu (Start Button)
+	Menu,
+	/// Show Controls (Guide on XBox, Select on PlayStation).  Use as
+	/// alternative for Menu -> "Controls".
+	Controls,
+	/// Exit This Screen (Back on XBox).  Use as alternative for
+	/// Menu -> "Quit" or Cancel, depending on situation.
+	Exit,
+	/// HAT/DPAD Up Button
 	Up,
-	/// DPAD Down Button
+	/// HAT/DPAD Down Button
 	Down,
-	/// DPAD Left Button
+	/// Hat/D-Pad left button
 	Left,
-	/// DPAD Right Button
+	/// Hat/D-Pad right button.
 	Right,
+	/// Movement stick Push
+	MoveStick,
+	/// Camera stick Push
+	CamStick,
 	/// Unknown Button
 	Unknown,
 }
@@ -66,19 +76,22 @@ pub enum Throttle {
 impl fmt::Display for Button {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match *self {
-			Button::A => write!(f, "A Button / Main Button (Missle)"),
-			Button::B => write!(f, "B Button / Secondary Button"),
-			Button::C => write!(f, "C (X) Button / Side Button"),
-			Button::D => write!(f, "D (Y) Button / Trigger"),
-			Button::L => write!(f, "L (left) Button"),
-			Button::R => write!(f, "R (right) Button"),
-			Button::Z => write!(f, "Z Button"),
-			Button::Start => write!(f, "Start Button"),
-			Button::Up => write!(f, "DPAD Up Button"),
-			Button::Down => write!(f, "DPAD Down Button"),
-			Button::Left => write!(f, "DPAD Left Button"),
-			Button::Right => write!(f, "DPAD Right Button"),
-			Button::Unknown => write!(f, "Unknown Button"),
+			Button::Accept => write!(f, "Accept"),
+			Button::Cancel => write!(f, "Cancel"),
+			Button::Execute => write!(f, "Execute"),
+			Button::Trigger => write!(f, "Trigger"),
+			Button::L(a) => write!(f, "Left Function {}", a),
+			Button::R(a) => write!(f, "Right Function {}", a),
+			Button::Menu => write!(f, "Menu"),
+			Button::Controls => write!(f, "Controls"),
+			Button::Exit => write!(f, "Exit"),
+			Button::Up => write!(f, "Up"),
+			Button::Down => write!(f, "Down"),
+			Button::Left => write!(f, "Left"),
+			Button::Right => write!(f, "Right"),
+			Button::MoveStick => write!(f, "Movement Stick Push"),
+			Button::CamStick => write!(f, "Camera Stick Push"),
+			Button::Unknown => write!(f, "Unknown"),
 		}
 	}
 }
@@ -141,8 +154,8 @@ use native::Joystick as NativeJoystick;
 pub struct Joystick {
 	map: Map,
 	joystick: NativeJoystick,
-	oldstate: (Vec<f32>, Vec<bool>),
-	state: (Vec<f32>, Vec<bool>),
+//	oldstate: (Vec<f32>, Vec<bool>),
+//	state: (Vec<f32>, Vec<bool>),
 	name: String,
 }
 
@@ -152,8 +165,7 @@ impl Joystick {
 	pub fn new(map: Option<Map>) -> Joystick {
 		// TODO: mut
 		let mut joystick = NativeJoystick::new();
-		let (n_axis, n_buttons, is_out) = joystick.map();
-		let (n_axis, n_buttons) = (n_axis as usize, n_buttons as usize);
+		let (id, is_out) = joystick.get_id();
 
 		if is_out {
 			return Joystick {
@@ -162,19 +174,19 @@ impl Joystick {
 					throttles: Vec::new()
 				},
 				joystick: joystick,
-				oldstate: (Vec::new(), Vec::new()),
-				state: (Vec::new(), Vec::new()),
+//				oldstate: (Vec::new(), Vec::new()),
+//				state: (Vec::new(), Vec::new()),
 				name: "".to_string(),
 			};
 		}
 
 		let name = joystick.name();
 
-		let mut axis = Vec::new();
-		let mut buttons = Vec::new();
+//		let mut axis = Vec::new();
+//		let mut buttons = Vec::new();
 
-		axis.resize(n_axis, 0.0);
-		buttons.resize(n_buttons, false);
+//		axis.resize(n_axis, 0.0);
+//		buttons.resize(n_buttons, false);
 
 		let map = if let Some(m) = map {
 			m
@@ -182,16 +194,16 @@ impl Joystick {
 			Map::new(&name)
 		};
 
-		println!("New Joystick: {}", name);
+		println!("New Joystick: {:x}", id);
 
-		assert_eq!(n_buttons, map.buttons.len());
-		assert_eq!(n_axis, map.throttles.len());
+//		assert_eq!(n_buttons, map.buttons.len());
+//		assert_eq!(n_axis, map.throttles.len());
 
 		Joystick {
 			map,
 			joystick,
-			oldstate: (axis.clone(), buttons.clone()),
-			state: (axis, buttons),
+//			oldstate: (axis.clone(), buttons.clone()),
+//			state: (axis, buttons),
 			name,
 		}
 	}
@@ -202,7 +214,7 @@ impl Joystick {
 			return
 		}
 
-		while self.joystick.poll_event(&mut self.state) { }
+//		while self.joystick.poll_event(&mut self.state) { }
 
 		// TODO: Create GUI widget to configure joystick.
 		// Current configuration:
@@ -229,8 +241,8 @@ impl Joystick {
 			let j = self.map.throttle(i);
 
 			match j {
-				Throttle::L | Throttle::R =>
-					self.check_axis(input, (i, j)),
+				Throttle::L | Throttle::R => {},
+//					self.check_axis(input, (i, j)),
 				Throttle::MainX => {
 					js_main.0 = true;
 					js_main.1 = i;
@@ -249,7 +261,7 @@ impl Joystick {
 			}
 		}
 
-		if js_main.0 {
+		/*if js_main.0 {
 			self.check_coord(input, (js_main.1, Throttle::MainX),
 				(js_main.2, Throttle::MainY));
 		}
@@ -263,7 +275,7 @@ impl Joystick {
 			let j = self.map.button(i);
 
 			self.check_button(input, (i, j));
-		}
+		}*/
 	}
 
 	/// Check to see if gamepad supports a specific input.
@@ -290,7 +302,7 @@ impl Joystick {
 		self.name.to_string()
 	}
 
-	fn check_button(&mut self, input: &mut Vec<Input>, i: (usize,Button)) {
+	/*fn check_button(&mut self, input: &mut Vec<Input>, i: (usize,Button)) {
 		if self.state.1[i.0] != self.oldstate.1[i.0] {
 			let value = self.state.1[i.0];
 
@@ -339,11 +351,11 @@ impl Joystick {
 				_ => unreachable!(),
 			});
 		}
-	}
+	}*/
 
 	fn not_plugged_in(&mut self) -> bool {
 		if self.joystick.is_plugged_in() {
-			let (_, _, is_out) = self.joystick.map();
+			let (_, is_out) = self.joystick.get_id();
 
 			if is_out {
 				println!("Unplugged Joystick: {}", self.name);
@@ -354,20 +366,18 @@ impl Joystick {
 		} else {
 			self.joystick = NativeJoystick::new();
 			self.name = self.joystick.name();
-			let (n_axis, n_buttons, is_out) = self.joystick.map();
-			let (n_axis, n_buttons) =
-				(n_axis as usize, n_buttons as usize);
+			let (id, is_out) = self.joystick.get_id();
 
 			if is_out == false {
 				self.map = Map::new(&self.name);
 
-				assert_eq!(n_buttons, self.map.buttons.len());
-				assert_eq!(n_axis, self.map.throttles.len());
+//				assert_eq!(n_buttons, self.map.buttons.len());
+//				assert_eq!(n_axis, self.map.throttles.len());
 
-				self.state.0.resize(n_axis, 0.0);
-				self.state.1.resize(n_buttons, false);
-				self.oldstate.0.resize(n_axis, 0.0);
-				self.oldstate.1.resize(n_buttons, false);
+//				self.state.0.resize(n_axis, 0.0);
+//				self.state.1.resize(n_buttons, false);
+//				self.oldstate.0.resize(n_axis, 0.0);
+//				self.oldstate.1.resize(n_buttons, false);
 
 				println!("New Joystick: {}", self.name);
 			}

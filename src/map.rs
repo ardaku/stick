@@ -22,16 +22,16 @@ impl Map {
 		if joystick_name.contains(GAMECUBE) {
 			Map {
 				buttons: vec![
-					Button::C, // 0
-					Button::A, // 1
-					Button::B, // 2
-					Button::D, // 3
-					Button::L, // 4
-					Button::R, // 5
+					Button::Execute, // 0
+					Button::Accept, // 1
+					Button::Cancel, // 2
+					Button::Trigger, // 3
+					Button::L(0), // 4
+					Button::R(0), // 5
 					Button::Unknown, // 6
-					Button::Z, // 7
+					Button::R(1), // 7
 					Button::Unknown, // 8
-					Button::Start, // 9
+					Button::Menu, // 9
 					Button::Unknown, // 10
 					Button::Unknown, // 11
 					Button::Up, // 12
@@ -54,10 +54,10 @@ impl Map {
 		} else {
 			Map {
 				buttons: vec![
-					Button::D, // 0
-					Button::A, // 1
-					Button::C, // 2
-					Button::B, // 3
+					Button::Trigger, // 0
+					Button::Accept, // 1
+					Button::Execute, // 2
+					Button::Cancel, // 3
 				],
 				throttles: vec![
 					Throttle::MainX, // 0
