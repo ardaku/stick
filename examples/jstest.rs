@@ -6,19 +6,26 @@
 
 extern crate stick;
 
-use stick::{ Joystick };
+fn remapper(input: stick::Input) -> stick::Input {
+	match input {
+		stick::Input::Camera(_, y) => {
+			stick::Input::ThrottleL(y)
+		}
+		a => a
+	}
+}
 
 fn main() {
-	let mut joystick = Joystick::new(None);
-	let mut input_buffer = Vec::new();
+	let mut joystick = stick::Joystick::new(vec![
+		stick::Remap {
+			id: 0x7b50316,
+			remapper,
+		}
+	]);
 
 	loop {
-		joystick.update(&mut input_buffer);
-
-		for i in input_buffer.iter() {
+		while let Some(i) = joystick.update() {
 			println!("{}", i);
 		}
-
-		input_buffer.clear();
 	}
 }

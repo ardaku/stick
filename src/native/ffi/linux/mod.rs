@@ -42,25 +42,29 @@ impl Joystick {
 	}
 
 	pub fn get_id(&self, id: usize) -> (i32, bool) {
-		joystick_id(self.fds[id])
+		if id >= self.fds.len() {
+			(0, true)
+		} else {
+			joystick_id(self.fds[id])
+		}
 	}
 
 	pub fn get_abs(&self, id: usize) -> (i32, i32, bool) {
-		joystick_abs(self.fds[id])
+		if id >= self.fds.len() {
+			(0, 0, true)
+		} else {
+			joystick_abs(self.fds[id])
+		}
 	}
 
 	pub fn num_plugged_in(&self) -> usize {
 		self.fds.len()
 	}
 
-	pub fn disconnect(&mut self, i: usize) -> () {
-		joystick_drop(self.fds[i]);
-		self.fds.remove(i);
-
-/*		for i in self.fds {
-			joystick_drop(i);
+	pub fn disconnect(&mut self) -> () {
+		while let Some(fd) = self.fds.pop() {
+			joystick_drop(fd);
 		}
-		self.fds.clear();*/
 	}
 
 	pub(crate) fn poll_event(&self, i: usize, state: &mut State) -> bool {
@@ -69,9 +73,7 @@ impl Joystick {
 }
 impl Drop for Joystick {
 	fn drop(&mut self) -> () {
-		while self.num_plugged_in() != 0 {
-			self.disconnect(0);
-		}
+		self.disconnect();
 	}
 }
 
