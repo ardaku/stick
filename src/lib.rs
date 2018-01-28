@@ -16,18 +16,18 @@ pub use self::map::Map;
 /// A Gamepad/Joystick Button
 #[derive(PartialEq, Copy, Clone)]
 pub enum Button {
-	/// Accept (A Button / Left Top Button - Missle / PS Circle)
+	/// Accept (A Button / Left Top Button - Missle / Circle)
 	Accept,
-	/// Cancel (B Button / Right Top Button / PS X)
+	/// Cancel (B Button / Side Button / Cross)
 	Cancel,
-	/// Execute (X Button / Side Button / PS Triangle)
+	/// Execute (X Button / Trigger / Triangle)
 	Execute,
-	/// Trigger (Y Button / Trigger / PS Square)
-	Trigger,
-	/// Left Function Button (0: L Trigger, 1: LZ / L bumper).  0 is
+	/// Action (Y Button / Right Top Button / Square)
+	Action,
+	/// Left Button (0: L Trigger, 1: LZ / L bumper).  0 is
 	/// farthest away from user, incrementing as buttons get closer.
 	L(u8),
-	/// Right Function Button (0: R Trigger, 1: Z / RZ / R Button). 0 is
+	/// Right Button (0: R Trigger, 1: Z / RZ / R Button). 0 is
 	/// farthest away from user, incrementing as buttons get closer.
 	R(u8),
 	/// Pause Menu (Start Button)
@@ -79,9 +79,9 @@ impl fmt::Display for Button {
 			Button::Accept => write!(f, "Accept"),
 			Button::Cancel => write!(f, "Cancel"),
 			Button::Execute => write!(f, "Execute"),
-			Button::Trigger => write!(f, "Trigger"),
-			Button::L(a) => write!(f, "Left Function {}", a),
-			Button::R(a) => write!(f, "Right Function {}", a),
+			Button::Action => write!(f, "Action"),
+			Button::L(a) => write!(f, "L-{}", a),
+			Button::R(a) => write!(f, "R-{}", a),
 			Button::Menu => write!(f, "Menu"),
 			Button::Controls => write!(f, "Controls"),
 			Button::Exit => write!(f, "Exit"),
@@ -150,13 +150,63 @@ impl ::std::fmt::Display for Input {
 
 use native::Joystick as NativeJoystick;
 
+pub(crate) struct State {
+	min: i32,
+	max: i32,
+	// Accept button
+	accept: bool,
+	// Cancel button
+	cancel: bool,
+	//
+	execute: bool,
+	trigger: bool,
+	l: [bool; 32],
+	r: [bool; 32],
+	menu: bool,
+	controls: bool,
+	up: bool,
+	down: bool,
+	left: bool,
+	right: bool,
+	exit: bool,
+	move_stick: bool,
+	cam_stick: bool,
+	move_xy: (f32, f32),
+	cam_xy: (f32, f32),
+	left_throttle: f32,
+	right_throttle: f32,
+}
+
+const EMPTY_STATE: State = State {
+	min: 0,
+	max: 0,
+	accept: false,
+	cancel: false,
+	execute: false,
+	trigger: false,
+	l: [false; 32],
+	r: [false; 32],
+	menu: false,
+	controls: false,
+	up: false,
+	down: false,
+	left: false,
+	right: false,
+	exit: false,
+	move_stick: false,
+	cam_stick: false,
+	move_xy: (0.0, 0.0),
+	cam_xy: (0.0, 0.0),
+	left_throttle: 0.0,
+	right_throttle: 0.0,
+};
+
 /// A USB Joystick Controller.
 pub struct Joystick {
 	map: Map,
 	joystick: NativeJoystick,
-//	oldstate: (Vec<f32>, Vec<bool>),
-//	state: (Vec<f32>, Vec<bool>),
-	name: String,
+	oldstate: State,
+	state: State,
 }
 
 impl Joystick {
@@ -165,56 +215,52 @@ impl Joystick {
 	pub fn new(map: Option<Map>) -> Joystick {
 		// TODO: mut
 		let mut joystick = NativeJoystick::new();
-		let (id, is_out) = joystick.get_id();
+		let (id, is_out) = joystick.get_id(0);
+		let (min, max, is_out2) = joystick.get_abs(0);
 
-		if is_out {
+		if is_out || is_out2 {
 			return Joystick {
 				map: Map {
 					buttons: Vec::new(),
 					throttles: Vec::new()
 				},
 				joystick: joystick,
-//				oldstate: (Vec::new(), Vec::new()),
-//				state: (Vec::new(), Vec::new()),
-				name: "".to_string(),
+				oldstate: EMPTY_STATE,
+				state: EMPTY_STATE,
 			};
 		}
 
-		let name = joystick.name();
 
-//		let mut axis = Vec::new();
-//		let mut buttons = Vec::new();
-
-//		axis.resize(n_axis, 0.0);
-//		buttons.resize(n_buttons, false);
 
 		let map = if let Some(m) = map {
 			m
 		} else {
-			Map::new(&name)
+			Map::new(id)
 		};
 
 		println!("New Joystick: {:x}", id);
 
-//		assert_eq!(n_buttons, map.buttons.len());
-//		assert_eq!(n_axis, map.throttles.len());
+		let mut oldstate = EMPTY_STATE;
+		let mut state = EMPTY_STATE;
+
+		oldstate.min = min;
+		oldstate.max = max;
+		state.min = min;
+		state.max = max;
 
 		Joystick {
 			map,
 			joystick,
-//			oldstate: (axis.clone(), buttons.clone()),
-//			state: (axis, buttons),
-			name,
+			oldstate,
+			state,
 		}
 	}
 
 	/// Poll Joystick Input
 	pub fn update(&mut self, input: &mut Vec<Input>) -> () {
-		if self.not_plugged_in() {
-			return
+		for i in 0..self.not_plugged_in() {
+			while self.joystick.poll_event(i, &mut self.state) { }
 		}
-
-//		while self.joystick.poll_event(&mut self.state) { }
 
 		// TODO: Create GUI widget to configure joystick.
 		// Current configuration:
@@ -234,7 +280,7 @@ impl Joystick {
 //		self.check_axis(input, (js_axis_pov, VIRTUAL_AXIS_POV));
 //		self.check_axis(input,(js_axis_throttle,VIRTUAL_AXIS_THROTTLE));
 
-		let mut js_main = (false, 0, 0);
+/*		let mut js_main = (false, 0, 0);
 		let mut js_pov = (false, 0, 0);
 
 		for i in 0..self.map.throttles.len() {
@@ -242,7 +288,7 @@ impl Joystick {
 
 			match j {
 				Throttle::L | Throttle::R => {},
-//					self.check_axis(input, (i, j)),
+					self.check_axis(input, (i, j)),
 				Throttle::MainX => {
 					js_main.0 = true;
 					js_main.1 = i;
@@ -259,23 +305,72 @@ impl Joystick {
 				}
 				_ => {},
 			}
-		}
+		}*/
 
-		/*if js_main.0 {
+/*		// 
+		if js_main.0 {
 			self.check_coord(input, (js_main.1, Throttle::MainX),
 				(js_main.2, Throttle::MainY));
 		}
 
+		// 
 		if js_pov.0 {
-			self.check_coord(input, (js_pov.1, Throttle::MainX),
-				(js_pov.2, Throttle::MainY));
-		}
-
-		for i in 0..self.map.buttons.len() {
-			let j = self.map.button(i);
-
-			self.check_button(input, (i, j));
+			self.check_coord(input, (js_pov.1, Throttle::PovX),
+				(js_pov.2, Throttle::PovY));
 		}*/
+
+		self.oldstate.left_throttle = check_axis(input,
+			(self.state.left_throttle, self.oldstate.left_throttle),
+			Throttle::L);
+		self.oldstate.right_throttle = check_axis(input,
+			(self.state.right_throttle,
+			self.oldstate.right_throttle), Throttle::R);
+
+		self.oldstate.move_xy = check_coord(input, (self.state.move_xy.0,
+			self.oldstate.move_xy.0), (self.state.move_xy.1,
+			self.oldstate.move_xy.1), Throttle::MainX);
+
+		self.oldstate.cam_xy = check_coord(input, (self.state.cam_xy.0,
+			self.oldstate.cam_xy.0), (self.state.cam_xy.1,
+			self.oldstate.cam_xy.1), Throttle::PovX);
+
+		// Button
+		self.oldstate.accept = check_button(input,
+			(self.state.accept, self.oldstate.accept),
+			Button::Accept);
+		self.oldstate.cancel = check_button(input,
+			(self.state.cancel, self.oldstate.cancel),
+			Button::Cancel);
+		self.oldstate.execute = check_button(input,
+			(self.state.execute, self.oldstate.execute),
+			Button::Execute);
+		self.oldstate.trigger = check_button(input,
+			(self.state.trigger, self.oldstate.trigger),
+			Button::Action);
+		self.oldstate.menu = check_button(input,
+			(self.state.menu, self.oldstate.menu),
+			Button::Menu);
+		self.oldstate.left = check_button(input,
+			(self.state.left, self.oldstate.left),
+			Button::Left);
+		self.oldstate.right = check_button(input,
+			(self.state.right, self.oldstate.right),
+			Button::Right);
+		self.oldstate.up = check_button(input,
+			(self.state.up, self.oldstate.up),
+			Button::Up);
+		self.oldstate.down = check_button(input,
+			(self.state.down, self.oldstate.down),
+			Button::Down);
+
+		for i in 0..32 {
+			self.oldstate.l[i] = check_button(input,
+				(self.state.l[i], self.oldstate.l[i]),
+				Button::L(i as u8));
+			self.oldstate.r[i] = check_button(input,
+				(self.state.r[i], self.oldstate.r[i]),
+				Button::R(i as u8));
+		}
 	}
 
 	/// Check to see if gamepad supports a specific input.
@@ -297,92 +392,72 @@ impl Joystick {
 		}
 	}
 
-	/// Get the name of the `Joystick`.
-	pub fn name(&self) -> String {
-		self.name.to_string()
-	}
-
-	/*fn check_button(&mut self, input: &mut Vec<Input>, i: (usize,Button)) {
-		if self.state.1[i.0] != self.oldstate.1[i.0] {
-			let value = self.state.1[i.0];
-
-			self.oldstate.1[i.0] = value;
-
-			input.push(match value {
-				false => Input::Release(i.1),
-				true => Input::Press(i.1),
-			});
-		}
-	}
-
-	fn check_coord(&mut self, input: &mut Vec<Input>, i: (usize,Throttle),
-		j: (usize,Throttle))
-	{
-		if self.state.0[i.0] != self.oldstate.0[i.0] ||
-			self.state.0[j.0] != self.oldstate.0[j.0]
-		{
-			let x = self.state.0[i.0];
-			let y = self.state.0[j.0];
-
-			self.oldstate.0[i.0] = x;
-			self.oldstate.0[j.0] = y;
-
-			input.push(match i.1 {
-				Throttle::MainX => Input::Move(x, y),
-				Throttle::PovX => Input::Pov(x, y),
-				_ => unreachable!(),
-			});
-		}
-	}
-
-	fn check_axis(&mut self, input: &mut Vec<Input>, i: (usize,Throttle)) {
-		if self.state.0[i.0] != self.oldstate.0[i.0] {
-			let value = self.state.0[i.0];
-
-			self.oldstate.0[i.0] = value;
-
-			input.push(match i.1 {
-				Throttle::L => {
-					Input::ThrottleL(value)
-				},
-				Throttle::R => {
-					Input::ThrottleR(value)
-				},
-				_ => unreachable!(),
-			});
-		}
-	}*/
-
-	fn not_plugged_in(&mut self) -> bool {
-		if self.joystick.is_plugged_in() {
-			let (_, is_out) = self.joystick.get_id();
-
-			if is_out {
-				println!("Unplugged Joystick: {}", self.name);
-				self.joystick.disconnect();
-			}
-
-			is_out
-		} else {
+	fn not_plugged_in(&mut self) -> usize {
+		// TODO: plug in when already some plugged in.
+		if self.joystick.num_plugged_in() == 0 {
 			self.joystick = NativeJoystick::new();
-			self.name = self.joystick.name();
-			let (id, is_out) = self.joystick.get_id();
+			let (id, is_out) = self.joystick.get_id(0);
 
 			if is_out == false {
-				self.map = Map::new(&self.name);
+				self.map = Map::new(id);
 
-//				assert_eq!(n_buttons, self.map.buttons.len());
-//				assert_eq!(n_axis, self.map.throttles.len());
-
-//				self.state.0.resize(n_axis, 0.0);
-//				self.state.1.resize(n_buttons, false);
-//				self.oldstate.0.resize(n_axis, 0.0);
-//				self.oldstate.1.resize(n_buttons, false);
-
-				println!("New Joystick: {}", self.name);
+				println!("New Joystick: {:x}", id);
 			}
+		} else {
+			for i in 0..self.joystick.num_plugged_in() {
+				let (_, is_out) = self.joystick.get_id(i);
 
-			is_out
+				if is_out {
+					// TODO
+					println!("Unplugged Joystick: ???");
+					self.joystick.disconnect(i);
+				}
+			}
 		}
+
+		self.joystick.num_plugged_in()
 	}
+}
+
+fn check_coord(input: &mut Vec<Input>, i: (f32, f32), j: (f32, f32),
+	throttle: Throttle) -> (f32, f32)
+{
+	if i.0 != i.1 || j.0 != j.1 {
+		input.push(match throttle {
+			Throttle::MainX => Input::Move(i.0, j.0),
+			Throttle::PovX => Input::Pov(i.0, j.0),
+			_ => unreachable!(),
+		});
+	}
+
+	(i.0, j.0)
+}
+
+fn check_axis(input: &mut Vec<Input>, i: (f32, f32), throttle: Throttle) -> f32
+{
+	if i.0 != i.1 {
+		input.push(match throttle {
+			Throttle::L => {
+				Input::ThrottleL(i.0)
+			},
+			Throttle::R => {
+				Input::ThrottleR(i.0)
+			},
+			_ => unreachable!(),
+		});
+	}
+
+	i.0
+}
+
+fn check_button(input: &mut Vec<Input>, i: (bool, bool), button: Button) -> bool
+{
+	if i.0 != i.1 {
+		input.push(match i.0 {
+			false => Input::Release(button),
+			true => Input::Press(button),
+		});
+	}
+
+	i.0
 }
