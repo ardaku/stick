@@ -201,8 +201,7 @@ impl Joystick {
 	/// Connect to a Joystick, with optional custom button/axis mapping.
 	/// If custom mapping, always map A, B, C, D, MainX and MainY.
 	pub fn new(remap: Vec<Remap>) -> Joystick {
-		// TODO: mut
-		let mut joystick = NativeJoystick::new();
+		let joystick = NativeJoystick::new();
 		let (id, is_out) = joystick.get_id(0);
 		let (min, max, is_out2) = joystick.get_abs(0);
 
@@ -310,6 +309,18 @@ impl Joystick {
 		self.oldstate.down = check_button(&mut self.input,
 			(self.state.down, self.oldstate.down),
 			Button::Down);
+		self.oldstate.controls = check_button(&mut self.input,
+			(self.state.controls, self.oldstate.controls),
+			Button::Controls);
+		self.oldstate.move_stick = check_button(&mut self.input,
+			(self.state.move_stick, self.oldstate.move_stick),
+			Button::MoveStick);
+		self.oldstate.cam_stick = check_button(&mut self.input,
+			(self.state.cam_stick, self.oldstate.cam_stick),
+			Button::CamStick);
+		self.oldstate.exit = check_button(&mut self.input,
+			(self.state.exit, self.oldstate.exit),
+			Button::Exit);
 
 		for i in 0..32 {
 			self.oldstate.l[i] = check_button(&mut self.input,

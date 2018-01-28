@@ -1,4 +1,4 @@
-# Stick 0.1.0
+# Stick 0.2.0
 [Stick](http://plopgrizzly.com/stick) is a Rust library developed by
 [Plop Grizzly](http://plopgrizzly.com) for getting joystick input.
 
@@ -24,6 +24,7 @@
 * MacOS
 * Android
 * XBox Controller
+* PlayStation Controller
 * Emulated Joystick
 * Nintendo Switch
 * Probably Some Other Controllers
