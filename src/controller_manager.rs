@@ -82,11 +82,15 @@ pub struct ControllerManager {
 
 impl ControllerManager {
 	/// Connect to a Joystick, with optional custom button/axis remapping.
-	pub fn new(remap: Vec<Remapper>) -> ControllerManager {
+	pub fn new(mut remap: Vec<Remapper>) -> ControllerManager {
 		let c_manager = NativeManager::new();
 		let controllers = Vec::new();
 		let input = Vec::new();
 		let reset = false;
+
+		// default remappings
+		remap.insert(0, include!("remapping/game_cube.rs"));
+		remap.push(include!("remapping/default.rs"));
 
 		ControllerManager {
 			c_manager, controllers, remap, input, reset
@@ -115,7 +119,8 @@ impl ControllerManager {
 
 			if ne { continue }
 			if is_out {
-				self.input.push((i, Input::UnPlugged));
+				self.input.push((i, Input::UnPlugged(
+					self.controllers[i].id)));
 				self.c_manager.disconnect(fd);
 				continue;
 			}
@@ -130,9 +135,8 @@ impl ControllerManager {
 				self.controllers[i].id =
 					self.c_manager.get_id(i).0;
 
-				println!("{} {:x}", i, self.controllers[i].id);
-
-				self.input.push((i, Input::PluggedIn))
+				self.input.push((i, Input::PluggedIn(
+					self.controllers[i].id)))
 			}
 
 			while self.c_manager.poll_event(i,

@@ -24,9 +24,9 @@ pub enum Input {
 	/// Button Release
 	Release(Button),
 	/// Device Plugged-In
-	PluggedIn,
+	PluggedIn(i32),
 	/// Device Un-Plugged
-	UnPlugged,
+	UnPlugged(i32),
 }
 
 impl fmt::Display for Input {
@@ -40,8 +40,8 @@ impl fmt::Display for Input {
 			ThrottleR(x) => write!(f, "ThrottleR ({})", x),
 			Press(x) => write!(f, "Press ({})", x),
 			Release(x) => write!(f, "Release ({})", x),
-			PluggedIn => write!(f, "Device Plugged-In"),
-			UnPlugged =>  write!(f, "Device Un-Plugged"),
+			PluggedIn(x) => write!(f, "Device Plugged-In {:x}", x),
+			UnPlugged(x) =>  write!(f, "Device Un-Plugged {:x}", x),
 		}
 	}
 }
