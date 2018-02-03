@@ -33,9 +33,11 @@ repository = "https://github.com/plopgrizzly/stick"
 
 readme = "README.md"
 description = """
-    A platform-agnostic joystick library for Rust.
+    A platform-agnostic joystick / gamepad / controller library for Rust.
 """
-keywords = ["interface", "joystick", "gamepad", "platform-agnostic"]
+keywords = [
+	"interface", "joystick", "gamepad", "platform-agnostic", "controller"
+]
 categories = ["hardware-support"]
 
 ################################################################################

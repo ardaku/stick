@@ -2,7 +2,7 @@
 // Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 //
-// src/native/windows/mod.rs
+// src/ffi/windows.rs
 
 use std::mem;
 
@@ -67,10 +67,10 @@ extern "system" {
 
 }
 
-pub struct Joystick { joy_caps: Option<JoyCaps> }
-impl Joystick {
-	pub fn new() -> Joystick {
-		Joystick { joy_caps: None }
+pub struct NativeManager { joy_caps: Option<JoyCaps> }
+impl NativeManager {
+	pub fn new() -> NativeManager {
+		NativeManager { joy_caps: None }
 	}
 
 	// TODO: Return Name Here Too, so Joystick is unit struct & no mut ref.
@@ -115,7 +115,7 @@ impl Joystick {
 		false
 	}
 }
-impl Drop for Joystick {
+impl Drop for NativeManager {
 	fn drop(&mut self) -> () {
 //		if self.native != -1 {
 //			destroy::joystick(self.native);

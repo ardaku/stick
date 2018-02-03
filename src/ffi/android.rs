@@ -2,18 +2,18 @@
 // Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 //
-// src/native/macos/mod.rs
+// src/ffi/android.rs
 
-pub struct Joystick { /*pub native: i32*/ }
-impl Joystick {
-	pub fn create() -> Joystick {
+pub struct NativeManager { /*pub native: i32*/ }
+impl NativeManager {
+	pub fn create() -> NativeManager {
 /*		let joystick = joystick_create::joystick_create();
 
 		if joystick != -1 {
 			joystick_async::joystick_async(joystick);
 		}*/
 
-		Joystick { /*native: joystick*/ }
+		NativeManager { /*native: joystick*/ }
 	}
 
 	pub fn map(&self) -> (usize, usize, bool) {
@@ -42,7 +42,7 @@ impl Joystick {
 		false
 	}
 }
-impl Drop for Joystick {
+impl Drop for NativeManager {
 	fn drop(&mut self) -> () {
 //		if self.native != -1 {
 //			destroy::joystick(self.native);

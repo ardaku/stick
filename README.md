@@ -1,6 +1,7 @@
 # Stick 0.2.0
 [Stick](http://plopgrizzly.com/stick) is a Rust library developed by
-[Plop Grizzly](http://plopgrizzly.com) for getting joystick input.
+[Plop Grizzly](http://plopgrizzly.com) for getting joystick, gamepad, or other
+controller input.
 
 [Cargo](https://crates.io/crates/stick) /
 [Documentation](https://docs.rs/stick)
@@ -8,7 +9,8 @@
 ## Features
 **stick**'s current features:
 * Get Joystick Input
-* Maps for differents kinds of joysticks.
+* Remap Joystick Input
+* (TODO) Connect To Multiple Joysticks
 
 **stick**'s planned features:
 * Haptic (Vibration) Support
