@@ -105,44 +105,9 @@ impl ControllerManager {
 		}
 	}
 
-	/// Check if anything changed
-	pub fn change(&mut self, input: (usize, Input))
-		-> Option<(usize, Input)>
-	{
-		use Input::*;
-
-		match input.1 {
-			Move(x, y) => if (x, y) != 
-				self.controllers[input.0].move_xy
-			{
-				self.controllers[input.0].move_xy = (x, y);
-			} else { return None },
-
-			Camera(x, y) => if (x, y) != 
-				self.controllers[input.0].cam_xy
-			{
-				self.controllers[input.0].cam_xy = (x, y);
-			} else { return None },
-
-			ThrottleL(x) => if x !=
-				self.controllers[input.0].l_throttle
-			{
-				self.controllers[input.0].l_throttle = x;
-			} else { return None },
-
-			ThrottleR(x) => if x !=
-				self.controllers[input.0].r_throttle
-			{
-				self.controllers[input.0].r_throttle = x;
-			} else { return None },
-
-			_ => {},
-		}
-
-		Some(input)
-	}
-
-	/// Poll Joystick Input
+	/// Poll Joystick Input.  Returns an `Option` for use in a `while let`.
+	/// The tuple within the `Some` variant is controller id (starting at 0),
+	/// followed by the input event for that controller.
 	pub fn update(&mut self) -> Option<(usize, Input)> {
 		if let Some(input) = self.input.pop() {
 			let remapped = self.remap(input);
@@ -289,6 +254,41 @@ impl ControllerManager {
 		}
 
 		self.update()
+	}
+
+	#[inline(always)]
+	fn change(&mut self, input: (usize, Input)) -> Option<(usize, Input)> {
+		use Input::*;
+
+		match input.1 {
+			Move(x, y) => if (x, y) != 
+				self.controllers[input.0].move_xy
+			{
+				self.controllers[input.0].move_xy = (x, y);
+			} else { return None },
+
+			Camera(x, y) => if (x, y) != 
+				self.controllers[input.0].cam_xy
+			{
+				self.controllers[input.0].cam_xy = (x, y);
+			} else { return None },
+
+			ThrottleL(x) => if x !=
+				self.controllers[input.0].l_throttle
+			{
+				self.controllers[input.0].l_throttle = x;
+			} else { return None },
+
+			ThrottleR(x) => if x !=
+				self.controllers[input.0].r_throttle
+			{
+				self.controllers[input.0].r_throttle = x;
+			} else { return None },
+
+			_ => {},
+		}
+
+		Some(input)
 	}
 
 	#[inline(always)]

@@ -17,10 +17,10 @@ pub enum Button {
 	Execute,
 	/// Action (Y Button / Right Top Button / Square)
 	Action,
-	/// Left Button (0: L Trigger, 1: LZ / L bumper).  0 is
+	/// Left Button (0: L Trigger, 1: LZ / L Bumper).  0 is
 	/// farthest away from user, incrementing as buttons get closer.
 	L(u8),
-	/// Right Button (0: R Trigger, 1: Z / RZ / R Button). 0 is
+	/// Right Button (0: R Trigger, 1: Z / RZ / R Bumper). 0 is
 	/// farthest away from user, incrementing as buttons get closer.
 	R(u8),
 	/// Pause Menu (Start Button)

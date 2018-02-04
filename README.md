@@ -1,4 +1,4 @@
-# Stick 0.2.0
+# Stick 0.3.0
 [Stick](http://plopgrizzly.com/stick) is a Rust library developed by
 [Plop Grizzly](http://plopgrizzly.com) for getting joystick, gamepad, or other
 controller input.
@@ -8,28 +8,29 @@ controller input.
 
 ## Features
 **stick**'s current features:
-* Get Joystick Input
-* Remap Joystick Input
-* (TODO) Connect To Multiple Joysticks
+* Get controller input
+* Remap controller input
+* Connect to multiple controllers
 
 **stick**'s planned features:
-* Haptic (Vibration) Support
+* Better (faster & simpler) remapping
+* Haptic (vibration) support
 
 ## Support
 **stick**'s current support:
 * Linux
-* GameCube Controllers
-* Flight Simulator Joystick
+* GameCube controllers (with MAYFLASH adapter)
+* Flight simulator joystick
 
 **stick**'s planned support:
 * Windows
 * MacOS
 * Android
-* XBox Controller
-* PlayStation Controller
-* Emulated Joystick
-* Nintendo Switch
-* Probably Some Other Controllers
+* XBox controller
+* PlayStation controller
+* Emulated joystick
+* Nintendo switch
+* Probably some other controllers
 
 # Contributing
 If you'd like to help implement functions for unsupported platforms, fix bugs,
