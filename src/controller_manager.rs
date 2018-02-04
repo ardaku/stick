@@ -10,7 +10,7 @@ use super::Input;
 use super::Remapper;
 
 #[derive(Copy, Clone)]
-pub struct State {
+pub(crate) struct State {
 	pub min: i32,
 	pub max: i32,
 	pub accept: bool,
@@ -38,7 +38,11 @@ pub struct State {
 struct Controller {
 	oldstate: State,
 	state: State,
-	id: i32
+	id: i32,
+	move_xy: (f32, f32),
+	cam_xy: (f32, f32),
+	l_throttle: f32,
+	r_throttle: f32,
 }
 
 const EMPTY_STATE: State = State {
@@ -69,6 +73,10 @@ const NEW_CONTROLLER: Controller = Controller {
 	oldstate: EMPTY_STATE,
 	state: EMPTY_STATE,
 	id: 0,
+	move_xy: (0.0, 0.0),
+	cam_xy: (0.0, 0.0),
+	l_throttle: 0.0,
+	r_throttle: 0.0,
 };
 
 /// A Manager for Controllers.
@@ -97,10 +105,53 @@ impl ControllerManager {
 		}
 	}
 
+	/// Check if anything changed
+	pub fn change(&mut self, input: (usize, Input))
+		-> Option<(usize, Input)>
+	{
+		use Input::*;
+
+		match input.1 {
+			Move(x, y) => if (x, y) != 
+				self.controllers[input.0].move_xy
+			{
+				self.controllers[input.0].move_xy = (x, y);
+			} else { return None },
+
+			Camera(x, y) => if (x, y) != 
+				self.controllers[input.0].cam_xy
+			{
+				self.controllers[input.0].cam_xy = (x, y);
+			} else { return None },
+
+			ThrottleL(x) => if x !=
+				self.controllers[input.0].l_throttle
+			{
+				self.controllers[input.0].l_throttle = x;
+			} else { return None },
+
+			ThrottleR(x) => if x !=
+				self.controllers[input.0].r_throttle
+			{
+				self.controllers[input.0].r_throttle = x;
+			} else { return None },
+
+			_ => {},
+		}
+
+		Some(input)
+	}
+
 	/// Poll Joystick Input
 	pub fn update(&mut self) -> Option<(usize, Input)> {
 		if let Some(input) = self.input.pop() {
-			return Some(self.remap(input));
+			let remapped = self.remap(input);
+
+			if let Some(input) = self.change(remapped) {
+				return Some(input);
+			} else {
+				return self.update();
+			}
 		} else if self.reset {
 			self.reset = false;
 			return None;
@@ -144,34 +195,19 @@ impl ControllerManager {
 
 			// TODO: This code is garbage.  Fix it.  Preferably not
 			// macros, but maybe is necesity.
-			self.controllers[i].oldstate.left_throttle=check_axis(
-				&mut self.input, i,
-				(self.controllers[i].state.left_throttle,
-				 self.controllers[i].oldstate.left_throttle),
-				false);
-			self.controllers[i].oldstate.right_throttle=check_axis(
-				&mut self.input, i,
-				(self.controllers[i].state.right_throttle,
-				 self.controllers[i].oldstate.right_throttle),
-				true);
+			check_axis(&mut self.input, i,
+				self.controllers[i].state.left_throttle, false);
+			check_axis(&mut self.input, i,
+				self.controllers[i].state.right_throttle, true);
 
-			self.controllers[i].oldstate.move_xy = check_coord(
-				&mut self.input, i,
-				(self.controllers[i].state.move_xy.0,
-				 self.controllers[i].oldstate.move_xy.0),
-				(self.controllers[i].state.move_xy.1,
-				 self.controllers[i].oldstate.move_xy.1),
-				false);
+			check_coord(&mut self.input, i,
+				self.controllers[i].state.move_xy.0,
+				self.controllers[i].state.move_xy.1, false);
+			check_coord(&mut self.input, i,
+				self.controllers[i].state.cam_xy.0,
+				self.controllers[i].state.cam_xy.1, true);
 
-			self.controllers[i].oldstate.cam_xy = check_coord(
-				&mut self.input, i,
-				(self.controllers[i].state.cam_xy.0,
-				 self.controllers[i].oldstate.cam_xy.0),
-				(self.controllers[i].state.cam_xy.1,
-				 self.controllers[i].oldstate.cam_xy.1),
-				true);
-
-			// Button
+			// Button ( TODO continued ... )
 			self.controllers[i].oldstate.accept = check_button(
 				&mut self.input, i,
 				(self.controllers[i].state.accept,
@@ -267,30 +303,22 @@ impl ControllerManager {
 	}
 }
 
-fn check_coord(input: &mut Vec<(usize, Input)>, id: usize, i: (f32, f32),
-	j: (f32, f32), cam_stick: bool) -> (f32, f32)
+fn check_coord(input: &mut Vec<(usize, Input)>, id: usize, i: f32, j: f32,
+	cam_stick: bool)
 {
-	if i.0 != i.1 || j.0 != j.1 {
-		input.push((id, match cam_stick {
-			false => Input::Move(i.0, j.0),
-			true => Input::Camera(i.0, j.0),
-		}));
-	}
-
-	(i.0, j.0)
+	input.push((id, match cam_stick {
+		false => Input::Move(i, j),
+		true => Input::Camera(i, j),
+	}));
 }
 
-fn check_axis(input: &mut Vec<(usize, Input)>, id: usize, i: (f32, f32),
-	rthrottle: bool) -> f32
+fn check_axis(input: &mut Vec<(usize, Input)>, id: usize, i: f32,
+	rthrottle: bool)
 {
-	if i.0 != i.1 {
-		input.push((id, match rthrottle {
-			false => Input::ThrottleL(i.0),
-			true => Input::ThrottleR(i.0),
-		}));
-	}
-
-	i.0
+	input.push((id, match rthrottle {
+		false => Input::ThrottleL(i),
+		true => Input::ThrottleR(i),
+	}));
 }
 
 fn check_button(input: &mut Vec<(usize, Input)>, id: usize, i: (bool, bool),

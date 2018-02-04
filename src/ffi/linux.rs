@@ -247,16 +247,11 @@ fn transform(min: i32, max: i32, val: i32) -> f32 {
 	let value = (value * 2.0) - 1.0; // -1 to 1
 	let value = (value * 100.0) as i32;
 
-	// deadzone, clamp and filter
+	// deadzone
 	if value < 10 && value > -10 {
 		0.0
-	} else if value >= 100 {
-		1.0
-	} else if value <= -100 {
-		-1.0
 	} else {
 		(value as f32) / 100.0
-//		((value - (value % 4)) as f32) / 100.0
 	}
 }
 

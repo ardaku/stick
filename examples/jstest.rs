@@ -8,6 +8,7 @@ extern crate stick;
 
 fn remapper(input: (usize, stick::Input)) -> (usize, stick::Input) {
 	(input.0, match input.1 {
+		stick::Input::ThrottleL(y) => { stick::Input::Camera(0.0, y) },
 		stick::Input::Camera(_, y) => {
 			stick::Input::ThrottleL(y)
 		}
