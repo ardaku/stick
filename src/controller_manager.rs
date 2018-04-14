@@ -155,8 +155,11 @@ impl ControllerManager {
 					self.controllers[i].id)))
 			}
 
-			while self.c_manager.poll_event(i,
-				&mut self.controllers[i].state) { }
+			// TODO: put inside linux ffi
+//			while self.c_manager.poll_event(i,
+//				&mut self.controllers[i].state) { }
+
+			self.c_manager.poll_event(i, &mut self.controllers[i].state);
 
 			// TODO: This code is garbage.  Fix it.  Preferably not
 			// macros, but maybe is necesity.
