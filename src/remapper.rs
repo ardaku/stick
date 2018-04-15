@@ -1,8 +1,6 @@
-// Stick
-// Copyright (c) 2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// remapper.rs -- Stick
+// Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/remapper.rs
 
 use super::Input;
 

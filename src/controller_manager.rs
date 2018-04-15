@@ -1,8 +1,6 @@
-// Stick
-// Copyright (c) 2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// controller_manager.rs -- Stick
+// Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/controller_manager.rs
 
 use super::Button;
 use super::NativeManager;

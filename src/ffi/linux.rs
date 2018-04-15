@@ -1,8 +1,6 @@
-// Stick
-// Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// ffi/linux.rs -- Stick
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/ffi/linux.rs
 
 use std::mem;
 use std::ffi::CString;

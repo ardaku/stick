@@ -1,8 +1,6 @@
-// Stick
-// Copyright (c) 2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// remapping/default.rs -- Stick
+// Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/remapping/default.rs
 
 {
 	fn remapper(input: (usize, ::Input)) -> (usize, ::Input) {

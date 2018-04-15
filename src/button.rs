@@ -1,8 +1,6 @@
-// Stick
-// Copyright (c) 2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// button.rs -- Stick
+// Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/button.rs
 
 use std::fmt;
 

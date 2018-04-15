@@ -1,8 +1,6 @@
-// Stick
-// Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// ffi/android.rs -- Stick
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/ffi/android.rs
 
 pub struct NativeManager { /*pub native: i32*/ }
 impl NativeManager {

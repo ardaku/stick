@@ -1,8 +1,6 @@
-// Stick
-// Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// lib.rs -- Stick
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/lib.rs
 
 //! A platform-agnostic joystick / gamepad / controller library for Rust.
 
