@@ -4,12 +4,10 @@
 
 //! A platform-agnostic joystick / gamepad / controller library for Rust.
 
-mod button;
 mod input;
 mod controller_manager;
 mod remapper;
 
-pub use button::Button;
 pub use input::Input;
 pub use controller_manager::ControllerManager;
 pub use remapper::Remapper;

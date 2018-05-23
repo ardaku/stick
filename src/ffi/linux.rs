@@ -121,8 +121,8 @@ impl NativeManager {
 		panic!("There was no fd of {}", fd);
 	}
 
-	pub(crate) fn poll_event(&self, i: usize, state: &mut State) -> bool {
-		joystick_poll_event(self.devices[i].fd, state)
+	pub(crate) fn poll_event(&self, i: usize, state: &mut State) {
+		while joystick_poll_event(self.devices[i].fd, state) {}
 	}
 
 	fn add(&mut self, device: Device) -> usize {

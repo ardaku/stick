@@ -2,7 +2,6 @@
 // Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 
-use super::Button;
 use super::NativeManager;
 use super::Input;
 use super::Remapper;
@@ -153,10 +152,6 @@ impl ControllerManager {
 					self.controllers[i].id)))
 			}
 
-			// TODO: put inside linux ffi
-//			while self.c_manager.poll_event(i,
-//				&mut self.controllers[i].state) { }
-
 			self.c_manager.poll_event(i, &mut self.controllers[i].state);
 
 			// TODO: This code is garbage.  Fix it.  Preferably not
@@ -166,113 +161,224 @@ impl ControllerManager {
 			check_axis(&mut self.input, i,
 				self.controllers[i].state.right_throttle, true);
 
-			check_coord(&mut self.input, i,
-				self.controllers[i].state.move_xy.0,
-				self.controllers[i].state.move_xy.1, false);
-			check_coord(&mut self.input, i,
-				self.controllers[i].state.cam_xy.0,
-				self.controllers[i].state.cam_xy.1, true);
+			if self.controllers[i].state.move_xy != (0.0, 0.0) {
+				self.input.push((i, Input::Move(
+					self.controllers[i].state.move_xy.0,
+					self.controllers[i].state.move_xy.1))
+				);
+			}
 
-			// Button ( TODO continued ... )
-			self.controllers[i].oldstate.accept = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.accept,
-				 self.controllers[i].oldstate.accept),
-				Button::Accept);
-			self.controllers[i].oldstate.cancel = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.cancel,
-				 self.controllers[i].oldstate.cancel),
-				Button::Cancel);
-			self.controllers[i].oldstate.execute = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.execute,
-				 self.controllers[i].oldstate.execute),
-				Button::Execute);
-			self.controllers[i].oldstate.trigger = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.trigger,
-				 self.controllers[i].oldstate.trigger),
-				Button::Action);
-			self.controllers[i].oldstate.menu = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.menu,
-				 self.controllers[i].oldstate.menu),
-				Button::Menu);
-			self.controllers[i].oldstate.left = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.left,
-				 self.controllers[i].oldstate.left),
-				Button::Left);
-			self.controllers[i].oldstate.right = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.right,
-				 self.controllers[i].oldstate.right),
-				Button::Right);
-			self.controllers[i].oldstate.up = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.up,
-				 self.controllers[i].oldstate.up),
-				Button::Up);
-			self.controllers[i].oldstate.down = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.down,
-				 self.controllers[i].oldstate.down),
-				Button::Down);
-			self.controllers[i].oldstate.controls = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.controls,
-				 self.controllers[i].oldstate.controls),
-				Button::Controls);
-			self.controllers[i].oldstate.move_stick = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.move_stick,
-				 self.controllers[i].oldstate.move_stick),
-				Button::MoveStick);
-			self.controllers[i].oldstate.cam_stick = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.cam_stick,
-				 self.controllers[i].oldstate.cam_stick),
-				Button::CamStick);
-			self.controllers[i].oldstate.exit = check_button(
-				&mut self.input, i,
-				(self.controllers[i].state.exit,
-				 	self.controllers[i].oldstate.exit),
-				Button::Exit);
+			if self.controllers[i].state.cam_xy != (0.0, 0.0) {
+				self.input.push((i, Input::Camera(
+					self.controllers[i].state.cam_xy.0,
+					self.controllers[i].state.cam_xy.1))
+				);
+			}
+
+			// Button ( previous TODO is continued ... )
+			if self.controllers[i].state.accept
+				!= self.controllers[i].oldstate.accept
+			{
+				self.input.push((i, match self.controllers[i].state.accept {
+					false => Input::Accept(None),
+					true => Input::Accept(Some(true)),
+				}));
+				self.controllers[i].oldstate.accept =
+					self.controllers[i].state.accept;
+			} else if self.controllers[i].state.accept {
+				self.input.push((i, Input::Accept(Some(false))))
+			}
+
+			if self.controllers[i].state.cancel
+				!= self.controllers[i].oldstate.cancel
+			{
+				self.input.push((i, match self.controllers[i].state.cancel {
+					false => Input::Cancel(None),
+					true => Input::Cancel(Some(true)),
+				}));
+				self.controllers[i].oldstate.cancel =
+					self.controllers[i].state.cancel;
+			} else if self.controllers[i].state.cancel {
+				self.input.push((i, Input::Cancel(Some(false))))
+			}
+
+			if self.controllers[i].state.execute
+				!= self.controllers[i].oldstate.execute
+			{
+				self.input.push((i, match self.controllers[i].state.execute {
+					false => Input::Execute(None),
+					true => Input::Execute(Some(true)),
+				}));
+				self.controllers[i].oldstate.execute =
+					self.controllers[i].state.execute;
+			} else if self.controllers[i].state.execute {
+				self.input.push((i, Input::Execute(Some(false))))
+			}
+
+			if self.controllers[i].state.trigger
+				!= self.controllers[i].oldstate.trigger
+			{
+				self.input.push((i, match self.controllers[i].state.trigger {
+					false => Input::Action(None),
+					true => Input::Action(Some(true)),
+				}));
+				self.controllers[i].oldstate.trigger =
+					self.controllers[i].state.trigger;
+			} else if self.controllers[i].state.trigger {
+				self.input.push((i, Input::Action(Some(false))))
+			}
+
+			if self.controllers[i].state.menu
+				!= self.controllers[i].oldstate.menu
+			{
+				self.input.push((i, match self.controllers[i].state.menu {
+					false => Input::Menu(None),
+					true => Input::Menu(Some(true)),
+				}));
+				self.controllers[i].oldstate.menu =
+					self.controllers[i].state.menu;
+			} else if self.controllers[i].state.menu {
+				self.input.push((i, Input::Menu(Some(false))))
+			}
+
+			if self.controllers[i].state.left
+				!= self.controllers[i].oldstate.left
+			{
+				self.input.push((i, match self.controllers[i].state.left {
+					false => Input::Left(None),
+					true => Input::Left(Some(true)),
+				}));
+				self.controllers[i].oldstate.left =
+					self.controllers[i].state.left;
+			} else if self.controllers[i].state.left {
+				self.input.push((i, Input::Left(Some(false))))
+			}
+
+			if self.controllers[i].state.right
+				!= self.controllers[i].oldstate.right
+			{
+				self.input.push((i, match self.controllers[i].state.right {
+					false => Input::Right(None),
+					true => Input::Right(Some(true)),
+				}));
+				self.controllers[i].oldstate.right =
+					self.controllers[i].state.right;
+			} else if self.controllers[i].state.right {
+				self.input.push((i, Input::Right(Some(false))))
+			}
+
+			if self.controllers[i].state.up
+				!= self.controllers[i].oldstate.up
+			{
+				self.input.push((i, match self.controllers[i].state.up {
+					false => Input::Up(None),
+					true => Input::Up(Some(true)),
+				}));
+				self.controllers[i].oldstate.up =
+					self.controllers[i].state.up;
+			} else if self.controllers[i].state.up {
+				self.input.push((i, Input::Up(Some(false))))
+			}
+
+			if self.controllers[i].state.down
+				!= self.controllers[i].oldstate.down
+			{
+				self.input.push((i, match self.controllers[i].state.down {
+					false => Input::Down(None),
+					true => Input::Down(Some(true)),
+				}));
+				self.controllers[i].oldstate.down =
+					self.controllers[i].state.down;
+			} else if self.controllers[i].state.down {
+				self.input.push((i, Input::Down(Some(false))))
+			}
+
+			if self.controllers[i].state.controls
+				!= self.controllers[i].oldstate.controls
+			{
+				if self.controllers[i].state.controls {
+					self.input.push((i, Input::Controls));
+				}
+				self.controllers[i].oldstate.controls =
+					self.controllers[i].state.controls;
+			}
+
+			if self.controllers[i].state.move_stick
+				!= self.controllers[i].oldstate.move_stick
+			{
+				self.input.push((i, match self.controllers[i].state.move_stick {
+					false => Input::MoveStick(None),
+					true => Input::MoveStick(Some(true)),
+				}));
+				self.controllers[i].oldstate.move_stick =
+					self.controllers[i].state.move_stick;
+			} else if self.controllers[i].state.move_stick {
+				self.input.push((i, Input::MoveStick(Some(false))))
+			}
+
+			if self.controllers[i].state.cam_stick
+				!= self.controllers[i].oldstate.cam_stick
+			{
+				self.input.push((i, match self.controllers[i].state.cam_stick {
+					false => Input::CamStick(None),
+					true => Input::CamStick(Some(true)),
+				}));
+				self.controllers[i].oldstate.cam_stick =
+					self.controllers[i].state.cam_stick;
+			} else if self.controllers[i].state.cam_stick {
+				self.input.push((i, Input::CamStick(Some(false))))
+			}
+
+			if self.controllers[i].state.exit
+				!= self.controllers[i].oldstate.exit
+			{
+				if self.controllers[i].state.exit {
+					self.input.push((i, Input::Exit));
+				}
+				self.controllers[i].oldstate.exit =
+					self.controllers[i].state.exit;
+			}
 
 			for b in 0..32 {
-				self.controllers[i].oldstate.l[b] = check_button(
-					&mut self.input, i,
-					(self.controllers[i].state.l[b],
-					 self.controllers[i].oldstate.l[b]),
-					Button::L(b as u8));
-				self.controllers[i].oldstate.r[b] = check_button(
-					&mut self.input, i,
-					(self.controllers[i].state.r[b],
-					 self.controllers[i].oldstate.r[b]),
-					Button::R(b as u8));
+				if self.controllers[i].state.l[b]
+					!= self.controllers[i].oldstate.l[b]
+				{
+					self.input.push((i, match self.controllers[i].state.l[b] {
+						false => Input::L(b as u8, None),
+						true => Input::L(b as u8, Some(true)),
+					}));
+					self.controllers[i].oldstate.l[b] =
+						self.controllers[i].state.l[b];
+				} else if self.controllers[i].state.l[b] {
+					self.input.push((i, Input::L(b as u8, Some(false))))
+				}
+
+				if self.controllers[i].state.r[b]
+					!= self.controllers[i].oldstate.r[b]
+				{
+					self.input.push((i, match self.controllers[i].state.r[b] {
+						false => Input::R(b as u8, None),
+						true => Input::R(b as u8, Some(true)),
+					}));
+					self.controllers[i].oldstate.r[b] =
+						self.controllers[i].state.r[b];
+				} else if self.controllers[i].state.r[b] {
+					self.input.push((i, Input::R(b as u8, Some(false))))
+				}
 			}
 		}
 
 		self.update()
 	}
 
+	// TODO: remove this function, it's not needed anymore
 	#[inline(always)]
 	fn change(&mut self, input: (usize, Input)) -> Option<(usize, Input)> {
 		use Input::*;
 
 		match input.1 {
-			Move(x, y) => if (x, y) != 
-				self.controllers[input.0].move_xy
-			{
-				self.controllers[input.0].move_xy = (x, y);
-			} else { return None },
-
-			Camera(x, y) => if (x, y) != 
-				self.controllers[input.0].cam_xy
-			{
-				self.controllers[input.0].cam_xy = (x, y);
-			} else { return None },
+			Move(x, y) => self.controllers[input.0].move_xy = (x, y),
+			Camera(x, y) => self.controllers[input.0].cam_xy = (x, y),
 
 			ThrottleL(x) => if x !=
 				self.controllers[input.0].l_throttle
@@ -304,15 +410,6 @@ impl ControllerManager {
 	}
 }
 
-fn check_coord(input: &mut Vec<(usize, Input)>, id: usize, i: f32, j: f32,
-	cam_stick: bool)
-{
-	input.push((id, match cam_stick {
-		false => Input::Move(i, j),
-		true => Input::Camera(i, j),
-	}));
-}
-
 fn check_axis(input: &mut Vec<(usize, Input)>, id: usize, i: f32,
 	rthrottle: bool)
 {
@@ -320,17 +417,4 @@ fn check_axis(input: &mut Vec<(usize, Input)>, id: usize, i: f32,
 		false => Input::ThrottleL(i),
 		true => Input::ThrottleR(i),
 	}));
-}
-
-fn check_button(input: &mut Vec<(usize, Input)>, id: usize, i: (bool, bool),
-	button: Button) -> bool
-{
-	if i.0 != i.1 {
-		input.push((id, match i.0 {
-			false => Input::Release(button),
-			true => Input::Press(button),
-		}));
-	}
-
-	i.0
 }
