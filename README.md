@@ -1,10 +1,11 @@
-# Stick 0.4.0
+# Stick
 [Stick](http://plopgrizzly.com/stick) is a Rust library developed by
 [Plop Grizzly](http://plopgrizzly.com) for getting joystick, gamepad, or other
 controller input.
 
 [Cargo](https://crates.io/crates/stick) /
-[Documentation](https://docs.rs/stick)
+[Documentation](https://docs.rs/stick) /
+[Change Log](CHANGELOG.md)
 
 ## Features
 **stick**'s current features:
