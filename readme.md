@@ -5,7 +5,7 @@ controller input.
 
 [Cargo](https://crates.io/crates/stick) /
 [Documentation](https://docs.rs/stick) /
-[Change Log](CHANGELOG.md)
+[Change Log](http://plopgrizzly.com/stick/changelog.html)
 
 ## Features
 **stick**'s current features:
