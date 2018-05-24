@@ -1,11 +1,11 @@
 // "stick" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use std::mem;
+//use std::mem;
 
 use State;
 
-type Tchar = i16;
+/*type Tchar = i16;
 const MAXPNAMELEN: usize = 32;
 const MAX_JOYSTICKOEMVXDNAME: usize = 260;
 
@@ -69,22 +69,22 @@ extern "system" {
 	fn joyGetDevCapsW(joy_id: usize, caps: *mut JoyCaps, cbjc: u32) -> u32;
 	// 
 	fn joyGetPosEx(joy_id: u32, pji: *mut JoyInfo) -> u32;
-}
+}*/
 
-pub struct NativeManager { joy_caps: Vec<Option<Device>> }
+pub struct NativeManager { /*joy_caps: Vec<Option<Device>>*/ }
 impl NativeManager {
 	pub fn new() -> NativeManager {
-		let supported = unsafe { joyGetNumDevs() } as usize;
+/*		let supported = unsafe { joyGetNumDevs() } as usize;
 		let mut joy_caps = Vec::new();
 		
-		joy_caps.resize(supported, None);
+		joy_caps.resize(supported, None);*/
 	
-		NativeManager { joy_caps }
+		NativeManager { /*joy_caps*/ }
 	}
 
 	/// Do a search for controllers.  Returns number of controllers.
 	pub fn search(&mut self) -> (usize, usize) {
-		for dev in 0..self.joy_caps.len() {
+/*		for dev in 0..self.joy_caps.len() {
 			let mut pos = unsafe { mem::uninitialized() };
 
 			// If Can't connect to joystick
@@ -92,7 +92,6 @@ impl NativeManager {
 				println!("WIN: unplugged");
 				self.disconnect(dev as i32);
 				continue;
-			
 			}			
 			// Can connect & is already recorded so
 			if !self.joy_caps[dev].is_none() {
@@ -106,7 +105,7 @@ impl NativeManager {
 						mem::size_of::<JoyCaps>() as u32);
 				}
 
-				println!("WIN: New joystick {}", dev);
+				panic!("WIN: New joystick {}", dev);
 			
 				self.joy_caps[dev] = Some(Device {
 					caps: joy_caps,
@@ -115,51 +114,52 @@ impl NativeManager {
 				
 				return (self.joy_caps.len(), self.joy_caps.len());
 			}
-		}
+		}*/
 
-		(self.joy_caps.len(), ::std::usize::MAX)
+		(0/*self.joy_caps.len()*/, ::std::usize::MAX)
 	}
 
-	pub fn num_plugged_in(&self) -> usize {
-		self.joy_caps.len()
-	}
+//	pub fn num_plugged_in(&self) -> usize {
+//		self.joy_caps.len()
+//		0
+//	}
 
-	pub fn disconnect(&mut self, fd: i32) -> () {
-		self.joy_caps[fd as usize] = None;
+	pub fn disconnect(&mut self, _fd: i32) -> () {
+//		self.joy_caps[fd as usize] = None;
 	}
 	
 	pub fn get_fd(&self, id: usize) -> (i32, bool, bool) {
-		if id >= self.joy_caps.len() {
+/*		if id >= self.joy_caps.len() {
 			(0, true, true)
-		} else {
+		} else {*/
 			(id as i32, false, false)
-		}
+//		}
 	}
 
-	pub fn get_id(&self, id: usize) -> (i32, bool) {
-		if id >= self.joy_caps.len() {
-			(0, true)
-		} else {
+	pub fn get_id(&self, _id: usize) -> (i32, bool) {
+//		if id >= self.joy_caps.len() {
+//			(0, true)
+//		} else {
 			(-1, false)
-		}
+//		}
 	}
 
-	pub fn get_abs(&self, id: usize) -> (i32, i32, bool) {
-		if id >= self.joy_caps.len() {
+	pub fn get_abs(&self, _id: usize) -> (i32, i32, bool) {
+//		if id >= self.joy_caps.len() {
 			(0, 0, true)
-		} else {
-			(self.joy_caps[id].unwrap().caps.x_min as i32,
-			 self.joy_caps[id].unwrap().caps.x_max as i32, false)
-		}
+//		} else {
+//			(self.joy_caps[id].unwrap().caps.x_min as i32,
+//			 self.joy_caps[id].unwrap().caps.x_max as i32, false)
+//		}
 	}
 
-	pub(crate) fn poll_event(&mut self, i: usize, state: &mut State) -> () {
+	pub(crate) fn poll_event(&mut self, _i: usize, _state: &mut State) -> () {
 //		println!("POLL_EVENT");
-		if self.joy_caps[i].is_none() {
-			println!("NONE {}", i);
-			{ let mut a = 0; a+=1; }
+//		if self.joy_caps[i].is_none() {
+//			println!("NONE {}", i);
+//			{ let mut a = 0; a+=1; }
 			return;
-		} else {
+/*		} else {
 			println!("SOME {}", i);
 		}
 		
@@ -225,7 +225,7 @@ impl NativeManager {
 			a => {
 				println!("unknown {}", a);
 			}
-		}
+		}*/
 	}
 }
 impl Drop for NativeManager {
