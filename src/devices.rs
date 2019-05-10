@@ -1,5 +1,19 @@
 use super::NativeManager;
 
+#[repr(C)]
+struct TimeVal {
+	tv_sec: isize,
+	tv_usec: isize,
+}
+
+#[repr(C)]
+struct Event {
+	ev_time: TimeVal,
+	ev_type: i16,
+	ev_code: i16,
+	ev_value: i32,
+}
+
 /// Newtype for Axis.
 #[derive(Copy, Clone)]
 pub struct Axis(i16);
@@ -68,7 +82,7 @@ pub enum Btn {
     /// BACK/START/ESCAPE KEY "Menu"
     Escape = 14,
     /// SELECT/E KEY "Inventory"
-    Select = 15,
+    Pocket = 15,
 }
 
 /// The state for a joystick, gamepad or controller device.
@@ -103,11 +117,11 @@ impl std::fmt::Display for Device {
 
         let z: char = if self.btn(Btn::Toggle) { '▣' } else { '□' };
         let c: char = if self.btn(Btn::Camera) { '▣' } else { '□' };
-        let esc: char = if self.btn(Btn::Escape) { '▣' } else { '□' };
-        let sel: char = if self.btn(Btn::Select) { '▣' } else { '□' };
+        let e: char = if self.btn(Btn::Escape) { '▣' } else { '□' };
+        let p: char = if self.btn(Btn::Pocket) { '▣' } else { '□' };
 
-        write!(f, "joy{:?} pan{:?} 𝑥 {} ✓ {} ⤒ {} ⚔ {} ← {} → {} ↑ {} ↓ {} l {} r {} t {} u {} z {} c {} ␛ {} ␐ {}",
-            joy, pan, x, o, u, a, dl, dr, du, dd, lb, rb, lt, rt, z, c, esc, sel)
+        write!(f, "joy{:?} pan{:?} 𝑥 {} ✓ {} ⤒ {} ⚔ {} ← {} → {} ↑ {} ↓ {} l {} r {} t {} u {} z {} c {} e {} p {}",
+            joy, pan, x, o, u, a, dl, dr, du, dd, lb, rb, lt, rt, z, c, e, p)
     }
 }
 
@@ -208,10 +222,13 @@ impl Devices {
 		let (device_count, added) = self.manager.search();
 
         for controller in self.controllers.iter() {
-            
+            while joystick_poll_event(self.manager.get_fd(controller.0.native_handle as usize).0) {
+            }
         }
 
 		if added != ::std::usize::MAX {
+            println!("s{:08X}", self.manager.get_id(added).0);
+
 			self.controllers.push((Controller {
                 native_handle: added as u32,
                 hardware_id: self.manager.get_id(added).0,
@@ -273,4 +290,73 @@ impl Devices {
         // TODO
         "Unknown".to_string()
     }
+}
+
+fn joystick_poll_event(fd: i32) -> bool {
+    extern {
+    	fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
+    }
+
+	let mut js = unsafe { std::mem::uninitialized() };
+
+	let bytes = unsafe {
+		read(fd, &mut js, std::mem::size_of::<Event>())
+	};
+
+	if bytes != (std::mem::size_of::<Event>() as isize) {
+		return false;
+	}
+
+	match js.ev_type {
+		// button press / release (key)
+		0x01 => {
+            println!("EV CODE {}", js.ev_code - 0x120);
+
+			let newstate = js.ev_value == 1;
+
+			match js.ev_code - 0x120 {
+                // 
+				0 => {},
+				1 => {},
+				2 => {},
+				3 => {},
+
+
+				4 => {},
+				5 => {},
+				7 => {},
+				9 => {},
+				// ignore, duplicate of hat axis
+				12 | 13 | 14 | 15 => {},
+				a => {}, //println!("Unknown Button: {}", a),
+			}
+		}
+		// axis move (abs)
+		0x03 => {
+//			let value = transform(state.min, state.max,
+//				js.ev_value as i32);
+
+//           println!("{} {}", js.ev_code, js.ev_value);
+
+			match js.ev_code {
+				0 => {},
+				1 => {},
+				2 => {},
+				3 => {},
+				4 => {},
+				5 => {},
+				16 => {
+				},
+				17 => {
+				},
+				// precision axis, maybe implement eventually.
+				40 => {},
+				a => {}, // println!("Unknown Axis: {}", a),
+			}
+		}
+		// ignore
+		_ => {}
+	}
+
+	true
 }
