@@ -31,7 +31,7 @@ pub(crate) struct State {
 struct Controller {
 	oldstate: State,
 	state: State,
-	id: i32,
+	id: u32,
 	move_xy: (f32, f32),
 	cam_xy: (f32, f32),
 	l_throttle: f32,

@@ -3,6 +3,9 @@
 mod input;
 mod controller_manager;
 mod remapper;
+mod devices;
+
+pub use devices::{Id,Devices,Device};
 
 pub use input::Input;
 pub use controller_manager::ControllerManager;

@@ -51,9 +51,9 @@ pub enum Input {
 	/// Camera stick Push
 	CamStick(Option<bool>),
 	/// Device Plugged-In
-	PluggedIn(i32),
+	PluggedIn(u32),
 	/// Device Un-Plugged
-	UnPlugged(i32),
+	UnPlugged(u32),
 }
 
 impl fmt::Display for Input {

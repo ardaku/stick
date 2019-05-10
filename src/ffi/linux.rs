@@ -2,7 +2,7 @@ use std::mem;
 use std::ffi::CString;
 use std::fs;
 
-use State;
+use crate::State;
 
 #[repr(C)]
 struct TimeVal {
@@ -77,11 +77,11 @@ impl NativeManager {
 		(self.num_plugged_in(), ::std::usize::MAX)
 	}
 
-	pub fn get_id(&self, id: usize) -> (i32, bool) {
+	pub fn get_id(&self, id: usize) -> (u32, bool) {
 		if id >= self.devices.len() {
 			(0, true)
 		} else {
-			let (_, a, b) = joystick_id(self.devices[id].fd);
+			let (a, b) = joystick_id(self.devices[id].fd);
 
 			(a, b)
 		}
@@ -193,18 +193,18 @@ fn joystick_async(fd: i32) -> () {
 }
 
 // Get the joystick id.
-fn joystick_id(fd: i32) -> (i16, i32, bool) {
-	let mut a = [0i16; 4];
+fn joystick_id(fd: i32) -> (u32, bool) {
+	let mut a = [0u16; 4];
 
 	extern "C" {
-		fn ioctl(fd: i32, request: usize, v: *mut i16) -> i32;
+		fn ioctl(fd: i32, request: usize, v: *mut u16) -> i32;
 	}
 
 	if unsafe { ioctl(fd, 0x80084502, &mut a[0]) } == -1 {
-		return (0, 0, true)
+		return (0, true)
 	}
 
-	(a[0], ((a[1] as i32) << 16) | (a[2] as i32), false)
+	(((a[1] as u32) << 16) | (a[2] as u32), false)
 }
 
 fn joystick_abs(fd: i32) -> (i32, i32, bool) {
@@ -268,6 +268,8 @@ fn joystick_poll_event(fd: i32, state: &mut State) -> bool {
 	match js.ev_type {
 		// button press / release (key)
 		0x01 => {
+            println!("EV CODE {}", js.ev_code);
+
 			let newstate = js.ev_value == 1;
 
 			match js.ev_code - 0x120 {
