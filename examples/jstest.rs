@@ -1,14 +1,10 @@
-// "stick" crate - Licensed under the MIT LICENSE
-//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
 
 extern crate stick;
 
 fn remapper(input: (usize, stick::Input)) -> (usize, stick::Input) {
 	(input.0, match input.1 {
 		stick::Input::ThrottleL(y) => { stick::Input::Camera(0.0, y) },
-		stick::Input::Camera(_, y) => {
-			stick::Input::ThrottleL(y)
-		}
 		a => a
 	})
 }

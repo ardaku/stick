@@ -1,3 +1,5 @@
+# "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
+
 [package]
 name = "typer"
 version = "0.1.0"

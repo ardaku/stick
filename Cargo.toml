@@ -1,5 +1,4 @@
-# "stick" crate - Licensed under the MIT LICENSE
-#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
 #                             _        _
 #                            /@\——————/@\
 # .———  .                   |   o    o   |     .————      .            .
@@ -13,7 +12,7 @@
 
 [package]
 name = "stick"
-version = "0.4.0"
+version = "0.4.1"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
 ]
@@ -21,7 +20,7 @@ authors = [
 license = "MIT"
 documentation = "https://docs.rs/stick"
 homepage = "http://plopgrizzly.com/stick"
-repository = "https://github.com/plopgrizzly/stick"
+repository = "https://gitlab.com/plopgrizzly/adi/stick"
 
 readme = "README.md"
 description = "Get input from joysticks, gamepads, and other controllers"

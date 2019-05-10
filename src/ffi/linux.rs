@@ -1,5 +1,4 @@
-// "stick" crate - Licensed under the MIT LICENSE
-//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
 
 use std::mem;
 use std::ffi::CString;
@@ -152,7 +151,12 @@ impl Drop for NativeManager {
 // Find the evdev device.
 fn find_devices() -> Vec<Device> {
 	let mut rtn = Vec::new();
-	let paths = fs::read_dir("/dev/input/by-id/").unwrap();
+	let paths = fs::read_dir("/dev/input/by-id/");
+	let paths = if let Ok(paths) = paths {
+		paths
+	} else {
+		return vec![];
+	};
 
 	for path in paths {
 		let path_str = path.unwrap().path();
