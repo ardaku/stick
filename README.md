@@ -1,36 +1,34 @@
 # Stick
-[Stick](http://plopgrizzly.com/stick) is a Rust library developed by
-[Plop Grizzly](http://plopgrizzly.com) for getting joystick, gamepad, or other
-controller input.
-
-[Cargo](https://crates.io/crates/stick) /
-[Documentation](https://docs.rs/stick) /
-[Change Log](http://plopgrizzly.com/stick/changelog.html)
+## About
+Stick is a Rust library for getting joystick, gamepad, or other controller input.
 
 ## Features
-**stick**'s current features:
-* Get controller input
-* Remap controller input
-* Connect to multiple controllers
+* Get controller input (Linux)
+* Remap controller input (Linux)
+* Connect to multiple controllers (Linux)
+* CONTROLLER: GameCube controllers (with MAYFLASH adapter)
+* CONTROLLER: Flight simulator joystick
 
-**stick**'s planned features:
-* Better (faster & simpler) remapping
+## Getting Started
+* TODO
+
+## TODO
+* Better (faster & simpler) remapping / API
 * Haptic (vibration) support
+* CONTROLLER: XBox controller
+* CONTROLLER: PlayStation controller
+* CONTROLLER: Emulated joystick
+* CONTROLLER: Probably some other controllers
+* PLATFORM: Windows
+* PLATFORM: MacOS
+* PLATFORM: Android
+* PLATFORM: Nintendo switch
 
-## Support
-**stick**'s current support:
-* Linux
-* GameCube controllers (with MAYFLASH adapter)
-* Flight simulator joystick
-
-**stick**'s planned support:
-* Windows
-* MacOS
-* Android
-* XBox controller
-* PlayStation controller
-* Emulated joystick
-* Nintendo switch
-* Probably some other controllers
-
-# [Contributing](http://plopgrizzly.com/contributing/en#contributing)
+## Links
+* [Website](https://jeronaldaron.github.io/stick)
+* [Cargo](https://crates.io/crates/stick)
+* [Documentation](https://docs.rs/stick)
+* [Change Log](https://jeronaldaron.github.io/stick/CHANGELOG)
+* [Contributors](https://jeronaldaron.github.io/stick/CONTRIBUTORS)
+* [Code of Conduct](https://jeronaldaron.github.io/stick/CODEOFCONDUCT)
+* [Join Cala on Zulip](https://plopgrizzly.zulipchat.com/join/pp13s6clnexk03tvlnrtjvi1)

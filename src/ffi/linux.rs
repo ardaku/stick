@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-
 use std::mem;
 use std::ffi::CString;
 use std::fs;

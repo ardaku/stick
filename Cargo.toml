@@ -1,26 +1,19 @@
-# "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-#                             _        _
-#                            /@\——————/@\
-# .———  .                   |   o    o   |     .————      .            .
-# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
-# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
-# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
-# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
-# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
-#                 |        \              /                              __/
-#                           ¯————————————¯
+# Stick
+#
+# Copyright © 2017-2019 Jeron Aldaron Lau.
+# Dual-licensed under either the MIT License or the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_BSL.txt or copy at https://www.boost.org/LICENSE_1_0.txt, and
+# accompanying file LICENSE_MIT.txt or copy at https://opensource.org/licenses/MIT)
 
 [package]
 name = "stick"
-version = "0.4.1"
-authors = [
-	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
-]
+version = "0.5.0"
+authors = ["Jeron Aldaron Lau <jeronaldaron@gmail.com>"]
 
-license = "MIT"
+license = "MIT / BSL-1.0"
 documentation = "https://docs.rs/stick"
-homepage = "http://plopgrizzly.com/stick"
-repository = "https://gitlab.com/plopgrizzly/adi/stick"
+homepage = "https://jeronaldaron.github.io/stick"
+repository = "https://github.com/JeronAldaron/stick"
 
 readme = "README.md"
 description = "Get input from joysticks, gamepads, and other controllers"

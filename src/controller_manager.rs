@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-
 use super::NativeManager;
 use super::Input;
 use super::Remapper;

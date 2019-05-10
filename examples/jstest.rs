@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-
 extern crate stick;
 
 fn remapper(input: (usize, stick::Input)) -> (usize, stick::Input) {

@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-
 {
 	fn remapper(input: (usize, ::Input)) -> (usize, ::Input) {
 		(input.0, match input.1 {

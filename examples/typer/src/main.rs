@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-
 extern crate stick;
 extern crate termion;
 

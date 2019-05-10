@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-
 pub struct NativeManager { /*pub native: i32*/ }
 impl NativeManager {
 	pub fn create() -> NativeManager {

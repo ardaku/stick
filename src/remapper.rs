@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-
 use super::Input;
 
 /// A structure to remap an `Input` to a different `Input`.

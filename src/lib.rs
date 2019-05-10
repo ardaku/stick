@@ -1,5 +1,3 @@
-// "stick" Source Code - Licensed under the MIT LICENSE (see /LICENSE)
-//
 //! A platform-agnostic joystick / gamepad / controller library for Rust.
 
 mod input;
