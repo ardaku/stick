@@ -94,8 +94,10 @@ pub struct Device { // 128 bits.
     joy: (i8, i8),
     // L & R Throttles. 16
     lrt: (u8, u8),
-    // Panning stick (Z-rotation,W-tilt). 32
-    pan: (i16, i16),
+    // Joystick 2 (Z-rotation,W-tilt) 16
+    cam: (i8, i8),
+    // Panning stick 16
+    pan: i16,
     // 64 #'d Buttons (Left=Even,Right=Odd). 64
     btn: u64,
 }
@@ -103,8 +105,10 @@ pub struct Device { // 128 bits.
 impl std::fmt::Display for Device {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let joy: (f32,f32) = ((self.joy.0 as f32) / (std::i8::MAX as f32), (self.joy.1 as f32) / (std::i8::MAX as f32));
-        let pan: (f32,f32) = ((self.pan.0 as f32) / (std::i8::MAX as f32), (self.pan.1 as f32) / (std::i8::MAX as f32));
+        let cam: (f32,f32) = ((self.cam.0 as f32) / (std::i8::MAX as f32), (self.cam.1 as f32) / (std::i8::MAX as f32));
         let lrt: (f32,f32) = ((self.lrt.0 as f32) / (std::u8::MAX as f32), (self.lrt.1 as f32) / (std::u8::MAX as f32));
+        let pan: f32 = (self.pan as f32) / (std::i16::MAX as f32);
+
         let x: char = if self.btn(Btn::Cancel) { '▣' } else { '□' };
         let o: char = if self.btn(Btn::Accept) { '▣' } else { '□' };
         let u: char = if self.btn(Btn::Upward) { '▣' } else { '□' };
@@ -123,10 +127,10 @@ impl std::fmt::Display for Device {
         let d: char = if self.btn(Btn::Toggle) { '▣' } else { '□' };
         let c: char = if self.btn(Btn::Camera) { '▣' } else { '□' };
         let e: char = if self.btn(Btn::Escape) { '▣' } else { '□' };
-        let p: char = if self.btn(Btn::Pocket) { '▣' } else { '□' };
+        let i: char = if self.btn(Btn::Pocket) { '▣' } else { '□' };
 
-        write!(f, "j({:.2},{:.2}) p({:.2},{:.2}) T({:.2},{:.2}) 𝑥{} ✓{} ⤒{} ⚔{} ←{} →{} ↑{} ↓{} l{} r{} t{} u{} d{} c{} e{} p{}",
-            joy.0, joy.1, pan.0, pan.1, lrt.0, lrt.1, x, o, u, a, dl, dr, du, dd, lb, rb, lt, rt, d, c, e, p)
+        write!(f, "j({:.2},{:.2}) p({:.2}) c({:.2},{:.2}) T({:.2},{:.2}) 𝑥{} ✓{} ⤒{} ⚔{} ←{} →{} ↑{} ↓{} l{} r{} t{} u{} d{} c{} e{} i{}",
+            joy.0, joy.1, pan, cam.0, cam.1, lrt.0, lrt.1, x, o, u, a, dl, dr, du, dd, lb, rb, lt, rt, d, c, e, i)
     }
 }
 
@@ -151,6 +155,22 @@ impl Device {
         } else {
             self.btn &= !(1 << b as u8);
         }
+    }
+
+    /// Swap X & Y on pan stick
+    pub fn swap_cam(&mut self) {
+        std::mem::swap(&mut self.cam.0, &mut self.cam.1)
+    }
+
+    /// Swap X & Y on joy stick
+    pub fn swap_joy(&mut self) {
+        std::mem::swap(&mut self.joy.0, &mut self.joy.1)
+    }
+
+    /// Copy l value to pan.
+   pub fn lt_to_pan(&mut self) {
+        let l = self.lrt.0 as i8;
+        self.pan = ((l as i32 * std::i16::MAX as i32) / 127) as i16;
     }
 }
 
@@ -261,8 +281,9 @@ impl Devices {
                 abs_max: max,
             }, Device {
                 joy: (0,0),
-                pan: (0,0),
+                cam: (0,0),
                 lrt: (0,0),
+                pan: 0,
                 btn: 0,
             }));
 		}
@@ -277,9 +298,11 @@ impl Devices {
         // Apply mods
         match self.controllers[stick as usize].0.hardware_id {
             // XBOX MODS
-            0x0E6F_0501 => rtn.swap_btn(Btn::Accept, Btn::Cancel),
+            0x_0E6F_0501 => rtn.swap_btn(Btn::Accept, Btn::Cancel),
             // PS3 MODS
-            0x054C_0268 => rtn.swap_btn(Btn::Upward, Btn::Action),
+            0x_054C_0268 => rtn.swap_btn(Btn::Upward, Btn::Action),
+            // THRUSTMASTER MODS
+            0x_07B5_0316 => rtn.lt_to_pan(),
             _ => {}
         }
 
@@ -407,12 +430,15 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
 				0 => device.1.joy.0 = value,
 				1 => device.1.joy.1 = value,
 				2 => {
+                    js.ev_value = js.ev_value.max(-127);
                     device.1.lrt.0 = js.ev_value as u8;
+//                    device.1.pan = ((js.ev_value as i32 * std::i16::MAX as i32) / 127) as i16;
                     edit(js.ev_value > 250, device, Btn::Crouch);
                 },
-				3 => device.1.pan.0 = value.into(), // Pan uses 16 bit
-				4 => device.1.pan.1 = value.into(), // Pan uses 16 bit
+				3 => device.1.cam.0 = value.into(), // Pan uses 16 bit
+				4 => device.1.cam.1 = value.into(), // Pan uses 16 bit
 				5 => {
+                    js.ev_value = js.ev_value.max(-128);
                     device.1.lrt.1 = js.ev_value as u8;
                     edit(js.ev_value > 250, device, Btn::Aiming);
                 },
@@ -440,7 +466,7 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
                         edit(false, device, Btn::DpadDn);
                     }
 				},
-				40 => {}, // FIXME: precision axis, maybe implement eventually.
+				40 => {}, // IGNORE: Duplicate axis.
 				a => {}, // println!("Unknown Axis: {}", a),
 			}
 		}
