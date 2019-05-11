@@ -46,6 +46,7 @@ pub struct Joystick {
 }
 
 /// 
+#[derive(Copy,Clone)]
 #[repr(u8)]
 pub enum Btn {
     /// B BUTTON / SHIFT KEY "Speed Things Up"
@@ -92,7 +93,7 @@ pub struct Device { // 128 bits.
     // Joystick 1 (XY). 16
     joy: (i8, i8),
     // L & R Throttles. 16
-    lrt: (i8, i8),
+    lrt: (u8, u8),
     // Panning stick (Z-rotation,W-tilt). 32
     pan: (i16, i16),
     // 64 #'d Buttons (Left=Even,Right=Odd). 64
@@ -103,6 +104,7 @@ impl std::fmt::Display for Device {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let joy: (f32,f32) = ((self.joy.0 as f32) / (std::i8::MAX as f32), (self.joy.1 as f32) / (std::i8::MAX as f32));
         let pan: (f32,f32) = ((self.pan.0 as f32) / (std::i8::MAX as f32), (self.pan.1 as f32) / (std::i8::MAX as f32));
+        let lrt: (f32,f32) = ((self.lrt.0 as f32) / (std::u8::MAX as f32), (self.lrt.1 as f32) / (std::u8::MAX as f32));
         let x: char = if self.btn(Btn::Cancel) { '▣' } else { '□' };
         let o: char = if self.btn(Btn::Accept) { '▣' } else { '□' };
         let u: char = if self.btn(Btn::Upward) { '▣' } else { '□' };
@@ -123,8 +125,8 @@ impl std::fmt::Display for Device {
         let e: char = if self.btn(Btn::Escape) { '▣' } else { '□' };
         let p: char = if self.btn(Btn::Pocket) { '▣' } else { '□' };
 
-        write!(f, "joy({:.2},{:.2}) pan({:.2},{:.2}) 𝑥 {} ✓ {} ⤒ {} ⚔ {} ← {} → {} ↑ {} ↓ {} l {} r {} t {} u {} d {} c {} e {} p {}",
-            joy.0, joy.1, pan.0, pan.1, x, o, u, a, dl, dr, du, dd, lb, rb, lt, rt, d, c, e, p)
+        write!(f, "j({:.2},{:.2}) p({:.2},{:.2}) T({:.2},{:.2}) 𝑥{} ✓{} ⤒{} ⚔{} ←{} →{} ↑{} ↓{} l{} r{} t{} u{} d{} c{} e{} p{}",
+            joy.0, joy.1, pan.0, pan.1, lrt.0, lrt.1, x, o, u, a, dl, dr, du, dd, lb, rb, lt, rt, d, c, e, p)
     }
 }
 
@@ -132,6 +134,23 @@ impl Device {
     /// Return true if a button is pressed.
     pub fn btn(&self, b: Btn) -> bool {
         self.btn & (1 << (b as u8)) != 0
+    }
+
+    /// Swap 2 buttons in the mapping.
+    pub fn swap_btn(&mut self, a: Btn, b: Btn) {
+        let new_b = self.btn(a);
+        let new_a = self.btn(b);
+
+        if new_a {
+            self.btn |= 1 << a as u8;
+        } else {
+            self.btn &= !(1 << a as u8);
+        }
+        if new_b {
+            self.btn |= 1 << b as u8;
+        } else {
+            self.btn &= !(1 << b as u8);
+        }
     }
 }
 
@@ -253,7 +272,18 @@ impl Devices {
 
     /// Get the state of a device 
     pub fn state(&self, stick: u16) -> Device {
-        self.controllers[stick as usize].1
+        let mut rtn = self.controllers[stick as usize].1;
+
+        // Apply mods
+        match self.controllers[stick as usize].0.hardware_id {
+            // XBOX MODS
+            0x0E6F_0501 => {
+                rtn.swap_btn(Btn::Accept, Btn::Cancel);
+            }
+            _ => {}
+        }
+
+        rtn
     }
 
 /*    /// Get a controller device by controller Id.
@@ -369,20 +399,46 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
 			let value = transform(device.0.abs_min, device.0.abs_max,
 				js.ev_value);
 
-//           if value != 0 {
-//               println!("{} {}", js.ev_code, value);
+//            if value != 0 {
+//                println!("{} {}", js.ev_code, value);
 //            }
 
 			match js.ev_code {
 				0 => device.1.joy.0 = value,
 				1 => device.1.joy.1 = value,
-				2 => {},
+				2 => {
+                    device.1.lrt.0 = js.ev_value as u8;
+                    edit(js.ev_value > 250, device, Btn::Crouch);
+                },
 				3 => device.1.pan.0 = value.into(), // Pan uses 16 bit
 				4 => device.1.pan.1 = value.into(), // Pan uses 16 bit
-				5 => {},
+				5 => {
+                    device.1.lrt.1 = js.ev_value as u8;
+                    edit(js.ev_value > 250, device, Btn::Aiming);
+                },
 				16 => {
+                    if js.ev_value < 0 {
+                        edit(true, device, Btn::DpadLt);
+                        edit(false, device, Btn::DpadRt);
+                    } else if js.ev_value > 0 {
+                        edit(false, device, Btn::DpadLt);
+                        edit(true, device, Btn::DpadRt);
+                    } else {
+                        edit(false, device, Btn::DpadLt);
+                        edit(false, device, Btn::DpadRt);
+                    }
 				},
 				17 => {
+                    if js.ev_value < 0 {
+                        edit(true, device, Btn::DpadUp);
+                        edit(false, device, Btn::DpadDn);
+                    } else if js.ev_value > 0 {
+                        edit(false, device, Btn::DpadUp);
+                        edit(true, device, Btn::DpadDn);
+                    } else {
+                        edit(false, device, Btn::DpadUp);
+                        edit(false, device, Btn::DpadDn);
+                    }
 				},
 				40 => {}, // FIXME: precision axis, maybe implement eventually.
 				a => {}, // println!("Unknown Axis: {}", a),
