@@ -28,3 +28,5 @@ _ => Dpadrt
 3 => Pan-X
 4 => Pan-Y
 5 => R THROTTLE
+16 => Dpad-X
+17 => Dpad-Y

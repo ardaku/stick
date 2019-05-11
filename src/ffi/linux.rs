@@ -208,6 +208,7 @@ fn joystick_id(fd: i32) -> (u32, bool) {
 }
 
 fn joystick_abs(fd: i32) -> (i32, i32, bool) {
+    #[derive(Debug)]
 	#[repr(C)]
 	struct AbsInfo {
 		value: i32,
@@ -227,6 +228,8 @@ fn joystick_abs(fd: i32) -> (i32, i32, bool) {
 	if unsafe { ioctl(fd, 0x80184540, &mut a) } == -1 {
 		return (0, 0, true)
 	}
+
+    println!("ABS {:?}", a);
 
 	(a.minimum, a.maximum, false)
 }
