@@ -1,10 +1,10 @@
-use stick::{Devices, Id};
+use stick::Devices;
 
 /*fn remapper(input: (usize, stick::Input)) -> (usize, stick::Input) {
-	(input.0, match input.1 {
-		stick::Input::ThrottleL(y) => { stick::Input::Camera(0.0, y) },
-		a => a
-	})
+    (input.0, match input.1 {
+        stick::Input::ThrottleL(y) => { stick::Input::Camera(0.0, y) },
+        a => a
+    })
 }*/
 
 fn main() {
@@ -23,13 +23,13 @@ fn main() {
         std::thread::sleep(std::time::Duration::from_millis(16));
     }
 
-/*	let mut cm = stick::ControllerManager::new(vec![
-/*		stick::Remapper::new(0x_07b5_0316, remapper)*/
-	]);
+    /*	let mut cm = stick::ControllerManager::new(vec![
+    /*		stick::Remapper::new(0x_07b5_0316, remapper)*/
+        ]);
 
-	loop {
-		while let Some((j, i)) = cm.update() {
-			println!("{}: {}", j, i);
-		}
-	}*/
+        loop {
+            while let Some((j, i)) = cm.update() {
+                println!("{}: {}", j, i);
+            }
+        }*/
 }

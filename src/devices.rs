@@ -2,19 +2,19 @@ use super::NativeManager;
 
 #[repr(C)]
 struct TimeVal {
-	tv_sec: isize,
-	tv_usec: isize,
+    tv_sec: isize,
+    tv_usec: isize,
 }
 
 #[repr(C)]
 struct Event {
-	ev_time: TimeVal,
-	ev_type: i16,
-	ev_code: i16,
-	ev_value: i32,
+    ev_time: TimeVal,
+    ev_type: i16,
+    ev_code: i16,
+    ev_value: i32,
 }
 
-/// Newtype for Axis.
+/*/// Newtype for Axis.
 #[derive(Copy, Clone)]
 pub struct Axis(i16);
 
@@ -37,59 +37,60 @@ impl Axis {
             (self.0 as f32) / (std::i16::MAX as f32)
         }
     }
-}
+}*/
 
-/// A Joystick.
+/*/// A Joystick.
 pub struct Joystick {
     x: i16,
     y: i16,
-}
+}*/
 
-/// 
-#[derive(Copy,Clone)]
+/// A button on a controller.
+#[derive(Copy, Clone)]
 #[repr(u8)]
 pub enum Btn {
-    /// B BUTTON / SHIFT KEY "Speed Things Up"
-    Cancel = 1,
-    /// A BUTTON / ENTER KEY / RIGHT CLICK "Talk/Inspect/Ok"
-    Accept = 3,
-    /// ONE OF: Y OR X BUTTON / SPACE KEY "Jump"
-    Upward = 5,
-    /// ONE OF: Y OR X BUTTON / LEFT CLICK "Attack/Execute/Use Item"
-    Action = 7,
+    /// B BUTTON / SHIFT KEY "Speed Things Up/Cancel"
+    B = 0,
+    /// A BUTTON / ENTER KEY / RIGHT CLICK "Talk/Inspect/Ok/Accept"
+    A = 1,
+    /// ONE OF: Y OR X BUTTON / SPACE KEY "Jump/Upward"
+    Y = 2,
+    /// ONE OF: Y OR X BUTTON / LEFT CLICK "Action/Attack/Execute/Use Item"
+    X = 3,
+
+    /// L THROTTLE BTN / CTRL KEY "Crouch/Sneak"
+    Lt = 4,
+    /// R THROTTLE BTN / Q KEY "Slingshot/Bow & Arrow"
+    Rt = 5,
+    /// L BTN / BACKSPACE KEY "Throw"
+    Lb = 6,
+    /// R BTN / ALT KEY "Alternative Action/Kick"
+    Rb = 7,
+
+    /// START / E KEY / MENU "Inventory"
+    E = 8,
+    /// BACK / SELECT / QUIT / ESCAPE KEY "Menu / Quit"
+    Back = 9,
+    /// JOY1 PUSH / C KEY "Toggle Crouch/Sneak"
+    D = 10,
+    /// JOY2 PUSH / F KEY "Camera/Binoculars"
+    C = 11,
 
     /// D-PAD LEFT / LEFT ARROW KEY
-    DpadLt = 0,
+    Left = 12,
     /// D-PAD RIGHT / RIGHT ARROW KEY
-    DpadRt = 2,
+    Right = 13,
     /// D-PAD UP / UP ARROW KEY
-    DpadUp = 4,
+    Up = 14,
     /// D-PAD DOWN / DOWN ARROW KEY
-    DpadDn = 6,
-
-    /// L BTN / BACKSPACE KEY "Throw"
-    Throws = 8,
-    /// R BTN / ALT KEY "Alternative Action/Kick"
-    AltAct = 9,
-    /// L THROTTLE BTN/ CTRL KEY "Crouch/Sneak"
-    Crouch = 10,
-    /// R THROTTLE BTN/ Q KEY "Slingshot/Bow & Arrow"
-    Aiming = 11,
-
-    /// JOY1 PUSH/Z KEY "Toggle Crouch/Sneak"
-    Toggle = 12,
-    /// JOY2 PUSH/C KEY "Camera/Binoculars"
-    Camera = 13,
-    /// BACK/START/ESCAPE KEY "Menu"
-    Escape = 14,
-    /// SELECT/E KEY "Inventory"
-    Pocket = 15,
+    Down = 15,
 }
 
 /// The state for a joystick, gamepad or controller device.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 #[repr(C)]
-pub struct Device { // 128 bits.
+pub struct Device {
+    // 128 bits.
     // Joystick 1 (XY). 16
     joy: (i8, i8),
     // L & R Throttles. 16
@@ -104,33 +105,68 @@ pub struct Device { // 128 bits.
 
 impl std::fmt::Display for Device {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        let joy: (f32,f32) = ((self.joy.0 as f32) / (std::i8::MAX as f32), (self.joy.1 as f32) / (std::i8::MAX as f32));
-        let cam: (f32,f32) = ((self.cam.0 as f32) / (std::i8::MAX as f32), (self.cam.1 as f32) / (std::i8::MAX as f32));
-        let lrt: (f32,f32) = ((self.lrt.0 as f32) / (std::u8::MAX as f32), (self.lrt.1 as f32) / (std::u8::MAX as f32));
+        let joy: (f32, f32) = (
+            (self.joy.0 as f32) / (std::i8::MAX as f32),
+            (self.joy.1 as f32) / (std::i8::MAX as f32),
+        );
+        let cam: (f32, f32) = (
+            (self.cam.0 as f32) / (std::i8::MAX as f32),
+            (self.cam.1 as f32) / (std::i8::MAX as f32),
+        );
+        let lrt: (f32, f32) = (
+            (self.lrt.0 as f32) / (std::u8::MAX as f32),
+            (self.lrt.1 as f32) / (std::u8::MAX as f32),
+        );
         let pan: f32 = (self.pan as f32) / (std::i16::MAX as f32);
 
-        let x: char = if self.btn(Btn::Cancel) { '▣' } else { '□' };
-        let o: char = if self.btn(Btn::Accept) { '▣' } else { '□' };
-        let u: char = if self.btn(Btn::Upward) { '▣' } else { '□' };
-        let a: char = if self.btn(Btn::Action) { '▣' } else { '□' };
+        let b_btn: char = if self.btn(Btn::B) { '▣' } else { '□' };
+        let a_btn: char = if self.btn(Btn::A) { '▣' } else { '□' };
+        let y_btn: char = if self.btn(Btn::Y) { '▣' } else { '□' };
+        let x_btn: char = if self.btn(Btn::X) { '▣' } else { '□' };
 
-        let dl: char = if self.btn(Btn::DpadLt) { '▣' } else { '□' };
-        let dr: char = if self.btn(Btn::DpadRt) { '▣' } else { '□' };
-        let du: char = if self.btn(Btn::DpadUp) { '▣' } else { '□' };
-        let dd: char = if self.btn(Btn::DpadDn) { '▣' } else { '□' };
+        let dl: char = if self.btn(Btn::Left) { '▣' } else { '□' };
+        let dr: char = if self.btn(Btn::Right) { '▣' } else { '□' };
+        let du: char = if self.btn(Btn::Up) { '▣' } else { '□' };
+        let dd: char = if self.btn(Btn::Down) { '▣' } else { '□' };
 
-        let lb: char = if self.btn(Btn::Throws) { '▣' } else { '□' };
-        let rb: char = if self.btn(Btn::AltAct) { '▣' } else { '□' };
-        let lt: char = if self.btn(Btn::Crouch) { '▣' } else { '□' };
-        let rt: char = if self.btn(Btn::Aiming) { '▣' } else { '□' };
+        let lb: char = if self.btn(Btn::Lb) { '▣' } else { '□' };
+        let rb: char = if self.btn(Btn::Rb) { '▣' } else { '□' };
+        let lt: char = if self.btn(Btn::Lt) { '▣' } else { '□' };
+        let rt: char = if self.btn(Btn::Rt) { '▣' } else { '□' };
 
-        let d: char = if self.btn(Btn::Toggle) { '▣' } else { '□' };
-        let c: char = if self.btn(Btn::Camera) { '▣' } else { '□' };
-        let e: char = if self.btn(Btn::Escape) { '▣' } else { '□' };
-        let i: char = if self.btn(Btn::Pocket) { '▣' } else { '□' };
+        let d_btn: char = if self.btn(Btn::D) { '▣' } else { '□' };
+        let c_btn: char = if self.btn(Btn::C) { '▣' } else { '□' };
+        let back: char = if self.btn(Btn::Back) { '▣' } else { '□' };
+        let e_btn: char = if self.btn(Btn::E) { '▣' } else { '□' };
 
-        write!(f, "j({:.2},{:.2}) p({:.2}) c({:.2},{:.2}) T({:.2},{:.2}) 𝑥{} ✓{} ⤒{} ⚔{} ←{} →{} ↑{} ↓{} l{} r{} t{} u{} d{} c{} e{} i{}",
-            joy.0, joy.1, pan, cam.0, cam.1, lrt.0, lrt.1, x, o, u, a, dl, dr, du, dd, lb, rb, lt, rt, d, c, e, i)
+        write!(
+            f,
+            "j({:.2},{:.2}) p({:.2}) c({:.2},{:.2}) T({:.2},{:.2}) b{} a{} y{} x{} ←{} →{} \
+             ↑{} ↓{} L{} R{} l{} r{} d{} c{} e{} B{}",
+            joy.0,
+            joy.1,
+            pan,
+            cam.0,
+            cam.1,
+            lrt.0,
+            lrt.1,
+            b_btn,
+            a_btn,
+            y_btn,
+            x_btn,
+            dl,
+            dr,
+            du,
+            dd,
+            lt,
+            rt,
+            lb,
+            rb,
+            d_btn,
+            c_btn,
+            e_btn,
+            back
+        )
     }
 }
 
@@ -163,35 +199,55 @@ impl Device {
     }
 
     /// Copy l value to pan.
-   pub fn lt_to_pan(&mut self) {
+    pub fn lt_to_pan(&mut self) {
         let l = self.lrt.0 as i8;
         self.pan = ((l as i32 * std::i16::MAX as i32) / 127) as i16;
     }
 
     /// Filter out noise for old controllers like GameCube.
     pub fn noise_filter(&mut self) {
-        self.joy.0 = self.joy.0.saturating_add((3 * self.joy.0 as i16 / 4) as i8).max(-127);
-        self.joy.1 = self.joy.1.saturating_add((3 * self.joy.1 as i16 / 4) as i8).max(-127);
+        self.joy.0 = self
+            .joy
+            .0
+            .saturating_add((3 * self.joy.0 as i16 / 4) as i8)
+            .max(-127);
+        self.joy.1 = self
+            .joy
+            .1
+            .saturating_add((3 * self.joy.1 as i16 / 4) as i8)
+            .max(-127);
 
-        self.cam.0 = self.cam.0.saturating_add((3 * self.cam.0 as i16 / 4) as i8).max(-127);
-        self.cam.1 = self.cam.1.saturating_add((3 * self.cam.1 as i16 / 4) as i8).max(-127);
+        self.cam.0 = self
+            .cam
+            .0
+            .saturating_add((3 * self.cam.0 as i16 / 4) as i8)
+            .max(-127);
+        self.cam.1 = self
+            .cam
+            .1
+            .saturating_add((3 * self.cam.1 as i16 / 4) as i8)
+            .max(-127);
 
         let lrt0 = (self.lrt.0 as i8).overflowing_add(-127).0;
-        self.lrt.0 = ((lrt0.saturating_add((3 * lrt0 as i16 / 4) as i8).max(-127)) as u8).overflowing_add(127).0;
+        self.lrt.0 = ((lrt0.saturating_add((3 * lrt0 as i16 / 4) as i8).max(-127)) as u8)
+            .overflowing_add(127)
+            .0;
 
         let lrt1 = (self.lrt.1 as i8).overflowing_add(-127).0;
-        self.lrt.1 = ((lrt1.saturating_add((3 * lrt1 as i16 / 4) as i8).max(-127)) as u8).overflowing_add(127).0;
+        self.lrt.1 = ((lrt1.saturating_add((3 * lrt1 as i16 / 4) as i8).max(-127)) as u8)
+            .overflowing_add(127)
+            .0;
 
-//        self.cam.0 = self.cam.0.saturating_add(self.cam.0 / 2);
-//        self.cam.1 = self.cam.1.saturating_add(self.cam.1 / 2);
+        //        self.cam.0 = self.cam.0.saturating_add(self.cam.0 / 2);
+        //        self.cam.1 = self.cam.1.saturating_add(self.cam.1 / 2);
     }
 }
 
 /// Controller ID.
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct Id(pub u16);
 
-/// A Controller's layout.
+/*/// A Controller's layout.
 pub struct Layout {
     // A joystick.
     joystick: bool,
@@ -237,7 +293,7 @@ pub struct Layout {
     trigger: bool,
     // A throttle that stays stationary while user isn't touching it.
     stationary_throttle: bool,
-}
+}*/
 
 /*impl Layout {
     pub fn new() -> Layout {
@@ -247,6 +303,7 @@ pub struct Layout {
 }*/
 
 // A joystick, gamepad and controller device.
+#[derive(Default, Clone)]
 struct Controller {
     // Native handle to the device (fd or index).
     native_handle: u32,
@@ -267,89 +324,75 @@ impl Devices {
     /// to this computer.
     pub fn new() -> Devices {
         let manager = NativeManager::new();
-        let mut controllers = vec![];
+        let controllers = vec![];
 
         Devices {
-            manager, controllers
+            manager,
+            controllers,
         }
     }
 
     /// Get the number of devices currently plugged in, and update number if needed.
     pub fn update(&mut self) -> u16 {
-		let (device_count, added) = self.manager.search();
-
         for mut controller in &mut self.controllers {
-            while joystick_poll_event(self.manager.get_fd(controller.0.native_handle as usize).0, &mut controller) {
-            }
+            while joystick_poll_event(
+                self.manager.get_fd(controller.0.native_handle as usize).0,
+                &mut controller,
+            ) {}
 
-            controller.1.pan = controller.1.pan.saturating_add(controller.1.cam.1 as i16 * 8);
+            controller.1.pan = controller
+                .1
+                .pan
+                .saturating_add(controller.1.cam.1 as i16 * 8);
         }
 
-		if added != ::std::usize::MAX {
+        let (device_count, added) = self.manager.search();
+
+        if added != ::std::usize::MAX {
             println!("s{:08X}", self.manager.get_id(added).0);
             let (min, max, _) = self.manager.get_abs(added);
 
-			self.controllers.push((Controller {
-                native_handle: added as u32,
-                hardware_id: self.manager.get_id(added).0,
-                abs_min: min,
-                abs_max: max,
-            }, Device {
-                joy: (0,0),
-                cam: (0,0),
-                lrt: (0,0),
-                pan: 0,
-                btn: 0,
-            }));
-		}
+            self.controllers.resize_with(device_count, Default::default);
+
+            self.controllers[added] = (
+                Controller {
+                    native_handle: added as u32,
+                    hardware_id: self.manager.get_id(added).0,
+                    abs_min: min,
+                    abs_max: max,
+                },
+                Device {
+                    joy: (0, 0),
+                    cam: (0, 0),
+                    lrt: (0, 0),
+                    pan: 0,
+                    btn: 0,
+                },
+            );
+        }
 
         self.controllers.len() as u16
     }
 
-    /// Get the state of a device 
-    pub fn state(&self, stick: u16) -> Device {
+    /// Get the state of a device
+    pub fn state(&self, stick: u16, ) -> Device {
         let mut rtn = self.controllers[stick as usize].1;
 
         // Apply mods
         match self.controllers[stick as usize].0.hardware_id {
             // XBOX MODS
-            0x_0E6F_0501 => rtn.swap_btn(Btn::Accept, Btn::Cancel),
+            0x_0E6F_0501 => rtn.swap_btn(Btn::A, Btn::B),
             // PS3 MODS
-            0x_054C_0268 => rtn.swap_btn(Btn::Upward, Btn::Action),
+            0x_054C_0268 => rtn.swap_btn(Btn::Y, Btn::A),
             // THRUSTMASTER MODS
             0x_07B5_0316 => rtn.lt_to_pan(),
             // GAMECUBE MODS
-            0x_0079_1844 => {
-                rtn.noise_filter();
-            }
+            0x_0079_1844 => rtn.noise_filter(),
             _ => {}
         }
 
         rtn
     }
-
-/*    /// Get a controller device by controller Id.
-    pub fn get(&self, id: Id) -> Controller {
-        
-    }
-
-    /// Get the main (left) joystick input for a specific controller Id.
-    pub fn joy(&self, id: Id) -> Joystick {
-    }
-
-    /// Get the alternate (right) joystick input for a specific controller Id.
-    pub fn joy2(&self, id: Id) -> Joystick {
-    }
-
-    /// 
-    pub fn joy_btn() -> bool {
-        
-    }*/
-
-/*    /// 
-    pub fn joy2_btn() -> bool {
-        
-    }*/
 
     /// Swap two devices in the interface by their indexes.
     /// # Panics
@@ -374,19 +417,17 @@ impl Devices {
 }
 
 fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
-    extern {
-    	fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
+    extern "C" {
+        fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
     }
 
-	let mut js = unsafe { std::mem::uninitialized() };
+    let mut js = unsafe { std::mem::uninitialized() };
 
-	let bytes = unsafe {
-		read(fd, &mut js, std::mem::size_of::<Event>())
-	};
+    let bytes = unsafe { read(fd, &mut js, std::mem::size_of::<Event>()) };
 
-	if bytes != (std::mem::size_of::<Event>() as isize) {
-		return false;
-	}
+    if bytes != (std::mem::size_of::<Event>() as isize) {
+        return false;
+    }
 
     fn edit(is: bool, device: &mut (Controller, Device), b: Btn) {
         if is {
@@ -396,92 +437,89 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
         }
     }
 
-	match js.ev_type {
-		// button press / release (key)
-		0x01 => {
+    match js.ev_type {
+        // button press / release (key)
+        0x01 => {
             println!("EV CODE {}", js.ev_code - 0x120);
 
-			let is = js.ev_value == 1;
+            let is = js.ev_value == 1;
 
-		    match js.ev_code - 0x120 {
+            match js.ev_code - 0x120 {
                 // ABXY
-			    0|19 => edit(is, device, Btn::Action),
-			    1|17 => edit(is, device, Btn::Accept),
-			    2|16 => edit(is, device, Btn::Cancel),
-			    3|20 => edit(is, device, Btn::Upward),
+                0 | 19 => edit(is, device, Btn::X),
+                1 | 17 => edit(is, device, Btn::A),
+                2 | 16 => edit(is, device, Btn::B),
+                3 | 20 => edit(is, device, Btn::Y),
                 // LT/RT
-                4|24 => edit(is, device, Btn::Crouch),
-                5|25 => edit(is, device, Btn::Aiming),
+                4 | 24 => edit(is, device, Btn::Lt),
+                5 | 25 => edit(is, device, Btn::Rt),
                 // LB/RB
-                6|22 => edit(is, device, Btn::Throws), // 6 is a guess.
-			    7|23 => edit(is, device, Btn::AltAct),
+                6 | 22 => edit(is, device, Btn::Lb), // 6 is a guess.
+                7 | 23 => edit(is, device, Btn::Rb),
                 // Select/Start
-                8|26 => edit(is, device, Btn::Escape), // 8 is a guess.
-			    9|27 => edit(is, device, Btn::Pocket),
+                8 | 26 => edit(is, device, Btn::Back), // 8 is a guess.
+                9 | 27 => edit(is, device, Btn::E),
                 // ?
                 10 => println!("Button 10 is Unknown"),
                 // D-PAD
-                12|256 => edit(is, device, Btn::DpadUp),
-                13|259 => edit(is, device, Btn::DpadRt),
-                14|257 => edit(is, device, Btn::DpadDn),
-                15|258 => edit(is, device, Btn::DpadLt),
+                12 | 256 => edit(is, device, Btn::Up),
+                13 | 259 => edit(is, device, Btn::Right),
+                14 | 257 => edit(is, device, Btn::Down),
+                15 | 258 => edit(is, device, Btn::Left),
                 // 16-17 already matched
                 18 => println!("Button 18 is Unknown"),
                 // 19-20 already matched
                 21 => println!("Button 21 is Unknown"),
                 // 22-27 already matched
                 28 => println!("Button 28 is Unknown"),
-                29 => edit(is, device, Btn::Toggle),
-                30 => edit(is, device, Btn::Camera),
-			    a => println!("Button {} is Unknown", a),
+                29 => edit(is, device, Btn::D),
+                30 => edit(is, device, Btn::C),
+                a => println!("Button {} is Unknown", a),
             }
-		}
-		// axis move (abs)
-		0x03 => {
-			let value = transform(device.0.abs_min, device.0.abs_max,
-				js.ev_value);
+        }
+        // axis move (abs)
+        0x03 => {
+            let value = transform(device.0.abs_min, device.0.abs_max, js.ev_value);
 
-//            if value != 0 {
-//                println!("{} {}", js.ev_code, value);
-//            }
+            //            if value != 0 {
+            //                println!("{} {}", js.ev_code, value);
+            //            }
 
             // For some reason this is different on the GameCube controller, so fix it.
             let (cam_x, cam_y, lrt_l, lrt_r) = match device.0.hardware_id {
-                0x_0079_1844 => {
-                    (5, 2, 3, 4)
-                }
-                _ => (3, 4, 2, 5)
+                0x_0079_1844 => (5, 2, 3, 4),
+                _ => (3, 4, 2, 5),
             };
 
-			match js.ev_code {
-				0 => device.1.joy.0 = value,
-				1 => device.1.joy.1 = value,
-				16 => {
+            match js.ev_code {
+                0 => device.1.joy.0 = value,
+                1 => device.1.joy.1 = value,
+                16 => {
                     if js.ev_value < 0 {
-                        edit(true, device, Btn::DpadLt);
-                        edit(false, device, Btn::DpadRt);
+                        edit(true, device, Btn::Left);
+                        edit(false, device, Btn::Right);
                     } else if js.ev_value > 0 {
-                        edit(false, device, Btn::DpadLt);
-                        edit(true, device, Btn::DpadRt);
+                        edit(false, device, Btn::Left);
+                        edit(true, device, Btn::Right);
                     } else {
-                        edit(false, device, Btn::DpadLt);
-                        edit(false, device, Btn::DpadRt);
+                        edit(false, device, Btn::Left);
+                        edit(false, device, Btn::Right);
                     }
-				},
-				17 => {
+                }
+                17 => {
                     if js.ev_value < 0 {
-                        edit(true, device, Btn::DpadUp);
-                        edit(false, device, Btn::DpadDn);
+                        edit(true, device, Btn::Up);
+                        edit(false, device, Btn::Down);
                     } else if js.ev_value > 0 {
-                        edit(false, device, Btn::DpadUp);
-                        edit(true, device, Btn::DpadDn);
+                        edit(false, device, Btn::Up);
+                        edit(true, device, Btn::Down);
                     } else {
-                        edit(false, device, Btn::DpadUp);
-                        edit(false, device, Btn::DpadDn);
+                        edit(false, device, Btn::Up);
+                        edit(false, device, Btn::Down);
                     }
-				},
-				40 => {}, // IGNORE: Duplicate axis.
-				a => {
+                }
+                40 => {} // IGNORE: Duplicate axis.
+                a => {
                     if a == cam_x {
                         device.1.cam.0 = value;
                     } else if a == cam_y {
@@ -489,20 +527,20 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
                     } else if a == lrt_l {
                         js.ev_value = js.ev_value.max(-127);
                         device.1.lrt.0 = js.ev_value as u8;
-//                        edit(js.ev_value > 250, device, Btn::Crouch);
+                    //                        edit(js.ev_value > 250, device, Btn::Crouch);
                     } else if a == lrt_r {
                         js.ev_value = js.ev_value.max(-127);
                         device.1.lrt.1 = js.ev_value as u8;
-//                        edit(js.ev_value > 250, device, Btn::Aiming);
+                        //                        edit(js.ev_value > 250, device, Btn::Aiming);
                     }
-                }, // println!("Unknown Axis: {}", a),
-			}
-		}
-		// ignore
-		_ => {}
-	}
+                } // println!("Unknown Axis: {}", a),
+            }
+        }
+        // ignore
+        _ => {}
+    }
 
-	true
+    true
 }
 
 fn deadzone(min: i32, max: i32, val: i32) -> (i32, i32) {
@@ -512,7 +550,7 @@ fn deadzone(min: i32, max: i32, val: i32) -> (i32, i32) {
     let midpt = min + halfr;
     // Center the range.
     let value = val - midpt; // -halfr to halfr
-    // Take deadzone into account.
+                             // Take deadzone into account.
     let value = if value < deadz {
         if value > -deadz {
             0
