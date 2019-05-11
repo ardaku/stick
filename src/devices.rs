@@ -157,11 +157,6 @@ impl Device {
         }
     }
 
-    /// Swap X & Y on pan stick
-    pub fn swap_cam(&mut self) {
-        std::mem::swap(&mut self.cam.0, &mut self.cam.1)
-    }
-
     /// Swap X & Y on joy stick
     pub fn swap_joy(&mut self) {
         std::mem::swap(&mut self.joy.0, &mut self.joy.1)
@@ -171,6 +166,24 @@ impl Device {
    pub fn lt_to_pan(&mut self) {
         let l = self.lrt.0 as i8;
         self.pan = ((l as i32 * std::i16::MAX as i32) / 127) as i16;
+    }
+
+    /// Filter out noise for old controllers like GameCube.
+    pub fn noise_filter(&mut self) {
+        self.joy.0 = self.joy.0.saturating_add((3 * self.joy.0 as i16 / 4) as i8).max(-127);
+        self.joy.1 = self.joy.1.saturating_add((3 * self.joy.1 as i16 / 4) as i8).max(-127);
+
+        self.cam.0 = self.cam.0.saturating_add((3 * self.cam.0 as i16 / 4) as i8).max(-127);
+        self.cam.1 = self.cam.1.saturating_add((3 * self.cam.1 as i16 / 4) as i8).max(-127);
+
+        let lrt0 = (self.lrt.0 as i8).overflowing_add(-127).0;
+        self.lrt.0 = ((lrt0.saturating_add((3 * lrt0 as i16 / 4) as i8).max(-127)) as u8).overflowing_add(127).0;
+
+        let lrt1 = (self.lrt.1 as i8).overflowing_add(-127).0;
+        self.lrt.1 = ((lrt1.saturating_add((3 * lrt1 as i16 / 4) as i8).max(-127)) as u8).overflowing_add(127).0;
+
+//        self.cam.0 = self.cam.0.saturating_add(self.cam.0 / 2);
+//        self.cam.1 = self.cam.1.saturating_add(self.cam.1 / 2);
     }
 }
 
@@ -268,6 +281,7 @@ impl Devices {
         for mut controller in &mut self.controllers {
             while joystick_poll_event(self.manager.get_fd(controller.0.native_handle as usize).0, &mut controller) {
             }
+
             controller.1.pan = controller.1.pan.saturating_add(controller.1.cam.1 as i16 * 8);
         }
 
@@ -304,6 +318,10 @@ impl Devices {
             0x_054C_0268 => rtn.swap_btn(Btn::Upward, Btn::Action),
             // THRUSTMASTER MODS
             0x_07B5_0316 => rtn.lt_to_pan(),
+            // GAMECUBE MODS
+            0x_0079_1844 => {
+                rtn.noise_filter();
+            }
             _ => {}
         }
 
@@ -427,21 +445,17 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
 //                println!("{} {}", js.ev_code, value);
 //            }
 
+            // For some reason this is different on the GameCube controller, so fix it.
+            let (cam_x, cam_y, lrt_l, lrt_r) = match device.0.hardware_id {
+                0x_0079_1844 => {
+                    (5, 2, 3, 4)
+                }
+                _ => (3, 4, 2, 5)
+            };
+
 			match js.ev_code {
 				0 => device.1.joy.0 = value,
 				1 => device.1.joy.1 = value,
-				2 => {
-                    js.ev_value = js.ev_value.max(-127);
-                    device.1.lrt.0 = js.ev_value as u8;
-                    edit(js.ev_value > 250, device, Btn::Crouch);
-                },
-				3 => device.1.cam.0 = value,
-				4 => device.1.cam.1 = value,
-				5 => {
-                    js.ev_value = js.ev_value.max(-128);
-                    device.1.lrt.1 = js.ev_value as u8;
-                    edit(js.ev_value > 250, device, Btn::Aiming);
-                },
 				16 => {
                     if js.ev_value < 0 {
                         edit(true, device, Btn::DpadLt);
@@ -467,7 +481,21 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
                     }
 				},
 				40 => {}, // IGNORE: Duplicate axis.
-				a => {}, // println!("Unknown Axis: {}", a),
+				a => {
+                    if a == cam_x {
+                        device.1.cam.0 = value;
+                    } else if a == cam_y {
+                        device.1.cam.1 = value;
+                    } else if a == lrt_l {
+                        js.ev_value = js.ev_value.max(-127);
+                        device.1.lrt.0 = js.ev_value as u8;
+//                        edit(js.ev_value > 250, device, Btn::Crouch);
+                    } else if a == lrt_r {
+                        js.ev_value = js.ev_value.max(-127);
+                        device.1.lrt.1 = js.ev_value as u8;
+//                        edit(js.ev_value > 250, device, Btn::Aiming);
+                    }
+                }, // println!("Unknown Axis: {}", a),
 			}
 		}
 		// ignore
