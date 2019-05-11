@@ -268,6 +268,7 @@ impl Devices {
         for mut controller in &mut self.controllers {
             while joystick_poll_event(self.manager.get_fd(controller.0.native_handle as usize).0, &mut controller) {
             }
+            controller.1.pan = controller.1.pan.saturating_add(controller.1.cam.1 as i16 * 8);
         }
 
 		if added != ::std::usize::MAX {
@@ -432,11 +433,10 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
 				2 => {
                     js.ev_value = js.ev_value.max(-127);
                     device.1.lrt.0 = js.ev_value as u8;
-//                    device.1.pan = ((js.ev_value as i32 * std::i16::MAX as i32) / 127) as i16;
                     edit(js.ev_value > 250, device, Btn::Crouch);
                 },
-				3 => device.1.cam.0 = value.into(), // Pan uses 16 bit
-				4 => device.1.cam.1 = value.into(), // Pan uses 16 bit
+				3 => device.1.cam.0 = value,
+				4 => device.1.cam.1 = value,
 				5 => {
                     js.ev_value = js.ev_value.max(-128);
                     device.1.lrt.1 = js.ev_value as u8;
