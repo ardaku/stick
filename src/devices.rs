@@ -277,9 +277,9 @@ impl Devices {
         // Apply mods
         match self.controllers[stick as usize].0.hardware_id {
             // XBOX MODS
-            0x0E6F_0501 => {
-                rtn.swap_btn(Btn::Accept, Btn::Cancel);
-            }
+            0x0E6F_0501 => rtn.swap_btn(Btn::Accept, Btn::Cancel),
+            // PS3 MODS
+            0x054C_0268 => rtn.swap_btn(Btn::Upward, Btn::Action),
             _ => {}
         }
 
