@@ -2,27 +2,10 @@ use std::ffi::CString;
 use std::fs;
 use std::mem;
 
-use crate::State;
-
-#[repr(C)]
-struct TimeVal {
-    tv_sec: isize,
-    tv_usec: isize,
-}
-
-#[repr(C)]
-struct Event {
-    ev_time: TimeVal,
-    ev_type: i16,
-    ev_code: i16,
-    ev_value: i32,
-}
-
 extern "C" {
     fn open(pathname: *const u8, flags: i32) -> i32;
     fn close(fd: i32) -> i32;
     fn fcntl(fd: i32, cmd: i32, v: i32) -> i32;
-    fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
 }
 
 struct Device {
@@ -119,9 +102,9 @@ impl NativeManager {
         panic!("There was no fd of {}", fd);
     }
 
-    pub(crate) fn poll_event(&self, i: usize, state: &mut State) {
+    /*    pub(crate) fn poll_event(&self, i: usize, state: &mut State) {
         while joystick_poll_event(self.devices[i].fd, state) {}
-    }
+    }*/
 
     fn add(&mut self, device: Device) -> usize {
         let mut r = 0;
@@ -237,23 +220,7 @@ fn joystick_drop(fd: i32) -> () {
     }
 }
 
-// Transform joystick coordinates.
-fn transform(min: i32, max: i32, val: i32) -> f32 {
-    let range = max - min;
-    let value = val - min; // 0 - range
-    let value = (value as f32) / (range as f32); // 0 - 1
-    let value = (value * 2.0) - 1.0; // -1 to 1
-    let value = (value * 100.0) as i32;
-
-    // deadzone
-    if value < 10 && value > -10 {
-        0.0
-    } else {
-        (value as f32) / 100.0
-    }
-}
-
-fn joystick_poll_event(fd: i32, state: &mut State) -> bool {
+/*fn joystick_poll_event(fd: i32, state: &mut State) -> bool {
     let mut js = unsafe { mem::uninitialized() };
 
     let bytes = unsafe { read(fd, &mut js, mem::size_of::<Event>()) };
@@ -312,4 +279,4 @@ fn joystick_poll_event(fd: i32, state: &mut State) -> bool {
     }
 
     true
-}
+}*/

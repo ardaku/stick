@@ -1,15 +1,8 @@
 //! A platform-agnostic joystick / gamepad / controller library for Rust.
 
-mod controller_manager;
 mod devices;
-mod input;
-mod remapper;
 
-pub use devices::{Device, Devices};
-
-pub use controller_manager::ControllerManager;
-pub use input::Input;
-pub use remapper::Remapper;
+pub use devices::{Btn, Device, Port};
 
 #[cfg(target_os = "android")]
 mod ffi {
@@ -33,4 +26,3 @@ mod ffi {
 }
 
 pub(crate) use self::ffi::NativeManager;
-pub(crate) use controller_manager::State;

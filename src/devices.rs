@@ -19,7 +19,7 @@ struct Event {
 #[repr(u8)]
 pub enum Btn {
     /// D-PAD LEFT / LEFT ARROW KEY / SCROLL UP "Previous Item"
-    Left = 0,
+    Left = 0u8,
     /// D-PAD RIGHT / RIGHT ARROW KEY / SCROLL DOWN "Next Item"
     Right = 1,
     /// D-PAD UP / UP ARROW KEY / R KEY "Reload/Tinker"
@@ -55,7 +55,13 @@ pub enum Btn {
     C = 15,
 }
 
-/// The state for a joystick, gamepad or controller device.
+impl From<Btn> for u8 {
+    fn from(b: Btn) -> Self {
+        b as u8
+    }
+}
+
+/// The state of a joystick, gamepad or controller device.
 #[derive(Debug, Copy, Clone, Default)]
 #[repr(C)]
 pub struct Device {
@@ -96,25 +102,89 @@ impl std::fmt::Display for Device {
         );
         let pan: f32 = (self.pan as f32) / (std::i16::MAX as f32);
 
-        let b_btn: char = if self.btn(Btn::B) { '▣' } else { '□' };
-        let a_btn: char = if self.btn(Btn::A) { '▣' } else { '□' };
-        let y_btn: char = if self.btn(Btn::Y) { '▣' } else { '□' };
-        let x_btn: char = if self.btn(Btn::X) { '▣' } else { '□' };
+        let b_btn: char = if self.btn(Btn::B) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let a_btn: char = if self.btn(Btn::A) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let y_btn: char = if self.btn(Btn::Y) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let x_btn: char = if self.btn(Btn::X) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
 
-        let dl: char = if self.btn(Btn::Left) { '▣' } else { '□' };
-        let dr: char = if self.btn(Btn::Right) { '▣' } else { '□' };
-        let du: char = if self.btn(Btn::Up) { '▣' } else { '□' };
-        let dd: char = if self.btn(Btn::Down) { '▣' } else { '□' };
+        let dl: char = if self.btn(Btn::Left) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let dr: char = if self.btn(Btn::Right) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let du: char = if self.btn(Btn::Up) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let dd: char = if self.btn(Btn::Down) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
 
-        let w_btn: char = if self.btn(Btn::W) { '▣' } else { '□' };
-        let z_btn: char = if self.btn(Btn::Z) { '▣' } else { '□' };
-        let l_btn: char = if self.btn(Btn::L) { '▣' } else { '□' };
-        let r_btn: char = if self.btn(Btn::R) { '▣' } else { '□' };
+        let w_btn: char = if self.btn(Btn::W) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let z_btn: char = if self.btn(Btn::Z) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let l_btn: char = if self.btn(Btn::L) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let r_btn: char = if self.btn(Btn::R) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
 
-        let d_btn: char = if self.btn(Btn::D) { '▣' } else { '□' };
-        let c_btn: char = if self.btn(Btn::C) { '▣' } else { '□' };
-        let f_btn: char = if self.btn(Btn::F) { '▣' } else { '□' };
-        let e_btn: char = if self.btn(Btn::E) { '▣' } else { '□' };
+        let d_btn: char = if self.btn(Btn::D) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let c_btn: char = if self.btn(Btn::C) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let f_btn: char = if self.btn(Btn::F) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
+        let e_btn: char = if self.btn(Btn::E) == Some(true) {
+            '▣'
+        } else {
+            '□'
+        };
 
         write!(
             f,
@@ -149,11 +219,11 @@ impl std::fmt::Display for Device {
 
 impl Device {
     /// Get main joystick state from the device if a main joystick exists, otherwise return `None`.
-    pub fn joy(&self) -> (f32,f32) {
-        (
+    pub fn joy(&self) -> Option<(f32, f32)> {
+        Some((
             (self.joy.0 as f32) / (std::i8::MAX as f32),
             (self.joy.1 as f32) / (std::i8::MAX as f32),
-        )
+        ))
     }
 
     /// Get X & Y from camera stick if it exists, otherwise return `None`.
@@ -161,7 +231,7 @@ impl Device {
         match self.hardware_id {
             // Flight controller
             0x_07B5_0316 => return None,
-            _ => {},
+            _ => {}
         }
 
         if self.cam.0 == -128 || self.cam.1 == -128 || self.pan == -128 {
@@ -185,7 +255,7 @@ impl Device {
         match self.hardware_id {
             // Flight controller
             0x_07B5_0316 => return None,
-            _ => {},
+            _ => {}
         }
 
         if self.cam.0 == -128 || self.cam.1 == -128 || self.pan == std::i16::MIN {
@@ -203,7 +273,7 @@ impl Device {
         Some(rtn)
     }
 
-    /// Get the pitch throttle value.
+    /// Get the pitch throttle value.  Returns `None` if the pitch throttle doesn't exist.
     pub fn pitch(&mut self) -> Option<f32> {
         if self.cam.0 == -128 || self.cam.1 == -128 || self.pan == std::i16::MIN {
             return None;
@@ -214,25 +284,28 @@ impl Device {
         Some(rtn)
     }
 
-    /// Return true if a button is pressed.
-    pub fn btn(&self, b: Btn) -> bool {
-        self.btn & (1 << (b as u8)) != 0
+    /// Return `Some(true)` if a button is pressed, `Some(false)` if not, and `None` if the button
+    /// doesn't exist.
+    pub fn btn<B: Into<u8>>(&self, b: B) -> Option<bool> {
+        Some(self.btn & (1 << (b.into())) != 0)
     }
 
     /// Swap 2 buttons in the mapping.
-    pub fn mod_swap_btn(&mut self, a: Btn, b: Btn) {
-        let new_b = self.btn(a);
-        let new_a = self.btn(b);
+    /// # Panics
+    /// Panics if the controller doesn't support either button a or button b.
+    pub fn mod_swap_btn<B: Into<u8> + Copy + Clone>(&mut self, a: B, b: B) {
+        let new_b = self.btn(a).unwrap();
+        let new_a = self.btn(b).unwrap();
 
         if new_a {
-            self.btn |= 1 << a as u8;
+            self.btn |= 1 << a.into();
         } else {
-            self.btn &= !(1 << a as u8);
+            self.btn &= !(1 << a.into());
         }
         if new_b {
-            self.btn |= 1 << b as u8;
+            self.btn |= 1 << b.into();
         } else {
-            self.btn &= !(1 << b as u8);
+            self.btn &= !(1 << b.into());
         }
     }
 
@@ -353,19 +426,19 @@ pub struct Layout {
 }*/
 
 /// An interface to all joystick, gamepad and controller devices.
-pub struct Devices {
+pub struct Port {
     manager: NativeManager,
     controllers: Vec<Device>,
 }
 
-impl Devices {
+impl Port {
     /// Create a new interface to all joystick, gamepad and controller devices currently plugged in
     /// to this computer.
-    pub fn new() -> Devices {
+    pub fn new() -> Port {
         let manager = NativeManager::new();
         let controllers = vec![];
 
-        Devices {
+        Port {
             manager,
             controllers,
         }
@@ -385,45 +458,39 @@ impl Devices {
                 continue;
             }
 
-            while joystick_poll_event(
-                fd,
-                &mut controller,
-            ) {}
+            while joystick_poll_event(fd, &mut controller) {}
 
-            controller.pan = controller
-                .pan
-                .saturating_add(controller.cam.1 as i16 * 8);
+            controller.pan = controller.pan.saturating_add(controller.cam.1 as i16 * 8);
         }
 
         let (device_count, added) = self.manager.search();
 
         if added != ::std::usize::MAX {
-// FOR TESTING
-// println!("s{:08X}", self.manager.get_id(added).0);
+            // FOR TESTING
+            // println!("s{:08X}", self.manager.get_id(added).0);
             let (min, max, _) = self.manager.get_abs(added);
 
             self.controllers.resize_with(device_count, Default::default);
 
-            self.controllers[added] =
-                Device {
-                    native_handle: added as u32,
-                    hardware_id: self.manager.get_id(added).0,
-                    abs_min: min,
-                    abs_max: max,
+            self.controllers[added] = Device {
+                native_handle: added as u32,
+                hardware_id: self.manager.get_id(added).0,
+                abs_min: min,
+                abs_max: max,
 
-                    joy: (0, 0),
-                    cam: (0, 0),
-                    lrt: (0, 0),
-                    pan: 0,
-                    btn: 0,
-                };
+                joy: (0, 0),
+                cam: (0, 0),
+                lrt: (0, 0),
+                pan: 0,
+                btn: 0,
+            };
         }
 
         self.controllers.len() as u16
     }
 
     /// Get the state of a device
-    pub fn state(&self, stick: u16) -> Device {
+    pub fn get(&self, stick: u16) -> Device {
         let mut rtn = self.controllers[stick as usize];
 
         // Apply mods
@@ -432,12 +499,12 @@ impl Devices {
             0x_0E6F_0501 => {
                 rtn.mod_swap_btn(Btn::A, Btn::B);
                 rtn.mod_t2lr();
-            },
+            }
             // PS3 MODS
             0x_054C_0268 => {
                 rtn.mod_swap_btn(Btn::X, Btn::Y);
                 rtn.mod_t2lr();
-            },
+            }
             // THRUSTMASTER MODS
             0x_07B5_0316 => rtn.mod_l2pitch(),
             // GAMECUBE MODS
@@ -483,18 +550,18 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
         return false;
     }
 
-    fn edit(is: bool, device: &mut Device, b: Btn) {
+    fn edit<B: Into<u8>>(is: bool, device: &mut Device, b: B) {
         if is {
-            device.btn |= 1 << (b as u8)
+            device.btn |= 1 << b.into()
         } else {
-            device.btn &= !(1 << (b as u8))
+            device.btn &= !(1 << b.into())
         }
     }
 
     match js.ev_type {
         // button press / release (key)
         0x01 => {
-//            println!("EV CODE {}", js.ev_code - 0x120);
+            //            println!("EV CODE {}", js.ev_code - 0x120);
 
             let is = js.ev_value == 1;
 

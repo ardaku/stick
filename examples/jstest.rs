@@ -1,4 +1,4 @@
-use stick::Devices;
+use stick::Port;
 
 /*fn remapper(input: (usize, stick::Input)) -> (usize, stick::Input) {
     (input.0, match input.1 {
@@ -9,13 +9,13 @@ use stick::Devices;
 
 fn main() {
     // Connect to all devices.
-    let mut devices = Devices::new();
+    let mut port = Port::new();
 
     // Loop showing state of all devices.
     loop {
         // Cycle through all currently plugged in devices.
-        for i in 0..devices.update() {
-            println!("{}: {}", i, devices.state(i));
+        for i in 0..port.update() {
+            println!("{}: {}", i, port.get(i));
         }
 
         std::thread::sleep(std::time::Duration::from_millis(16));
