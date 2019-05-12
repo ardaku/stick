@@ -15,9 +15,7 @@ fn main() {
     loop {
         // Cycle through all currently plugged in devices.
         for i in 0..devices.update() {
-            if i == 3 {
-                println!("{}: {}", i, devices.state(i));
-            }
+            println!("{}: {}", i, devices.state(i));
         }
 
         std::thread::sleep(std::time::Duration::from_millis(16));

@@ -227,8 +227,6 @@ fn joystick_abs(fd: i32) -> (i32, i32, bool) {
         return (0, 0, true);
     }
 
-    println!("ABS {:?}", a);
-
     (a.minimum, a.maximum, false)
 }
 

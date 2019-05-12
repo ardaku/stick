@@ -14,37 +14,6 @@ struct Event {
     ev_value: i32,
 }
 
-/*/// Newtype for Axis.
-#[derive(Copy, Clone)]
-pub struct Axis(i16);
-
-impl Axis {
-    /// Return true if axis doesn't exist.
-    pub fn is_none(self) -> bool {
-        self.0 == std::i16::MIN
-    }
-
-    /// Return true if axis exists.
-    pub fn is_some(self) -> bool {
-        !self.is_none()
-    }
-
-    /// Convert into an f32.
-    pub fn into_f32(self) -> f32 {
-        if self.is_none() {
-            0.0
-        } else {
-            (self.0 as f32) / (std::i16::MAX as f32)
-        }
-    }
-}*/
-
-/*/// A Joystick.
-pub struct Joystick {
-    x: i16,
-    y: i16,
-}*/
-
 /// A button on a controller.
 #[derive(Copy, Clone)]
 #[repr(u8)]
@@ -251,7 +220,7 @@ impl Device {
     }
 
     /// Swap 2 buttons in the mapping.
-    pub fn swap_btn(&mut self, a: Btn, b: Btn) {
+    pub fn mod_swap_btn(&mut self, a: Btn, b: Btn) {
         let new_b = self.btn(a);
         let new_a = self.btn(b);
 
@@ -268,18 +237,32 @@ impl Device {
     }
 
     /// Swap X & Y on joy stick
-    pub fn swap_joy(&mut self) {
+    pub fn mod_swap_joy(&mut self) {
         std::mem::swap(&mut self.joy.0, &mut self.joy.1)
     }
 
-    /// Copy l value to pan.
-    pub fn lt_to_pan(&mut self) {
+    /// Copy l value to pitch.
+    pub fn mod_l2pitch(&mut self) {
         let l = self.lrt.0 as i8;
         self.pan = ((l as i32 * std::i16::MAX as i32) / 127) as i16;
     }
 
-    /// Expand axis for old controllers like GameCube.
-    pub fn expand(&mut self) {
+    /// If trigger is all of the way down, activate button.
+    pub fn mod_t2lr(&mut self) {
+        if self.lrt.0 == 255 {
+            self.btn |= 1 << Btn::L as u8;
+        } else {
+            self.btn &= !(1 << Btn::L as u8);
+        }
+        if self.lrt.1 == 255 {
+            self.btn |= 1 << Btn::R as u8;
+        } else {
+            self.btn &= !(1 << Btn::R as u8);
+        }
+    }
+
+    /// mod_expand( axis for old controllers like GameCube.
+    pub fn mod_expand(&mut self) {
         self.joy.0 = self
             .joy
             .0
@@ -313,10 +296,6 @@ impl Device {
             .0;
     }
 }
-
-/// Controller ID.
-#[derive(Copy, Clone)]
-pub struct Id(pub u16);
 
 /*/// A Controller's layout.
 pub struct Layout {
@@ -408,7 +387,8 @@ impl Devices {
         let (device_count, added) = self.manager.search();
 
         if added != ::std::usize::MAX {
-            println!("s{:08X}", self.manager.get_id(added).0);
+// FOR TESTING
+// println!("s{:08X}", self.manager.get_id(added).0);
             let (min, max, _) = self.manager.get_abs(added);
 
             self.controllers.resize_with(device_count, Default::default);
@@ -438,13 +418,19 @@ impl Devices {
         // Apply mods
         match rtn.hardware_id {
             // XBOX MODS
-            0x_0E6F_0501 => rtn.swap_btn(Btn::A, Btn::B),
+            0x_0E6F_0501 => {
+                rtn.mod_swap_btn(Btn::A, Btn::B);
+                rtn.mod_t2lr();
+            },
             // PS3 MODS
-            0x_054C_0268 => rtn.swap_btn(Btn::Y, Btn::A),
+            0x_054C_0268 => {
+                rtn.mod_swap_btn(Btn::X, Btn::Y);
+                rtn.mod_t2lr();
+            },
             // THRUSTMASTER MODS
-            0x_07B5_0316 => rtn.lt_to_pan(),
+            0x_07B5_0316 => rtn.mod_l2pitch(),
             // GAMECUBE MODS
-            0x_0079_1844 => rtn.expand(),
+            0x_0079_1844 => rtn.mod_expand(),
             _ => {}
         }
 
@@ -459,15 +445,15 @@ impl Devices {
     /// assigned to.  You can do this with:
     /// ```norun
     /// // Assuming P1 is at index 0, and P2 is at index 1,
-    /// devices.swap(Id(0), Id(1));
+    /// devices.swap(0, 1);
     /// ```
-    pub fn swap(&mut self, a: Id, b: Id) {
-        self.controllers.swap(a.0 as usize, b.0 as usize);
+    pub fn swap(&mut self, a: u16, b: u16) {
+        self.controllers.swap(a as usize, b as usize);
     }
 
     /// Get the name of a device by index.
     #[allow(unused)]
-    pub fn name(&self, a: Id) -> String {
+    pub fn name(&self, a: u16) -> String {
         // TODO
         "Unknown".to_string()
     }
@@ -497,7 +483,7 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
     match js.ev_type {
         // button press / release (key)
         0x01 => {
-            println!("EV CODE {}", js.ev_code - 0x120);
+//            println!("EV CODE {}", js.ev_code - 0x120);
 
             let is = js.ev_value == 1;
 
