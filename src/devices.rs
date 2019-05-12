@@ -15,6 +15,10 @@ struct Event {
 }
 
 /// A button on a controller.
+/// 
+/// Example controller:
+///
+/// <img src="https://jeronaldaron.github.io/stick/res/controller.png" width="292">
 #[derive(Copy, Clone)]
 #[repr(u8)]
 pub enum Btn {
