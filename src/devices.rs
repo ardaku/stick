@@ -49,58 +49,66 @@ pub struct Joystick {
 #[derive(Copy, Clone)]
 #[repr(u8)]
 pub enum Btn {
-    /// B BUTTON / SHIFT KEY "Speed Things Up/Cancel"
-    B = 0,
-    /// A BUTTON / ENTER KEY / RIGHT CLICK "Talk/Inspect/Ok/Accept"
-    A = 1,
-    /// ONE OF: Y OR X BUTTON / SPACE KEY "Jump/Upward"
-    Y = 2,
+    /// D-PAD LEFT / LEFT ARROW KEY / SCROLL UP "Previous Item"
+    Left = 0,
+    /// D-PAD RIGHT / RIGHT ARROW KEY / SCROLL DOWN "Next Item"
+    Right = 1,
+    /// D-PAD UP / UP ARROW KEY / R KEY "Reload/Tinker"
+    Up = 2,
+    /// D-PAD DOWN / DOWN ARROW KEY / X KEY "Put Away"
+    Down = 3,
+
     /// ONE OF: Y OR X BUTTON / LEFT CLICK "Action/Attack/Execute/Use Item"
-    X = 3,
+    X = 4,
+    /// A BUTTON / ENTER KEY / RIGHT CLICK "Talk/Inspect/Ok/Accept"
+    A = 5,
+    /// ONE OF: Y OR X BUTTON / SPACE KEY "Jump/Upward"
+    Y = 6,
+    /// B BUTTON / SHIFT KEY "Speed Things Up/Cancel"
+    B = 7,
 
     /// L THROTTLE BTN / CTRL KEY "Crouch/Sneak"
-    Lt = 4,
-    /// R THROTTLE BTN / Q KEY "Slingshot/Bow & Arrow"
-    Rt = 5,
-    /// L BTN / BACKSPACE KEY "Throw"
-    Lb = 6,
-    /// R BTN / ALT KEY "Alternative Action/Kick"
-    Rb = 7,
+    L = 8,
+    /// R THROTTLE BTN / ALT KEY "Slingshot/Bow & Arrow"
+    R = 9,
+    /// L BTN / W BTN / BACKSPACE KEY "Throw/Send/Wave"
+    W = 10,
+    /// R BTN / Z BTN / Z KEY "Alternative Action/Kick"
+    Z = 11,
 
-    /// START / E KEY / MENU "Inventory"
-    E = 8,
-    /// BACK / SELECT / QUIT / ESCAPE KEY "Menu / Quit"
-    Back = 9,
+    /// BACK / SELECT / QUIT / ESCAPE KEY / EXIT "Menu / Quit / Finish"
+    F = 12,
+    /// START / E KEY / MENU / FIND "Inventory/Pockets/Find"
+    E = 13,
     /// JOY1 PUSH / C KEY "Toggle Crouch/Sneak"
-    D = 10,
+    D = 14,
     /// JOY2 PUSH / F KEY "Camera/Binoculars"
-    C = 11,
-
-    /// D-PAD LEFT / LEFT ARROW KEY
-    Left = 12,
-    /// D-PAD RIGHT / RIGHT ARROW KEY
-    Right = 13,
-    /// D-PAD UP / UP ARROW KEY
-    Up = 14,
-    /// D-PAD DOWN / DOWN ARROW KEY
-    Down = 15,
+    C = 15,
 }
 
 /// The state for a joystick, gamepad or controller device.
 #[derive(Debug, Copy, Clone, Default)]
 #[repr(C)]
 pub struct Device {
-    // 128 bits.
-    // Joystick 1 (XY). 16
+    // Joystick 1 (XY).
     joy: (i8, i8),
-    // L & R Throttles. 16
+    // L & R Throttles.
     lrt: (u8, u8),
-    // Joystick 2 (Z-rotation,W-tilt) 16
+    // Joystick 2 (Z-rotation,W-tilt)
     cam: (i8, i8),
-    // Panning stick 16
+    // Panning stick
     pan: i16,
-    // 64 #'d Buttons (Left=Even,Right=Odd). 64
+    // 64 #'d Buttons (Left=Even,Right=Odd).
     btn: u64,
+    // 128 bits so far.
+
+    // Native handle to the device (fd or index).
+    native_handle: u32,
+    // Hardware ID for this device.
+    hardware_id: u32,
+    abs_min: i32,
+    abs_max: i32,
+    // 256 bits total
 }
 
 impl std::fmt::Display for Device {
@@ -129,20 +137,20 @@ impl std::fmt::Display for Device {
         let du: char = if self.btn(Btn::Up) { '▣' } else { '□' };
         let dd: char = if self.btn(Btn::Down) { '▣' } else { '□' };
 
-        let lb: char = if self.btn(Btn::Lb) { '▣' } else { '□' };
-        let rb: char = if self.btn(Btn::Rb) { '▣' } else { '□' };
-        let lt: char = if self.btn(Btn::Lt) { '▣' } else { '□' };
-        let rt: char = if self.btn(Btn::Rt) { '▣' } else { '□' };
+        let w_btn: char = if self.btn(Btn::W) { '▣' } else { '□' };
+        let z_btn: char = if self.btn(Btn::Z) { '▣' } else { '□' };
+        let l_btn: char = if self.btn(Btn::L) { '▣' } else { '□' };
+        let r_btn: char = if self.btn(Btn::R) { '▣' } else { '□' };
 
         let d_btn: char = if self.btn(Btn::D) { '▣' } else { '□' };
         let c_btn: char = if self.btn(Btn::C) { '▣' } else { '□' };
-        let back: char = if self.btn(Btn::Back) { '▣' } else { '□' };
+        let f_btn: char = if self.btn(Btn::F) { '▣' } else { '□' };
         let e_btn: char = if self.btn(Btn::E) { '▣' } else { '□' };
 
         write!(
             f,
             "j({:.2},{:.2}) p({:.2}) c({:.2},{:.2}) T({:.2},{:.2}) b{} a{} y{} x{} ←{} →{} \
-             ↑{} ↓{} L{} R{} l{} r{} d{} c{} e{} B{}",
+             ↑{} ↓{} l{} r{} w{} z{} f{} e{} d{} c{}",
             joy.0,
             joy.1,
             pan,
@@ -158,19 +166,85 @@ impl std::fmt::Display for Device {
             dr,
             du,
             dd,
-            lt,
-            rt,
-            lb,
-            rb,
+            l_btn,
+            r_btn,
+            w_btn,
+            z_btn,
+            f_btn,
+            e_btn,
             d_btn,
             c_btn,
-            e_btn,
-            back
         )
     }
 }
 
 impl Device {
+    /// Get main joystick state from the device if a main joystick exists, otherwise return `None`.
+    pub fn joy(&self) -> (f32,f32) {
+        (
+            (self.joy.0 as f32) / (std::i8::MAX as f32),
+            (self.joy.1 as f32) / (std::i8::MAX as f32),
+        )
+    }
+
+    /// Get X & Y from camera stick if it exists, otherwise return `None`.
+    pub fn cam(&mut self) -> Option<(f32, f32)> {
+        match self.hardware_id {
+            // Flight controller
+            0x_07B5_0316 => return None,
+            _ => {},
+        }
+
+        if self.cam.0 == -128 || self.cam.1 == -128 || self.pan == -128 {
+            return None;
+        }
+
+        let rtn = (
+            (self.cam.0 as f32) / (std::i8::MAX as f32),
+            (self.cam.1 as f32) / (std::i8::MAX as f32),
+        );
+
+        self.cam = (-128, -128);
+        self.pan = std::i16::MIN;
+
+        Some(rtn)
+    }
+
+    /// Get X & Y facing direction from camera stick.  This is like `cam()` for x, but `pitch()` for
+    /// y.
+    pub fn dir(&mut self) -> Option<(f32, f32)> {
+        match self.hardware_id {
+            // Flight controller
+            0x_07B5_0316 => return None,
+            _ => {},
+        }
+
+        if self.cam.0 == -128 || self.cam.1 == -128 || self.pan == std::i16::MIN {
+            return None;
+        }
+
+        let rtn = (
+            (self.cam.0 as f32) / (std::i8::MAX as f32),
+            (self.pan as f32) / (std::i16::MAX as f32),
+        );
+
+        self.cam = (-128, -128);
+        self.pan = std::i16::MIN;
+
+        Some(rtn)
+    }
+
+    /// Get the pitch throttle value.
+    pub fn pitch(&mut self) -> Option<f32> {
+        if self.cam.0 == -128 || self.cam.1 == -128 || self.pan == std::i16::MIN {
+            return None;
+        }
+
+        let rtn = (self.pan as f32) / (std::i16::MAX as f32);
+        self.pan = std::i16::MIN;
+        Some(rtn)
+    }
+
     /// Return true if a button is pressed.
     pub fn btn(&self, b: Btn) -> bool {
         self.btn & (1 << (b as u8)) != 0
@@ -204,8 +278,8 @@ impl Device {
         self.pan = ((l as i32 * std::i16::MAX as i32) / 127) as i16;
     }
 
-    /// Filter out noise for old controllers like GameCube.
-    pub fn noise_filter(&mut self) {
+    /// Expand axis for old controllers like GameCube.
+    pub fn expand(&mut self) {
         self.joy.0 = self
             .joy
             .0
@@ -237,9 +311,6 @@ impl Device {
         self.lrt.1 = ((lrt1.saturating_add((3 * lrt1 as i16 / 4) as i8).max(-127)) as u8)
             .overflowing_add(127)
             .0;
-
-        //        self.cam.0 = self.cam.0.saturating_add(self.cam.0 / 2);
-        //        self.cam.1 = self.cam.1.saturating_add(self.cam.1 / 2);
     }
 }
 
@@ -302,21 +373,10 @@ pub struct Layout {
     }
 }*/
 
-// A joystick, gamepad and controller device.
-#[derive(Default, Clone)]
-struct Controller {
-    // Native handle to the device (fd or index).
-    native_handle: u32,
-    // Hardware ID for this device.
-    hardware_id: u32,
-    abs_min: i32,
-    abs_max: i32,
-}
-
 /// An interface to all joystick, gamepad and controller devices.
 pub struct Devices {
     manager: NativeManager,
-    controllers: Vec<(Controller, Device)>,
+    controllers: Vec<Device>,
 }
 
 impl Devices {
@@ -336,14 +396,13 @@ impl Devices {
     pub fn update(&mut self) -> u16 {
         for mut controller in &mut self.controllers {
             while joystick_poll_event(
-                self.manager.get_fd(controller.0.native_handle as usize).0,
+                self.manager.get_fd(controller.native_handle as usize).0,
                 &mut controller,
             ) {}
 
-            controller.1.pan = controller
-                .1
+            controller.pan = controller
                 .pan
-                .saturating_add(controller.1.cam.1 as i16 * 8);
+                .saturating_add(controller.cam.1 as i16 * 8);
         }
 
         let (device_count, added) = self.manager.search();
@@ -354,21 +413,19 @@ impl Devices {
 
             self.controllers.resize_with(device_count, Default::default);
 
-            self.controllers[added] = (
-                Controller {
+            self.controllers[added] =
+                Device {
                     native_handle: added as u32,
                     hardware_id: self.manager.get_id(added).0,
                     abs_min: min,
                     abs_max: max,
-                },
-                Device {
+
                     joy: (0, 0),
                     cam: (0, 0),
                     lrt: (0, 0),
                     pan: 0,
                     btn: 0,
-                },
-            );
+                };
         }
 
         self.controllers.len() as u16
@@ -376,10 +433,10 @@ impl Devices {
 
     /// Get the state of a device
     pub fn state(&self, stick: u16, ) -> Device {
-        let mut rtn = self.controllers[stick as usize].1;
+        let mut rtn = self.controllers[stick as usize];
 
         // Apply mods
-        match self.controllers[stick as usize].0.hardware_id {
+        match rtn.hardware_id {
             // XBOX MODS
             0x_0E6F_0501 => rtn.swap_btn(Btn::A, Btn::B),
             // PS3 MODS
@@ -387,7 +444,7 @@ impl Devices {
             // THRUSTMASTER MODS
             0x_07B5_0316 => rtn.lt_to_pan(),
             // GAMECUBE MODS
-            0x_0079_1844 => rtn.noise_filter(),
+            0x_0079_1844 => rtn.expand(),
             _ => {}
         }
 
@@ -416,7 +473,7 @@ impl Devices {
     }
 }
 
-fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
+fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
     extern "C" {
         fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
     }
@@ -429,11 +486,11 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
         return false;
     }
 
-    fn edit(is: bool, device: &mut (Controller, Device), b: Btn) {
+    fn edit(is: bool, device: &mut Device, b: Btn) {
         if is {
-            device.1.btn |= 1 << (b as u8)
+            device.btn |= 1 << (b as u8)
         } else {
-            device.1.btn &= !(1 << (b as u8))
+            device.btn &= !(1 << (b as u8))
         }
     }
 
@@ -451,13 +508,13 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
                 2 | 16 => edit(is, device, Btn::B),
                 3 | 20 => edit(is, device, Btn::Y),
                 // LT/RT
-                4 | 24 => edit(is, device, Btn::Lt),
-                5 | 25 => edit(is, device, Btn::Rt),
+                4 | 24 => edit(is, device, Btn::L),
+                5 | 25 => edit(is, device, Btn::R),
                 // LB/RB
-                6 | 22 => edit(is, device, Btn::Lb), // 6 is a guess.
-                7 | 23 => edit(is, device, Btn::Rb),
+                6 | 22 => edit(is, device, Btn::W), // 6 is a guess.
+                7 | 23 => edit(is, device, Btn::Z),
                 // Select/Start
-                8 | 26 => edit(is, device, Btn::Back), // 8 is a guess.
+                8 | 26 => edit(is, device, Btn::F), // 8 is a guess.
                 9 | 27 => edit(is, device, Btn::E),
                 // ?
                 10 => println!("Button 10 is Unknown"),
@@ -479,21 +536,21 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
         }
         // axis move (abs)
         0x03 => {
-            let value = transform(device.0.abs_min, device.0.abs_max, js.ev_value);
+            let value = transform(device.abs_min, device.abs_max, js.ev_value);
 
             //            if value != 0 {
             //                println!("{} {}", js.ev_code, value);
             //            }
 
             // For some reason this is different on the GameCube controller, so fix it.
-            let (cam_x, cam_y, lrt_l, lrt_r) = match device.0.hardware_id {
+            let (cam_x, cam_y, lrt_l, lrt_r) = match device.hardware_id {
                 0x_0079_1844 => (5, 2, 3, 4),
                 _ => (3, 4, 2, 5),
             };
 
             match js.ev_code {
-                0 => device.1.joy.0 = value,
-                1 => device.1.joy.1 = value,
+                0 => device.joy.0 = value,
+                1 => device.joy.1 = value,
                 16 => {
                     if js.ev_value < 0 {
                         edit(true, device, Btn::Left);
@@ -521,16 +578,16 @@ fn joystick_poll_event(fd: i32, device: &mut (Controller, Device)) -> bool {
                 40 => {} // IGNORE: Duplicate axis.
                 a => {
                     if a == cam_x {
-                        device.1.cam.0 = value;
+                        device.cam.0 = value;
                     } else if a == cam_y {
-                        device.1.cam.1 = value;
+                        device.cam.1 = value;
                     } else if a == lrt_l {
                         js.ev_value = js.ev_value.max(-127);
-                        device.1.lrt.0 = js.ev_value as u8;
+                        device.lrt.0 = js.ev_value as u8;
                     //                        edit(js.ev_value > 250, device, Btn::Crouch);
                     } else if a == lrt_r {
                         js.ev_value = js.ev_value.max(-127);
-                        device.1.lrt.1 = js.ev_value as u8;
+                        device.lrt.1 = js.ev_value as u8;
                         //                        edit(js.ev_value > 250, device, Btn::Aiming);
                     }
                 } // println!("Unknown Axis: {}", a),
