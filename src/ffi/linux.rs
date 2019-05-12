@@ -90,7 +90,7 @@ impl NativeManager {
         self.devices.len()
     }
 
-    pub fn disconnect(&mut self, fd: i32) -> () {
+    pub fn disconnect(&mut self, fd: i32) {
         for i in 0..self.devices.len() {
             if self.devices[i].fd == fd {
                 joystick_drop(fd);
@@ -124,7 +124,7 @@ impl NativeManager {
     }
 }
 impl Drop for NativeManager {
-    fn drop(&mut self) -> () {
+    fn drop(&mut self) {
         while let Some(device) = self.devices.pop() {
             self.disconnect(device.fd);
         }
@@ -158,14 +158,14 @@ fn find_devices() -> Vec<Device> {
 }
 
 // Open the evdev device.
-fn open_joystick(device: &mut Device) -> () {
+fn open_joystick(device: &mut Device) {
     let file_name = CString::new(device.name.clone().unwrap()).unwrap();
 
     device.fd = unsafe { open(file_name.as_ptr() as *const _, 0) };
 }
 
 // Set up file descriptor for asynchronous reading.
-fn joystick_async(fd: i32) -> () {
+fn joystick_async(fd: i32) {
     let error = unsafe { fcntl(fd, 0x4, 0x800) } == -1;
 
     if error {
@@ -181,7 +181,7 @@ fn joystick_id(fd: i32) -> (u32, bool) {
         fn ioctl(fd: i32, request: usize, v: *mut u16) -> i32;
     }
 
-    if unsafe { ioctl(fd, 0x80084502, &mut a[0]) } == -1 {
+    if unsafe { ioctl(fd, 0x_8008_4502, &mut a[0]) } == -1 {
         return (0, true);
     }
 
@@ -206,7 +206,7 @@ fn joystick_abs(fd: i32) -> (i32, i32, bool) {
         fn ioctl(fd: i32, request: usize, v: *mut AbsInfo) -> i32;
     }
 
-    if unsafe { ioctl(fd, 0x80184540, &mut a) } == -1 {
+    if unsafe { ioctl(fd, 0x_8018_4540, &mut a) } == -1 {
         return (0, 0, true);
     }
 
@@ -214,7 +214,7 @@ fn joystick_abs(fd: i32) -> (i32, i32, bool) {
 }
 
 // Disconnect the joystick.
-fn joystick_drop(fd: i32) -> () {
+fn joystick_drop(fd: i32) {
     if unsafe { close(fd) == -1 } {
         panic!("Failed to disconnect joystick.");
     }

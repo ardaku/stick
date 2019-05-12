@@ -1,5 +1,8 @@
 //! A platform-agnostic joystick / gamepad / controller library for Rust.
 
+#![allow(clippy::cast_lossless)]
+#![allow(clippy::new_without_default)]
+
 mod devices;
 
 pub use devices::{Btn, Device, Port};

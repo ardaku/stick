@@ -228,6 +228,7 @@ impl Device {
 
     /// Get X & Y from camera stick if it exists, otherwise return `None`.
     pub fn cam(&mut self) -> Option<(f32, f32)> {
+        #[allow(clippy::single_match)]
         match self.hardware_id {
             // Flight controller
             0x_07B5_0316 => return None,
@@ -252,6 +253,7 @@ impl Device {
     /// Get X & Y facing direction from camera stick.  This is like `cam()` for x, but `pitch()` for
     /// y.
     pub fn dir(&mut self) -> Option<(f32, f32)> {
+        #[allow(clippy::single_match)]
         match self.hardware_id {
             // Flight controller
             0x_07B5_0316 => return None,
