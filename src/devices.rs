@@ -374,8 +374,19 @@ impl Devices {
     /// Get the number of devices currently plugged in, and update number if needed.
     pub fn update(&mut self) -> u16 {
         for mut controller in &mut self.controllers {
+            let (fd, is_out, ne) = self.manager.get_fd(controller.native_handle as usize);
+
+            if ne {
+                continue;
+            }
+
+            if is_out {
+                self.manager.disconnect(fd);
+                continue;
+            }
+
             while joystick_poll_event(
-                self.manager.get_fd(controller.native_handle as usize).0,
+                fd,
                 &mut controller,
             ) {}
 
@@ -412,7 +423,7 @@ impl Devices {
     }
 
     /// Get the state of a device
-    pub fn state(&self, stick: u16, ) -> Device {
+    pub fn state(&self, stick: u16) -> Device {
         let mut rtn = self.controllers[stick as usize];
 
         // Apply mods
