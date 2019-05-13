@@ -223,11 +223,19 @@ impl std::fmt::Display for Device {
 
 impl Device {
     /// Get main joystick state from the device if a main joystick exists, otherwise return `None`.
-    pub fn joy(&self) -> Option<(f32, f32)> {
-        Some((
+    pub fn joy(&mut self) -> Option<(f32, f32)> {
+        if self.joy.0 == -128 || self.joy.1 == -128 {
+            return None;
+        }
+
+        let rtn = (
             (self.joy.0 as f32) / (std::i8::MAX as f32),
             (self.joy.1 as f32) / (std::i8::MAX as f32),
-        ))
+        );
+
+        self.joy = (-128, -128);
+
+        Some(rtn)
     }
 
     /// Get X & Y from camera stick if it exists, otherwise return `None`.
@@ -287,6 +295,16 @@ impl Device {
 
         let rtn = (self.pan as f32) / (std::i16::MAX as f32);
         self.pan = std::i16::MIN;
+        Some(rtn)
+    }
+
+    /// Get the left & right trigger values.
+    pub fn lrt(&mut self) -> Option<(f32, f32)> {
+        let rtn: (f32, f32) = (
+            (self.lrt.0 as f32) / (std::u8::MAX as f32),
+            (self.lrt.1 as f32) / (std::u8::MAX as f32),
+        );
+
         Some(rtn)
     }
 

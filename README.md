@@ -8,15 +8,33 @@ Stick is a Rust library for getting joystick, gamepad, or other controller input
 - Connect to multiple controllers (Linux)
 - CONTROLLER: GameCube controllers (with MAYFLASH adapter)
 - CONTROLLER: Flight simulator joystick
-
-## Getting Started
-- TODO
-
-## TODO
-- Better (faster & simpler) remapping / API
-- Haptic (vibration) support
 - CONTROLLER: XBox controller
 - CONTROLLER: PlayStation controller
+
+## Getting Started
+```rs
+// jstest.rs
+use stick::Port;
+
+fn main() {
+    // Connect to all devices.
+    let mut port = Port::new();
+
+    // Loop showing state of all devices.
+    loop {
+        // Cycle through all currently plugged in devices.
+        for i in 0..port.update() {
+            let device = port.get(i);
+            println!("{}: {}", i, device);
+        }
+
+        std::thread::sleep(std::time::Duration::from_millis(16));
+    }
+}
+```
+
+## TODO
+- Better haptic (vibration) support
 - CONTROLLER: Emulated joystick
 - CONTROLLER: Probably some other controllers
 - PLATFORM: Windows
