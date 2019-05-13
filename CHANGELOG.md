@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://free.plopgrizzly.com/s
 ## [0.6.0] - 2019-05-13
 ### Added
 - `Device.lrt()` function to get left & right trigger values.
+
 ### Fixed
 - Can only extract `Device.joy()` values once.
 
@@ -21,8 +22,10 @@ and this project adheres to [Semantic Versioning](https://free.plopgrizzly.com/s
 - Full support for 4 joysticks
 - New API with `Port`, `Device` and `Btn`
 - API to detect whether or not joystick features are supported (not complete).
+
 ### Removed
 - `ControllerManager` & `Input`
+
 ### Changed
 - Input is now received through function calls like `joy()` instead of the `Input` Enum
 
@@ -33,18 +36,21 @@ and this project adheres to [Semantic Versioning](https://free.plopgrizzly.com/s
 ## [0.4.0] - 2018-05-23
 ### Added
 - Fake Windows support.
+
 ### Removed
 - `Button` - Now incorporated into `Input`.
 
 ## [0.3.0] - 2018-02-03
 ### Added
 - Added `ControllerManager` to simplify API
+
 ### Removed
 - Removed `Throttle` struct and `Joystick` struct
 
 ## [0.2.0] - 2018-01-27
 ### Added
 - Remapping
+
 ### Changed
 - Use evdev instead of js0
 
