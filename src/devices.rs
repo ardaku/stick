@@ -15,7 +15,7 @@ struct Event {
 }
 
 /// A button on a controller.
-/// 
+///
 /// Example controller:
 ///
 /// <img src="https://jeronaldaron.github.io/stick/res/controller.png" width="292">

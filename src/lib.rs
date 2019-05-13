@@ -2,7 +2,6 @@
 
 #![allow(clippy::cast_lossless)]
 #![allow(clippy::new_without_default)]
-
 #![warn(missing_docs)]
 #![doc(
     html_logo_url = "https://jeronaldaron.github.io/stick/res/icon.svg",
