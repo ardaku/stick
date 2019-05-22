@@ -14,12 +14,6 @@ struct Device {
     fd: i32,
 }
 
-/*impl PartialEq for Device {
-    fn eq(&self, other: &Device) -> bool {
-        self.name == other.name;
-    }
-}*/
-
 pub struct NativeManager {
     // Inotify File descriptor.
     pub(crate) inotify: i32,
@@ -80,30 +74,6 @@ impl NativeManager {
         nm
     }
 
-    /*    /// Do a search for controllers.  Returns number of controllers.
-    pub fn search(&mut self) -> (usize, usize) {
-        let devices = find_devices();
-
-        // Add devices
-        for mut i in devices {
-            if self.devices.contains(&i) {
-                continue;
-            }
-
-            open_joystick(&mut i);
-
-            // Setup device for asynchronous reads
-            if i.fd != -1 {
-                joystick_async(i.fd);
-
-                let index = self.add(i);
-                return (self.devices.len(), index);
-            }
-        }
-
-        (self.num_plugged_in(), ::std::usize::MAX)
-    }*/
-
     pub fn get_id(&self, id: usize) -> (u32, bool) {
         if id >= self.devices.len() {
             (0, true)
@@ -148,28 +118,6 @@ impl NativeManager {
 
         panic!("There was no fd of {}", fd);
     }
-
-    /*    pub(crate) fn poll_event(&self, i: usize, state: &mut State) {
-        while joystick_poll_event(self.devices[i].fd, state) {}
-    }*/
-
-    /*    fn add(&mut self, device: Device) -> usize {
-        let mut r = 0;
-
-        for i in &mut self.devices {
-            if i.name[ == None {
-                *i = device;
-                return r;
-            }
-
-            r += 1;
-        }
-
-        epoll_add(self.fd, device.fd);
-        self.devices.push(device);
-
-        r
-    }*/
 }
 impl Drop for NativeManager {
     fn drop(&mut self) {
@@ -181,32 +129,6 @@ impl Drop for NativeManager {
         }
     }
 }
-
-/*// Find the evdev device.
-fn find_devices() -> Vec<Device> {
-    let mut rtn = Vec::new();
-    let paths = fs::read_dir("/dev/input/by-id/");
-    let paths = if let Ok(paths) = paths {
-        paths
-    } else {
-        return vec![];
-    };
-
-    for path in paths {
-        let path_str = path.unwrap().path();
-        let path_str = path_str.to_str().unwrap();
-
-        // An evdev device.
-        if path_str.ends_with("-event-joystick") {
-            rtn.push(Device {
-                name: Some(path_str.to_string()),
-                fd: -1,
-            });
-        }
-    }
-
-    rtn
-}*/
 
 // Set up file descriptor for asynchronous reading.
 fn joystick_async(fd: i32) {

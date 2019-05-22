@@ -5,12 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://free.plopgrizzly.com/semver/).
 
 ## [Unreleased]
+
+## [0.7.0]
 ### Added
 - `poll()` method to block until an event is received from any controller.
+- Asynchronous support.
 ### Removed
 - Pan separate from camera Y.
+- Mods
 ### Changed
+- `update()` is now renamed to `poll()` and is asynchronous.  It's now recommended to put your input on it's own thread and call `poll` which blocks.
 ### Fixed
+- L & R triggers without buttons requiring mods to be treated as buttons.
 
 ## [0.6.0] - 2019-05-13
 ### Added

@@ -4,8 +4,6 @@ fn main() {
     // Connect to all devices.
     let mut port = Port::new();
 
-    //    port.update();
-
     // Loop showing state of all devices.
     loop {
         // Cycle through all currently plugged in devices.
@@ -16,7 +14,5 @@ fn main() {
         };
 
         println!("{}: {}", id, port.get(id));
-
-        std::thread::sleep(std::time::Duration::from_millis(16));
     }
 }
