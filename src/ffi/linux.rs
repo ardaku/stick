@@ -59,10 +59,10 @@ impl NativeManager {
             if path_str.ends_with("-event-joystick") {
                 println!("js");
                 let mut event = Event {
-                    wd: 0,          /* Watch descriptor */
-                    mask: 0x100,    /* Mask describing event */
-                    cookie: 0,      /* Unique cookie associating related
-                                       events (for rename(2)) */
+                    wd: 0,       /* Watch descriptor */
+                    mask: 0x100, /* Mask describing event */
+                    cookie: 0,   /* Unique cookie associating related
+                                 events (for rename(2)) */
                     len: 0,         /* Size of name field */
                     name: [0; 256], /* Optional null-terminated name */
                 };
@@ -80,7 +80,7 @@ impl NativeManager {
         nm
     }
 
-/*    /// Do a search for controllers.  Returns number of controllers.
+    /*    /// Do a search for controllers.  Returns number of controllers.
     pub fn search(&mut self) -> (usize, usize) {
         let devices = find_devices();
 
@@ -125,7 +125,11 @@ impl NativeManager {
     pub fn get_fd(&self, id: usize) -> (i32, bool, bool) {
         let (_, unplug) = self.get_id(id);
 
-        (self.devices[id].fd, unplug, self.devices[id].name[0] == b'\0')
+        (
+            self.devices[id].fd,
+            unplug,
+            self.devices[id].name[0] == b'\0',
+        )
     }
 
     pub fn num_plugged_in(&self) -> usize {
@@ -149,7 +153,7 @@ impl NativeManager {
         while joystick_poll_event(self.devices[i].fd, state) {}
     }*/
 
-/*    fn add(&mut self, device: Device) -> usize {
+    /*    fn add(&mut self, device: Device) -> usize {
         let mut r = 0;
 
         for i in &mut self.devices {
@@ -172,7 +176,9 @@ impl Drop for NativeManager {
         while let Some(device) = self.devices.pop() {
             self.disconnect(device.fd);
         }
-        unsafe { close(self.fd); }
+        unsafe {
+            close(self.fd);
+        }
     }
 }
 
@@ -272,8 +278,8 @@ union EpollData {
 
 #[repr(C)]
 struct EpollEvent {
-    events: u32,        /* Epoll events */
-    data: EpollData,    /* User data variable */
+    events: u32,     /* Epoll events */
+    data: EpollData, /* User data variable */
 }
 
 extern "C" {
@@ -296,39 +302,49 @@ fn epoll_new() -> i32 {
 
 fn epoll_add(epoll: i32, newfd: i32) {
     let mut event = EpollEvent {
-        events: 0x001 /*EPOLLIN*/,
+        events: 0x001, /*EPOLLIN*/
         data: EpollData { fd: newfd },
     };
 
-    if unsafe { epoll_ctl(epoll, 1 /*EPOLL_CTL_ADD*/, newfd, &mut event) } == -1
+    if unsafe {
+        epoll_ctl(epoll, 1 /*EPOLL_CTL_ADD*/, newfd, &mut event)
+    } == -1
     {
-        unsafe { close(newfd); }
+        unsafe {
+            close(newfd);
+        }
         panic!("Failed to add file descriptor {} to epoll {}", newfd, epoll);
     }
 }
 
 fn epoll_del(epoll: i32, newfd: i32) {
     let mut event = EpollEvent {
-        events: 0x001 /*EPOLLIN*/,
+        events: 0x001, /*EPOLLIN*/
         data: EpollData { fd: newfd },
     };
 
-    if unsafe { epoll_ctl(epoll, 2 /*EPOLL_CTL_DEL*/, newfd, &mut event) } == -1
+    if unsafe {
+        epoll_ctl(epoll, 2 /*EPOLL_CTL_DEL*/, newfd, &mut event)
+    } == -1
     {
-        unsafe { close(newfd); }
+        unsafe {
+            close(newfd);
+        }
         panic!("Failed to add file descriptor to epoll");
     }
 }
 
 pub(crate) fn epoll_wait(epoll_fd: i32) -> Option<i32> {
     extern "C" {
-        fn epoll_wait(epfd: i32, events: *mut EpollEvent,
-                      maxevents: i32, timeout: i32) -> i32;
+        fn epoll_wait(epfd: i32, events: *mut EpollEvent, maxevents: i32, timeout: i32) -> i32;
     }
 
     let mut events: EpollEvent = unsafe { std::mem::uninitialized() };
 
-    if unsafe { epoll_wait(epoll_fd, &mut events, 1 /*MAX_EVENTS*/, -1) } == 1 {
+    if unsafe {
+        epoll_wait(epoll_fd, &mut events, 1 /*MAX_EVENTS*/, -1)
+    } == 1
+    {
         return Some(unsafe { events.data.fd });
     } else {
         return None;
@@ -347,7 +363,14 @@ fn inotify_new() -> i32 {
         panic!("Couldn't create inotify (1)!");
     }
 
-    if unsafe { inotify_add_watch(fd, b"/dev/input/by-id/\0".as_ptr() as *const _, 0x00000100 | 0x00000200) } == -1 {
+    if unsafe {
+        inotify_add_watch(
+            fd,
+            b"/dev/input/by-id/\0".as_ptr() as *const _,
+            0x00000100 | 0x00000200,
+        )
+    } == -1
+    {
         panic!("Couldn't create inotify (2)!");
     }
 
@@ -356,10 +379,10 @@ fn inotify_new() -> i32 {
 
 #[repr(C)]
 struct Event {
-    wd: i32,         /* Watch descriptor */
-    mask: u32,       /* Mask describing event */
-    cookie: u32,     /* Unique cookie associating related
-                             events (for rename(2)) */
+    wd: i32,   /* Watch descriptor */
+    mask: u32, /* Mask describing event */
+    cookie: u32, /* Unique cookie associating related
+               events (for rename(2)) */
     len: u32,        /* Size of name field */
     name: [u8; 256], /* Optional null-terminated name */
 }
@@ -387,7 +410,7 @@ fn inotify_read2(port: &mut NativeManager, ev: Event) -> Option<(bool, usize)> {
     for i in 0..256 {
         name[i + 17] = ev.name[i];
         if ev.name[i] == b'\0' {
-            length = i+17;
+            length = i + 17;
             break;
         }
     }

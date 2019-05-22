@@ -1,7 +1,7 @@
 use super::NativeManager;
 
-use std::sync::atomic::Ordering;
 use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering;
 
 #[repr(C)]
 struct TimeVal {
@@ -71,19 +71,6 @@ impl From<Btn> for u8 {
 /// The state of a joystick, gamepad or controller device.
 #[derive(Debug, Default)]
 pub struct Device {
-/*    // Joystick 1 (XY).
-    joy: (i8, i8),
-    // L & R Throttles.
-    lrt: (u8, u8),
-    // Joystick 2 (Z-rotation,W-tilt)
-    cam: (i8, i8),
-    // Panning stick
-    pan: i16,
-    // 64 #'d Buttons (Left=Even,Right=Odd).
-    btn: u64,*/
-    // 128 bits so far.
-
-    // Native handle to the device (fd or index).
     native_handle: u32,
     // Hardware ID for this device.
     hardware_id: u32,
@@ -104,18 +91,9 @@ pub struct Device {
 
 impl std::fmt::Display for Device {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        let joy: (f32, f32) = (
-            gfloat(&self.joyx),
-            gfloat(&self.joyy),
-        );
-        let cam: (f32, f32) = (
-            gfloat(&self.camx),
-            gfloat(&self.camy),
-        );
-        let lrt: (f32, f32) = (
-            gfloat(&self.trgl),
-            gfloat(&self.trgr),
-        );
+        let joy: (f32, f32) = (gfloat(&self.joyx), gfloat(&self.joyy));
+        let cam: (f32, f32) = (gfloat(&self.camx), gfloat(&self.camy));
+        let lrt: (f32, f32) = (gfloat(&self.trgl), gfloat(&self.trgr));
 
         let b_btn: char = if self.btn(Btn::B) == Some(true) {
             '▣'
@@ -259,117 +237,7 @@ impl Device {
     pub fn btn<B: Into<u8>>(&self, b: B) -> Option<bool> {
         Some(self.btns.load(Ordering::Relaxed) & (1 << (b.into())) != 0)
     }
-
-    /// Swap 2 buttons in the mapping.
-    /// # Panics
-    /// Panics if the controller doesn't support either button a or button b.
-    pub fn mod_swap_btn<B: Into<u8> + Copy + Clone>(&mut self, a: B, b: B) {
-        let new_b = self.btn(a).unwrap();
-        let new_a = self.btn(b).unwrap();
-
-        if new_a {
-            self.btns.fetch_or(1 << a.into(), Ordering::Relaxed);
-        } else {
-            self.btns.fetch_and(!(1 << a.into()), Ordering::Relaxed);
-        }
-        if new_b {
-            self.btns.fetch_or(1 << b.into(), Ordering::Relaxed);
-        } else {
-            self.btns.fetch_and(!(1 << b.into()), Ordering::Relaxed);
-        }
-    }
-
-    /// Swap X & Y on joy stick
-    pub fn mod_swap_joy(&mut self) {
-        std::mem::swap(&mut self.joyx, &mut self.joyy)
-    }
-
-    /// Copy l value to pitch.
-    pub fn mod_l2pitch(&mut self) {
-        afloat(&self.camy, &|_| {
-            gfloat(&self.trgl)
-        });
-    }
-
-    /// If trigger is all of the way down, activate button.
-    pub fn mod_t2lr(&mut self) {
-        if gfloat(&self.trgl) > 0.99 {
-            self.btns.fetch_or(1 << Btn::L as u8, Ordering::Relaxed);
-        } else {
-            self.btns.fetch_and(!(1 << Btn::L as u8), Ordering::Relaxed);
-        }
-        if gfloat(&self.trgr) > 0.99 {
-            self.btns.fetch_or(1 << Btn::R as u8, Ordering::Relaxed);
-        } else {
-            self.btns.fetch_and(!(1 << Btn::R as u8), Ordering::Relaxed);
-        }
-    }
-
-    /// mod_expand( axis for old controllers like GameCube.
-    pub fn mod_expand(&mut self) {
-        afloat(&mut self.joyx, &|x| (x * 0.75).max(1.0).min(-1.0) );
-        afloat(&mut self.joyy, &|x| (x * 0.75).max(1.0).min(-1.0) );
-        afloat(&mut self.camx, &|x| (x * 0.75).max(1.0).min(-1.0) );
-        afloat(&mut self.camy, &|x| (x * 0.75).max(1.0).min(-1.0) );
-        afloat(&mut self.trgl, &|x| (x * 0.75).max(1.0).min(0.0) );
-        afloat(&mut self.trgr, &|x| (x * 0.75).max(1.0).min(0.0) );
-    }
 }
-
-/*/// A Controller's layout.
-pub struct Layout {
-    // A joystick.
-    joystick: bool,
-    // Can joystick be pushed as an extra button?
-    joystick_button: bool,
-    // An extra joystick.
-    alt_joystick: bool,
-    // Can extra joystick be pushed as an extra button?
-    alt_joystick_button: bool,
-    // A direction pad.
-    dir_pad: bool,
-    // A back button.
-    back: bool,
-    // A start button.
-    start: bool,
-    // A select button.
-    select: bool,
-    // A menu button.
-    menu: bool,
-    // An accept button (a).
-    accept: bool,
-    // A cancel button (b).
-    cancel: bool,
-    // A jump button (x or y).
-    jump: bool,
-    // An action button (x or y).
-    action: bool,
-    // A number of numbered buttons.
-    numbered: u16,
-    // Left throttle (resets position when released).
-    l_throttle: bool,
-    // Right throttle (resets position when released).
-    r_throttle: bool,
-    // Left Button
-    l: bool,
-    // Right Button.
-    r: bool,
-    // Left Button & Throttle (L on a GameCube controller)
-    ll_throttle: bool,
-    // Right Button & Throttle (R on a GameCube controller)
-    rr_throttle: bool,
-    // Trigger button.
-    trigger: bool,
-    // A throttle that stays stationary while user isn't touching it.
-    stationary_throttle: bool,
-}*/
-
-/*impl Layout {
-    pub fn new() -> Layout {
-        Layout {
-        }
-    }
-}*/
 
 // Adjust atomic float.
 fn afloat(float: &AtomicUsize, fnc: &Fn(f32) -> f32) {
@@ -417,7 +285,8 @@ impl Port {
     fn add_stick(&mut self, index: usize) {
         let (min, max, _) = self.manager.get_abs(index);
 
-        self.controllers.resize_with((index + 1).max(self.controllers.len()), Default::default);
+        self.controllers
+            .resize_with((index + 1).max(self.controllers.len()), Default::default);
 
         self.controllers[index] = Device {
             native_handle: index as u32,
@@ -438,7 +307,8 @@ impl Port {
     /// Block thread until input is available.
     pub fn poll(&mut self) -> Option<u16> {
         if let Some(fd) = crate::ffi::epoll_wait(self.manager.fd) {
-            if fd == self.manager.inotify { // not a joystick (one's been plugged in).
+            if fd == self.manager.inotify {
+                // not a joystick (one's been plugged in).
                 let (is_add, index) = crate::ffi::inotify_read(&mut self.manager)?;
                 println!("Controller Count Changed {} {}", is_add, index);
 
@@ -453,12 +323,12 @@ impl Port {
             }
 
             for i in 0..self.controllers.len() {
-                let (devfd, is_out, ne)
-                    = self.manager.get_fd(self.controllers[i].native_handle as usize);
+                let (devfd, is_out, ne) = self
+                    .manager
+                    .get_fd(self.controllers[i].native_handle as usize);
 
                 if ne {
                     continue;
-//                    panic!("Bad File descriptor (joystick don't exist)");
                 }
 
                 if is_out {
@@ -476,59 +346,7 @@ impl Port {
             }
         }
         return None;
-//        panic!("Epoll returned when there wasn't any events!");
     }
-
-/*    /// Get the number of devices currently plugged in, and update number if needed.
-    pub fn update(&mut self) -> u16 {
-        for mut controller in &mut self.controllers {
-            let (fd, is_out, ne) = self.manager.get_fd(controller.native_handle as usize);
-
-            if ne {
-                continue;
-            }
-
-            if is_out {
-                self.manager.disconnect(fd);
-                continue;
-            }
-
-            while joystick_poll_event(fd, &mut controller) {}
-        }
-
-        let (device_count, added) = self.manager.search();
-
-        if added != ::std::usize::MAX {
-            // FOR TESTING
-            // println!("s{:08X}", self.manager.get_id(added).0);
-            let (min, max, _) = self.manager.get_abs(added);
-
-            self.controllers.resize_with(device_count, Default::default);
-
-            self.controllers[added] = Device {
-                native_handle: added as u32,
-                hardware_id: self.manager.get_id(added).0,
-                abs_min: min,
-                abs_max: max,
-
-                joyx: std::sync::atomic::AtomicUsize::new(0),
-                joyy: std::sync::atomic::AtomicUsize::new(0),
-                camx: std::sync::atomic::AtomicUsize::new(0),
-                camy: std::sync::atomic::AtomicUsize::new(0),
-                trgl: std::sync::atomic::AtomicUsize::new(0),
-                trgr: std::sync::atomic::AtomicUsize::new(0),
-                btns: std::sync::atomic::AtomicUsize::new(0),
-
-/*                joy: (0, 0),
-                cam: (0, 0),
-                lrt: (0, 0),
-                pan: 0,
-                btn: 0,*/
-            };
-        }
-
-        self.controllers.len() as u16
-    }*/
 
     /// Get the state of a device
     pub fn get(&self, stick: u16) -> &Device {
@@ -579,36 +397,37 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
     }
 
     // Apply Mods
-    let a = if device.hardware_id == 0x_0E6F_0501 /* XBOX */ {
+    let a = if device.hardware_id == 0x_0E6F_0501
+    /* XBOX */
+    {
         Btn::B
     } else {
         Btn::A
     };
 
-    let b = if device.hardware_id == 0x_0E6F_0501 /* XBOX */ {
+    let b = if device.hardware_id == 0x_0E6F_0501
+    /* XBOX */
+    {
         Btn::A
     } else {
         Btn::B
     };
 
-    let x = if device.hardware_id == 0x_054C_0268 /* PS3 */ {
+    let x = if device.hardware_id == 0x_054C_0268
+    /* PS3 */
+    {
         Btn::Y
     } else {
         Btn::X
     };
 
-    let y = if device.hardware_id == 0x_054C_0268 /* PS3 */ {
+    let y = if device.hardware_id == 0x_054C_0268
+    /* PS3 */
+    {
         Btn::X
     } else {
         Btn::Y
     };
-
-/*  // XBOX & PS3 MODS
-    rtn.mod_t2lr()
-    // THRUSTMASTER MODS
-    0x_07B5_0316 => rtn.mod_l2pitch()
-    // GAMECUBE MODS
-    0x_0079_1844 => rtn.mod_expand()*/
 
     // Get Events
     match js.ev_type {
@@ -653,7 +472,18 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
         }
         // axis move (abs)
         0x03 => {
-            let value = transform(device.abs_min, device.abs_max, js.ev_value);
+            let value = if device.hardware_id == 0x_0079_1844 { // GameCube
+                let q = (device.abs_max - device.abs_min) / 4;
+                transform(device.abs_min + q, device.abs_max - q, js.ev_value)
+            } else {
+                transform(device.abs_min, device.abs_max, js.ev_value)
+            };
+
+            let value2 = if device.hardware_id == 0x_0079_1844 { // GameCube
+                transform2(32, 95, js.ev_value)
+            } else {
+                transform2(0, 127, js.ev_value)
+            };
 
             // if value != 0 {
             //     println!("{} {}", js.ev_code, value);
@@ -703,14 +533,22 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
                             value
                         });
                     } else if a == lrt_l {
-                        js.ev_value = js.ev_value.max(-127).min(127);
+                        if value2 > 0.99 {
+                            edit(true, device, Btn::L)
+                        } else {
+                            edit(false, device, Btn::L)
+                        }
                         afloat(&mut device.trgl, &|_| {
-                            f32::from(js.ev_value as u8) / 127.0
+                            value2
                         });
                     } else if a == lrt_r {
-                        js.ev_value = js.ev_value.max(-127).min(127);
+                        if value2 > 0.99 {
+                            edit(true, device, Btn::R)
+                        } else {
+                            edit(false, device, Btn::R)
+                        }
                         afloat(&mut device.trgr, &|_| {
-                            f32::from(js.ev_value as u8) / 127.0
+                            value2
                         });
                     }
                 } // println!("Unknown Axis: {}", a),
@@ -747,6 +585,11 @@ fn transform(min: i32, max: i32, val: i32) -> f32 {
     let (value, full) = deadzone(min, max, val);
     // Modify integer range from (-(full) thru (full)) to -127 to 127
     ((value * 127) / full).max(-127).min(127) as f32 / 127.0
+}
+
+fn transform2(min: i32, max: i32, val: i32) -> f32 {
+    // Modify integer range from (-(full) thru (full)) to 0 to 255
+    ((val * 255) / (max - min)).max(0).min(255) as f32 / 255.0
 }
 
 #[cfg(test)]
