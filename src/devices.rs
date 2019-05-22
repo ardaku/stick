@@ -402,21 +402,63 @@ impl Port {
         let manager = NativeManager::new();
         let controllers = vec![];
 
-        Port {
+        let mut port = Port {
             manager,
             controllers,
+        };
+
+        for stick in 0..port.manager.num_plugged_in() {
+            port.add_stick(stick);
         }
+
+        port
+    }
+
+    fn add_stick(&mut self, index: usize) {
+        let (min, max, _) = self.manager.get_abs(index);
+
+        self.controllers.resize_with((index + 1).max(self.controllers.len()), Default::default);
+
+        self.controllers[index] = Device {
+            native_handle: index as u32,
+            hardware_id: self.manager.get_id(index).0,
+            abs_min: min,
+            abs_max: max,
+
+            joyx: std::sync::atomic::AtomicUsize::new(0),
+            joyy: std::sync::atomic::AtomicUsize::new(0),
+            camx: std::sync::atomic::AtomicUsize::new(0),
+            camy: std::sync::atomic::AtomicUsize::new(0),
+            trgl: std::sync::atomic::AtomicUsize::new(0),
+            trgr: std::sync::atomic::AtomicUsize::new(0),
+            btns: std::sync::atomic::AtomicUsize::new(0),
+        };
     }
 
     /// Block thread until input is available.
-    pub fn poll(&mut self) -> u16 {
+    pub fn poll(&mut self) -> Option<u16> {
         if let Some(fd) = crate::ffi::epoll_wait(self.manager.fd) {
+            if fd == self.manager.inotify { // not a joystick (one's been plugged in).
+                let (is_add, index) = crate::ffi::inotify_read(&mut self.manager)?;
+                println!("Controller Count Changed {} {}", is_add, index);
+
+                if is_add {
+                    // FOR TESTING
+                    // println!("s{:08X}", self.manager.get_id(added).0);
+                    self.add_stick(index);
+                    return Some(index as u16);
+                } else {
+                    return None;
+                }
+            }
+
             for i in 0..self.controllers.len() {
                 let (devfd, is_out, ne)
                     = self.manager.get_fd(self.controllers[i].native_handle as usize);
 
                 if ne {
-                    panic!("Bad File descriptor (joystick don't exist)");
+                    continue;
+//                    panic!("Bad File descriptor (joystick don't exist)");
                 }
 
                 if is_out {
@@ -430,13 +472,14 @@ impl Port {
 
                 while joystick_poll_event(fd, &mut self.controllers[i]) {}
 
-                return i as u16;
+                return Some(i as u16);
             }
         }
-        panic!("Epoll returned when there wasn't any events!");
+        return None;
+//        panic!("Epoll returned when there wasn't any events!");
     }
 
-    /// Get the number of devices currently plugged in, and update number if needed.
+/*    /// Get the number of devices currently plugged in, and update number if needed.
     pub fn update(&mut self) -> u16 {
         for mut controller in &mut self.controllers {
             let (fd, is_out, ne) = self.manager.get_fd(controller.native_handle as usize);
@@ -485,7 +528,7 @@ impl Port {
         }
 
         self.controllers.len() as u16
-    }
+    }*/
 
     /// Get the state of a device
     pub fn get(&self, stick: u16) -> &Device {

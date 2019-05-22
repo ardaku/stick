@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](https://free.plopgrizzly.com/s
 
 ## [Unreleased]
 ### Added
+- `poll()` method to block until an event is received from any controller.
 ### Removed
+- Pan separate from camera Y.
 ### Changed
 ### Fixed
 

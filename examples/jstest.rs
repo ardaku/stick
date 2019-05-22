@@ -4,14 +4,12 @@ fn main() {
     // Connect to all devices.
     let mut port = Port::new();
 
-    port.update();
+//    port.update();
 
     // Loop showing state of all devices.
     loop {
-        println!("Looking...");
-
         // Cycle through all currently plugged in devices.
-        let id = port.poll();
+        let id = if let Some(a) = port.poll() { a } else { continue };
 
         println!("{}: {}", id, port.get(id));
 
