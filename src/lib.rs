@@ -15,22 +15,22 @@ pub use devices::{Btn, Device, Port};
 #[cfg(target_os = "android")]
 mod ffi {
     mod android;
-    pub use self::android::NativeManager;
+    pub use self::android::*;
 }
 #[cfg(all(not(target_os = "macos"), unix))]
 mod ffi {
     mod linux;
-    pub use self::linux::NativeManager;
+    pub use self::linux::*;
 }
 #[cfg(target_os = "macos")]
 mod ffi {
     mod macos;
-    pub use self::macos::NativeManager;
+    pub use self::macos::*;
 }
 #[cfg(target_os = "windows")]
 mod ffi {
     mod windows;
-    pub use self::windows::NativeManager;
+    pub use self::windows::*;
 }
 
 pub(crate) use self::ffi::NativeManager;

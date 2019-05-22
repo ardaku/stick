@@ -28,12 +28,16 @@ impl PartialEq for Device {
 }
 
 pub struct NativeManager {
+    // Epoll File Descriptor.
+    pub(crate) fd: i32,
+    // Controller File Descriptors.
     devices: Vec<Device>,
 }
 
 impl NativeManager {
     pub fn new() -> NativeManager {
         NativeManager {
+            fd: epoll_new(),
             devices: Vec::new(),
         }
     }
@@ -93,6 +97,7 @@ impl NativeManager {
     pub fn disconnect(&mut self, fd: i32) {
         for i in 0..self.devices.len() {
             if self.devices[i].fd == fd {
+                epoll_del(self.fd, fd);
                 joystick_drop(fd);
                 self.devices[i].name = None;
                 return;
@@ -118,6 +123,7 @@ impl NativeManager {
             r += 1;
         }
 
+        epoll_add(self.fd, device.fd);
         self.devices.push(device);
 
         r
@@ -128,6 +134,7 @@ impl Drop for NativeManager {
         while let Some(device) = self.devices.pop() {
             self.disconnect(device.fd);
         }
+        unsafe { close(self.fd); }
     }
 }
 
@@ -220,63 +227,82 @@ fn joystick_drop(fd: i32) {
     }
 }
 
-/*fn joystick_poll_event(fd: i32, state: &mut State) -> bool {
-    let mut js = unsafe { mem::uninitialized() };
+// // // // // //
+//    EPOLL    //
+// // // // // //
 
-    let bytes = unsafe { read(fd, &mut js, mem::size_of::<Event>()) };
+#[repr(C)]
+union EpollData {
+    ptr: *mut std::ffi::c_void,
+    fd: i32,
+    uint32: u32,
+    uint64: u64,
+}
 
-    if bytes != (mem::size_of::<Event>() as isize) {
-        return false;
+#[repr(C)]
+struct EpollEvent {
+    events: u32,        /* Epoll events */
+    data: EpollData,    /* User data variable */
+}
+
+extern "C" {
+    fn epoll_ctl(epfd: i32, op: i32, fd: i32, event: *mut EpollEvent) -> i32;
+}
+
+fn epoll_new() -> i32 {
+    extern "C" {
+        fn epoll_create1(flags: i32) -> i32;
     }
 
-    match js.ev_type {
-        // button press / release (key)
-        0x01 => {
-            println!("EV CODE {}", js.ev_code);
+    let fd = unsafe { epoll_create1(0) };
 
-            let newstate = js.ev_value == 1;
-
-            match js.ev_code - 0x120 {
-                0 => state.execute = newstate,
-                1 => state.accept = newstate,
-                2 => state.cancel = newstate,
-                3 => state.trigger = newstate,
-                4 => state.l[0] = newstate,
-                5 => state.r[0] = newstate,
-                7 => state.r[1] = newstate,
-                9 => state.menu = newstate,
-                // ignore, duplicate of hat axis
-                12 | 13 | 14 | 15 => {}
-                a => println!("Unknown Button: {}", a),
-            }
-        }
-        // axis move (abs)
-        0x03 => {
-            let value = transform(state.min, state.max, js.ev_value as i32);
-
-            match js.ev_code {
-                0 => state.move_xy.0 = value,
-                1 => state.move_xy.1 = value,
-                2 => state.cam_xy.1 = value,
-                3 => state.left_throttle = value,
-                4 => state.right_throttle = value,
-                5 => state.cam_xy.0 = value,
-                16 => {
-                    state.right = js.ev_value > 0;
-                    state.left = js.ev_value < 0;
-                }
-                17 => {
-                    state.up = js.ev_value < 0;
-                    state.down = js.ev_value > 0;
-                }
-                // precision axis, maybe implement eventually.
-                40 => {}
-                a => println!("Unknown Axis: {}", a),
-            }
-        }
-        // ignore
-        _ => {}
+    if fd == -1 {
+        panic!("Couldn't create epoll!");
     }
 
-    true
-}*/
+    fd
+}
+
+fn epoll_add(epoll: i32, newfd: i32) {
+    let mut event = EpollEvent {
+        events: 0x001 /*EPOLLIN*/,
+        data: EpollData { fd: newfd },
+    };
+
+    if unsafe { epoll_ctl(epoll, 1 /*EPOLL_CTL_ADD*/, newfd, &mut event) } == -1
+    {
+        unsafe { close(newfd); }
+        panic!("Failed to add file descriptor to epoll");
+    }
+}
+
+fn epoll_del(epoll: i32, newfd: i32) {
+    let mut event = EpollEvent {
+        events: 0x001 /*EPOLLIN*/,
+        data: EpollData { fd: newfd },
+    };
+
+    if unsafe { epoll_ctl(epoll, 2 /*EPOLL_CTL_DEL*/, newfd, &mut event) } == -1
+    {
+        unsafe { close(newfd); }
+        panic!("Failed to add file descriptor to epoll");
+    }
+}
+
+pub(crate) fn epoll_wait(epoll_fd: i32) -> Option<i32> {
+    extern "C" {
+        fn epoll_wait(epfd: i32, events: *mut EpollEvent,
+                      maxevents: i32, timeout: i32) -> i32;
+    }
+
+    let mut events: EpollEvent = EpollEvent {
+        events: 0,
+        data: EpollData { fd: 0 },
+    };
+
+    if unsafe { epoll_wait(epoll_fd, &mut events, 1 /*MAX_EVENTS*/, -1) } == 1 {
+        return Some(unsafe { events.data.fd });
+    } else {
+        return None;
+    }
+}
