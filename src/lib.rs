@@ -1,7 +1,5 @@
 //! A platform-agnostic joystick / gamepad / controller library for Rust.
 
-#![allow(clippy::cast_lossless)]
-#![allow(clippy::new_without_default)]
 #![warn(missing_docs)]
 #![doc(
     html_logo_url = "https://jeronaldaron.github.io/stick/res/icon.svg",
@@ -10,7 +8,7 @@
 
 mod devices;
 
-pub use devices::{Btn, Device, Port};
+pub use devices::{Btn, Device, Port, CONTROLLER_MAX};
 
 #[cfg(target_os = "android")]
 mod ffi {

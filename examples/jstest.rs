@@ -13,6 +13,8 @@ fn main() {
             continue;
         };
 
-        println!("{}: {}", id, port.get(id));
+        if let Some(state) = port.get(id) {
+            println!("{}: {}", id, state);
+        }
     }
 }

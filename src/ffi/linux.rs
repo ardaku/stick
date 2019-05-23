@@ -1,6 +1,7 @@
-use std::ffi::CString;
 use std::fs;
 use std::mem;
+
+// use crate::devices::MAX_JS;
 
 extern "C" {
     fn open(pathname: *const u8, flags: i32) -> i32;
@@ -51,7 +52,6 @@ impl NativeManager {
 
             // An evdev device.
             if path_str.ends_with("-event-joystick") {
-                println!("js");
                 let mut event = Event {
                     wd: 0,       /* Watch descriptor */
                     mask: 0x100, /* Mask describing event */
@@ -62,10 +62,9 @@ impl NativeManager {
                 };
 
                 let path_str = path_str.to_string().into_bytes();
+                let slice_len = path_str.len().min(255);
 
-                for i in 0..path_str.len().min(255) {
-                    event.name[i] = path_str[i];
-                }
+                event.name[..slice_len].clone_from_slice(&path_str[..slice_len]);
 
                 inotify_read2(&mut nm, event);
             }
@@ -151,7 +150,7 @@ fn joystick_id(fd: i32) -> (u32, bool) {
         return (0, true);
     }
 
-    (((a[1] as u32) << 16) | (a[2] as u32), false)
+    (((u32::from(a[1])) << 16) | (u32::from(a[2])), false)
 }
 
 fn joystick_abs(fd: i32) -> (i32, i32, bool) {
@@ -267,9 +266,9 @@ pub(crate) fn epoll_wait(epoll_fd: i32) -> Option<i32> {
         epoll_wait(epoll_fd, &mut events, 1 /*MAX_EVENTS*/, -1)
     } == 1
     {
-        return Some(unsafe { events.data.fd });
+        Some(unsafe { events.data.fd })
     } else {
-        return None;
+        None
     }
 }
 
@@ -289,7 +288,7 @@ fn inotify_new() -> i32 {
         inotify_add_watch(
             fd,
             b"/dev/input/by-id/\0".as_ptr() as *const _,
-            0x00000100 | 0x00000200,
+            0x0000_0100 | 0x0000_0200,
         )
     } == -1
     {
@@ -340,11 +339,11 @@ fn inotify_read2(port: &mut NativeManager, ev: Event) -> Option<(bool, usize)> {
     let namer = String::from_utf8_lossy(&name[0..length]);
 
     let mut device = Device {
-        name: name,
+        name,
         fd: unsafe { open(name.as_ptr() as *const _, 0) },
     };
 
-    if namer.ends_with("-event-joystick") == false || ev.mask != 0x00000100 {
+    if !namer.ends_with("-event-joystick") || ev.mask != 0x0000_0100 {
         return None;
     }
 

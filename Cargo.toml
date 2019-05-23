@@ -7,7 +7,7 @@
 
 [package]
 name = "stick"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Jeron Aldaron Lau <jeronaldaron@gmail.com>"]
 edition = "2018"
 
