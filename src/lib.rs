@@ -1,4 +1,4 @@
-//! A platform-agnostic joystick / gamepad / controller library for Rust.
+//! Stick is a cross-platform Rust library for getting joystick, gamepad, or other controller input.
 
 #![warn(missing_docs)]
 #![doc(

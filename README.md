@@ -1,8 +1,9 @@
 # Stick
 ## About
-Stick is a Rust library for getting joystick, gamepad, or other controller input.
+Stick is a cross-platform Rust library for getting joystick, gamepad, or other controller input.
 
 ## Features
+- Asynchronously get events from multiple joysticks on one thread, joystick state shared via atomics to the other threads.
 - Get controller input (Linux)
 - Remap controller input (Linux)
 - Connect to multiple controllers (Linux)
@@ -23,12 +24,15 @@ fn main() {
     // Loop showing state of all devices.
     loop {
         // Cycle through all currently plugged in devices.
-        for i in 0..port.update() {
-            let device = port.get(i);
-            println!("{}: {}", i, device);
-        }
+        let id = if let Some(a) = port.poll() {
+            a
+        } else {
+            continue;
+        };
 
-        std::thread::sleep(std::time::Duration::from_millis(16));
+        if let Some(state) = port.get(id) {
+            println!("{}: {}", id, state);
+        }
     }
 }
 ```
