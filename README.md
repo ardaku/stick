@@ -45,6 +45,7 @@ fn main() {
 - PLATFORM: MacOS
 - PLATFORM: Android
 - PLATFORM: Nintendo switch
+- PLATFORM: Web Assembly
 
 ## Links
 - [Website](https://aldarobot.plopgrizzly.com/stick)
