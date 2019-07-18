@@ -246,18 +246,18 @@ impl Device {
 
 // Adjust atomic float.
 fn afloat(float: &AtomicUsize, fnc: &Fn(f32) -> f32) {
-    let old: [u8; 8] = float.load(Ordering::Relaxed).to_ne_bytes();
+    let old: &[u8] = &float.load(Ordering::Relaxed).to_ne_bytes();
     let old: f32 = f32::from_bits(u32::from_ne_bytes([old[0], old[1], old[2], old[3]]));
 
     let new: [u8; 4] = fnc(old).to_bits().to_ne_bytes();
-    let new: usize = usize::from_ne_bytes([new[0], new[1], new[2], new[3], 0, 0, 0, 0]);
+    let new: u32 = u32::from_ne_bytes([new[0], new[1], new[2], new[3]]);
 
-    float.store(new, Ordering::Relaxed);
+    float.store(new as usize, Ordering::Relaxed);
 }
 
 // Get atomic float.
 fn gfloat(float: &AtomicUsize) -> f32 {
-    let rtn: [u8; 8] = float.load(Ordering::Relaxed).to_ne_bytes();
+    let rtn: &[u8] = &float.load(Ordering::Relaxed).to_ne_bytes();
     let rtn: f32 = f32::from_bits(u32::from_ne_bytes([rtn[0], rtn[1], rtn[2], rtn[3]]));
     rtn
 }
