@@ -2,11 +2,15 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://free.plopgrizzly.com/semver/).
+and this project adheres to [Semantic Versioning](https://code.plopgrizzly.com/semver/).
 
 ## [Unreleased]
 ### TODO
 - When a joystick is removed, add it to a garbage array.  This way we can replace "first-open" index with "last-used" index.  This will also allow users to swap out their controller and still have it connected to the same player in a video game.
+
+## [0.7.1] - 2019-07-18
+### Fixed
+- Not compiling for 32-bit architecture.
 
 ## [0.7.0] - 2019-05-22
 ### Added

@@ -64,7 +64,8 @@ impl NativeManager {
                 let path_str = path_str.to_string().into_bytes();
                 let slice_len = path_str.len().min(255);
 
-                event.name[..slice_len].clone_from_slice(&path_str[..slice_len]);
+                event.name[..slice_len]
+                    .clone_from_slice(&path_str[..slice_len]);
 
                 inotify_read2(&mut nm, event);
             }
@@ -257,7 +258,12 @@ fn epoll_del(epoll: i32, newfd: i32) {
 
 pub(crate) fn epoll_wait(epoll_fd: i32) -> Option<i32> {
     extern "C" {
-        fn epoll_wait(epfd: i32, events: *mut EpollEvent, maxevents: i32, timeout: i32) -> i32;
+        fn epoll_wait(
+            epfd: i32,
+            events: *mut EpollEvent,
+            maxevents: i32,
+            timeout: i32,
+        ) -> i32;
     }
 
     let mut events: EpollEvent = unsafe { std::mem::uninitialized() };

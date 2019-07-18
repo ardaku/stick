@@ -2,8 +2,8 @@
 
 #![warn(missing_docs)]
 #![doc(
-    html_logo_url = "https://jeronaldaron.github.io/stick/res/icon.svg",
-    html_favicon_url = "https://jeronaldaron.github.io/stick/res/icon.svg"
+    html_logo_url = "https://aldarobot.plopgrizzly.com/stick/res/controller.png",
+    html_favicon_url = "https://aldarobot.plopgrizzly.com/stick/res/controller.png"
 )]
 
 mod devices;

@@ -47,10 +47,10 @@ fn main() {
 - PLATFORM: Nintendo switch
 
 ## Links
-- [Website](https://jeronaldaron.github.io/stick)
+- [Website](https://aldarobot.plopgrizzly.com/stick)
 - [Cargo](https://crates.io/crates/stick)
 - [Documentation](https://docs.rs/stick)
-- [Change Log](https://jeronaldaron.github.io/stick/CHANGELOG)
-- [Contributors](https://jeronaldaron.github.io/stick/CONTRIBUTORS)
-- [Code of Conduct](https://jeronaldaron.github.io/stick/CODEOFCONDUCT)
+- [Change Log](https://aldarobot.plopgrizzly.com/stick/CHANGELOG)
+- [Contributors](https://aldarobot.plopgrizzly.com/stick/CONTRIBUTORS)
+- [Code of Conduct](https://aldarobot.plopgrizzly.com/stick/CODEOFCONDUCT)
 - [Join Cala on Zulip](https://plopgrizzly.zulipchat.com/join/pp13s6clnexk03tvlnrtjvi1)

@@ -24,7 +24,7 @@ struct Event {
 ///
 /// Example controller:
 ///
-/// <img src="https://jeronaldaron.github.io/stick/res/controller.png" width="292">
+/// <img src="https://aldarobot.plopgrizzly.com/stick/res/controller.png" width="292">
 #[derive(Copy, Clone)]
 #[repr(u8)]
 pub enum Btn {
@@ -247,7 +247,8 @@ impl Device {
 // Adjust atomic float.
 fn afloat(float: &AtomicUsize, fnc: &Fn(f32) -> f32) {
     let old: &[u8] = &float.load(Ordering::Relaxed).to_ne_bytes();
-    let old: f32 = f32::from_bits(u32::from_ne_bytes([old[0], old[1], old[2], old[3]]));
+    let old: f32 =
+        f32::from_bits(u32::from_ne_bytes([old[0], old[1], old[2], old[3]]));
 
     let new: [u8; 4] = fnc(old).to_bits().to_ne_bytes();
     let new: u32 = u32::from_ne_bytes([new[0], new[1], new[2], new[3]]);
@@ -258,7 +259,8 @@ fn afloat(float: &AtomicUsize, fnc: &Fn(f32) -> f32) {
 // Get atomic float.
 fn gfloat(float: &AtomicUsize) -> f32 {
     let rtn: &[u8] = &float.load(Ordering::Relaxed).to_ne_bytes();
-    let rtn: f32 = f32::from_bits(u32::from_ne_bytes([rtn[0], rtn[1], rtn[2], rtn[3]]));
+    let rtn: f32 =
+        f32::from_bits(u32::from_ne_bytes([rtn[0], rtn[1], rtn[2], rtn[3]]));
     rtn
 }
 
@@ -326,7 +328,8 @@ impl Port {
         if let Some(fd) = crate::ffi::epoll_wait(self.manager.fd) {
             if fd == self.manager.inotify {
                 // not a joystick (one's been plugged in).
-                let (is_add, index) = crate::ffi::inotify_read(&mut self.manager)?;
+                let (is_add, index) =
+                    crate::ffi::inotify_read(&mut self.manager)?;
                 println!("Controller Count Changed {} {}", is_add, index);
 
                 if is_add {
@@ -506,7 +509,11 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
             let value = if device.hardware_id == 0x_0079_1844 {
                 // GameCube
                 let pad = (device.abs_max - device.abs_min) / 4;
-                transform(device.abs_min + pad, device.abs_max - pad, js.ev_value)
+                transform(
+                    device.abs_min + pad,
+                    device.abs_max - pad,
+                    js.ev_value,
+                )
             } else {
                 transform(device.abs_min, device.abs_max, js.ev_value)
             };
