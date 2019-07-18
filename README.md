@@ -13,7 +13,7 @@ Stick is a cross-platform Rust library for getting joystick, gamepad, or other c
 - CONTROLLER: PlayStation controller
 
 ## Getting Started
-```rs
+```rust
 // jstest.rs
 use stick::Port;
 
