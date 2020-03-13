@@ -166,15 +166,17 @@ fn joystick_abs(fd: i32) -> (i32, i32, bool) {
         resolution: i32,
     }
 
-    let mut a = unsafe { mem::uninitialized() };
-
     extern "C" {
         fn ioctl(fd: i32, request: usize, v: *mut AbsInfo) -> i32;
     }
 
-    if unsafe { ioctl(fd, 0x_8018_4540, &mut a) } == -1 {
-        return (0, 0, true);
-    }
+    let mut a = mem::MaybeUninit::uninit();
+    let a = unsafe {
+        if ioctl(fd, 0x_8018_4540, a.as_mut_ptr()) == -1 {
+            return (0, 0, true);
+        }
+        a.assume_init()
+    };
 
     (a.minimum, a.maximum, false)
 }
@@ -266,13 +268,13 @@ pub(crate) fn epoll_wait(epoll_fd: i32) -> Option<i32> {
         ) -> i32;
     }
 
-    let mut events: EpollEvent = unsafe { std::mem::uninitialized() };
+    let mut events: mem::MaybeUninit<EpollEvent> = mem::MaybeUninit::uninit();
 
     if unsafe {
-        epoll_wait(epoll_fd, &mut events, 1 /*MAX_EVENTS*/, -1)
+        epoll_wait(epoll_fd, events.as_mut_ptr(), 1 /*MAX_EVENTS*/, -1)
     } == 1
     {
-        Some(unsafe { events.data.fd })
+        Some(unsafe { events.assume_init().data.fd })
     } else {
         None
     }
@@ -382,9 +384,11 @@ pub(crate) fn inotify_read(port: &mut NativeManager) -> Option<(bool, usize)> {
         fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
     }
 
-    let mut ev = unsafe { std::mem::uninitialized() };
-
-    unsafe { read(port.inotify, &mut ev, std::mem::size_of::<Event>()) };
+    let mut ev = mem::MaybeUninit::uninit();
+    let ev = unsafe {
+        read(port.inotify, ev.as_mut_ptr(), mem::size_of::<Event>());
+        ev.assume_init()
+    };
 
     inotify_read2(port, ev)
 }

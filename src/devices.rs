@@ -1,7 +1,6 @@
 use super::NativeManager;
 
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicU32, AtomicUsize, AtomicBool, Ordering};
 
 /// Allow the up to the ridiculous number of 64 physical joysticks.
 pub const CONTROLLER_MAX: usize = 64;
@@ -82,16 +81,16 @@ pub struct Device {
     // 256 bits total
 
     // AXIS (Atomic f32)
-    joyx: AtomicUsize,
-    joyy: AtomicUsize,
-    camx: AtomicUsize,
-    camy: AtomicUsize,
-    trgl: AtomicUsize,
-    trgr: AtomicUsize,
+    joyx: AtomicU32,
+    joyy: AtomicU32,
+    camx: AtomicU32,
+    camy: AtomicU32,
+    trgl: AtomicU32,
+    trgr: AtomicU32,
     // BTNS (32 bits)
-    btns: AtomicUsize,
+    btns: AtomicU32,
     // Is it plugged in?
-    plug: AtomicUsize,
+    plug: AtomicBool,
 }
 
 impl std::fmt::Display for Device {
@@ -245,23 +244,15 @@ impl Device {
 }
 
 // Adjust atomic float.
-fn afloat(float: &AtomicUsize, fnc: &Fn(f32) -> f32) {
-    let old: &[u8] = &float.load(Ordering::Relaxed).to_ne_bytes();
-    let old: f32 =
-        f32::from_bits(u32::from_ne_bytes([old[0], old[1], old[2], old[3]]));
+fn afloat(float: &AtomicU32, fnc: &dyn Fn(f32) -> f32) {
+    let old = f32::from_bits(float.load(Ordering::Relaxed));
 
-    let new: [u8; 4] = fnc(old).to_bits().to_ne_bytes();
-    let new: u32 = u32::from_ne_bytes([new[0], new[1], new[2], new[3]]);
-
-    float.store(new as usize, Ordering::Relaxed);
+    float.store(fnc(old).to_bits(), Ordering::Relaxed);
 }
 
 // Get atomic float.
-fn gfloat(float: &AtomicUsize) -> f32 {
-    let rtn: &[u8] = &float.load(Ordering::Relaxed).to_ne_bytes();
-    let rtn: f32 =
-        f32::from_bits(u32::from_ne_bytes([rtn[0], rtn[1], rtn[2], rtn[3]]));
-    rtn
+fn gfloat(float: &AtomicU32) -> f32 {
+    f32::from_bits(float.load(Ordering::Relaxed))
 }
 
 /// An interface to all joystick, gamepad and controller devices.
@@ -312,14 +303,14 @@ impl Port {
             abs_min: min,
             abs_max: max,
 
-            joyx: AtomicUsize::new(0),
-            joyy: AtomicUsize::new(0),
-            camx: AtomicUsize::new(0),
-            camy: AtomicUsize::new(0),
-            trgl: AtomicUsize::new(0),
-            trgr: AtomicUsize::new(0),
-            btns: AtomicUsize::new(0),
-            plug: AtomicUsize::new(1),
+            joyx: AtomicU32::new(0),
+            joyy: AtomicU32::new(0),
+            camx: AtomicU32::new(0),
+            camy: AtomicU32::new(0),
+            trgl: AtomicU32::new(0),
+            trgr: AtomicU32::new(0),
+            btns: AtomicU32::new(0),
+            plug: AtomicBool::new(true),
         };
     }
 
@@ -374,7 +365,6 @@ impl Port {
         if self.controllers[stick as usize]
             .plug
             .load(Ordering::Relaxed)
-            == 1
         {
             Some(&self.controllers[stick as usize])
         } else {
@@ -414,13 +404,12 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
         fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
     }
 
-    let mut js = unsafe { std::mem::uninitialized() };
-
-    let bytes = unsafe { read(fd, &mut js, std::mem::size_of::<Event>()) };
-
+    let mut js = std::mem::MaybeUninit::uninit();
+    let bytes = unsafe { read(fd, js.as_mut_ptr(), std::mem::size_of::<Event>()) };
     if bytes != (std::mem::size_of::<Event>() as isize) {
         return false;
     }
+    let js = unsafe { js.assume_init() };
 
     fn edit<B: Into<u8>>(is: bool, device: &mut Device, b: B) {
         if is {
