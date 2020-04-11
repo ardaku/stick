@@ -1,6 +1,6 @@
 # Stick
 #
-# Copyright © 2017-2019 Jeron Aldaron Lau.
+# Copyright © 2017-2020 Jeron Aldaron Lau.
 # Dual-licensed under either the MIT License or the Boost Software License,
 # Version 1.0. (See accompanying file LICENSE_BSL.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt, and accompanying file LICENSE_MIT.txt
@@ -12,21 +12,25 @@ version = "0.7.1"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 edition = "2018"
 
-license = "MIT / BSL-1.0"
+license = "MIT OR BSL-1.0"
 documentation = "https://docs.rs/stick"
-homepage = "https://aldarobot.plopgrizzly.com/stick"
-repository = "https://github.com/Aldarobot/stick"
+homepage = "https://libcala.github.io/stick"
+repository = "https://github.com/libcala/stick"
 
 readme = "README.md"
 description = "Get input from joysticks, gamepads, and other controllers"
 keywords = [
-	"interface", "joystick", "gamepad", "platform-agnostic", "controller"
+	"ux", "joystick", "gamepad", "platform-agnostic", "controller"
 ]
-categories = ["hardware-support"]
+categories = ["hardware-support", "asynchronous", "game-development"]
 
 exclude = [
 	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
 	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
 ]
 
-[dependencies]
+[target.'cfg(all(not(target_arch = "wasm32"), target_os = "linux"))'.dependencies]
+smelling-salts = { path = "../../RedAldaron/smelling-salts" }
+
+[dev-dependencies]
+pasts = "0.0.1"

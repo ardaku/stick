@@ -1,3 +1,5 @@
+use smelling_salts::{Watcher, Device as AsyncDevice};
+
 use std::fs;
 use std::mem;
 
@@ -12,14 +14,12 @@ extern "C" {
 #[repr(C)]
 struct Device {
     name: [u8; 256 + 17],
-    fd: i32,
+    async_device: AsyncDevice,
 }
 
 pub struct NativeManager {
-    // Inotify File descriptor.
-    pub(crate) inotify: i32,
-    // Epoll File Descriptor.
-    pub(crate) fd: i32,
+    // Inotify Device.
+    pub(crate) async_device: AsyncDevice,
     // Controller File Descriptors.
     devices: Vec<Device>,
 }
@@ -27,13 +27,11 @@ pub struct NativeManager {
 impl NativeManager {
     pub fn new() -> NativeManager {
         let inotify = inotify_new();
-        let fd = epoll_new();
-
-        epoll_add(fd, inotify);
+        let watcher = Watcher::new().input();
+        let async_device = AsyncDevice::new(inotify, watcher);
 
         let mut nm = NativeManager {
-            inotify,
-            fd,
+            async_device,
             devices: Vec::new(),
         };
 
@@ -78,7 +76,7 @@ impl NativeManager {
         if id >= self.devices.len() {
             (0, true)
         } else {
-            let (a, b) = joystick_id(self.devices[id].fd);
+            let (a, b) = joystick_id(self.devices[id].async_device.fd());
 
             (a, b)
         }
@@ -88,7 +86,7 @@ impl NativeManager {
         if id >= self.devices.len() {
             (0, 0, true)
         } else {
-            joystick_abs(self.devices[id].fd)
+            joystick_abs(self.devices[id].async_device.fd())
         }
     }
 
@@ -96,7 +94,7 @@ impl NativeManager {
         let (_, unplug) = self.get_id(id);
 
         (
-            self.devices[id].fd,
+            self.devices[id].async_device.fd(),
             unplug,
             self.devices[id].name[0] == b'\0',
         )
@@ -108,8 +106,8 @@ impl NativeManager {
 
     pub fn disconnect(&mut self, fd: i32) -> usize {
         for i in 0..self.devices.len() {
-            if self.devices[i].fd == fd {
-                epoll_del(self.fd, fd);
+            if self.devices[i].async_device.fd() == fd {
+                self.async_device.old();
                 joystick_drop(fd);
                 self.devices[i].name[0] = b'\0';
                 return i;
@@ -122,10 +120,12 @@ impl NativeManager {
 impl Drop for NativeManager {
     fn drop(&mut self) {
         while let Some(device) = self.devices.pop() {
-            self.disconnect(device.fd);
+            self.disconnect(device.async_device.fd());
         }
         unsafe {
-            close(self.fd);
+            let fd = self.async_device.fd();
+            self.async_device.old();
+            close(fd);
         }
     }
 }
@@ -188,98 +188,6 @@ fn joystick_drop(fd: i32) {
     }
 }
 
-// // // // // //
-//    EPOLL    //
-// // // // // //
-
-#[repr(C)]
-union EpollData {
-    ptr: *mut std::ffi::c_void,
-    fd: i32,
-    uint32: u32,
-    uint64: u64,
-}
-
-#[repr(C)]
-struct EpollEvent {
-    events: u32,     /* Epoll events */
-    data: EpollData, /* User data variable */
-}
-
-extern "C" {
-    fn epoll_ctl(epfd: i32, op: i32, fd: i32, event: *mut EpollEvent) -> i32;
-}
-
-fn epoll_new() -> i32 {
-    extern "C" {
-        fn epoll_create1(flags: i32) -> i32;
-    }
-
-    let fd = unsafe { epoll_create1(0) };
-
-    if fd == -1 {
-        panic!("Couldn't create epoll!");
-    }
-
-    fd
-}
-
-fn epoll_add(epoll: i32, newfd: i32) {
-    let mut event = EpollEvent {
-        events: 0x001, /*EPOLLIN*/
-        data: EpollData { fd: newfd },
-    };
-
-    if unsafe {
-        epoll_ctl(epoll, 1 /*EPOLL_CTL_ADD*/, newfd, &mut event)
-    } == -1
-    {
-        unsafe {
-            close(newfd);
-        }
-        panic!("Failed to add file descriptor {} to epoll {}", newfd, epoll);
-    }
-}
-
-fn epoll_del(epoll: i32, newfd: i32) {
-    let mut event = EpollEvent {
-        events: 0x001, /*EPOLLIN*/
-        data: EpollData { fd: newfd },
-    };
-
-    if unsafe {
-        epoll_ctl(epoll, 2 /*EPOLL_CTL_DEL*/, newfd, &mut event)
-    } == -1
-    {
-        unsafe {
-            close(newfd);
-        }
-        panic!("Failed to add file descriptor to epoll");
-    }
-}
-
-pub(crate) fn epoll_wait(epoll_fd: i32) -> Option<i32> {
-    extern "C" {
-        fn epoll_wait(
-            epfd: i32,
-            events: *mut EpollEvent,
-            maxevents: i32,
-            timeout: i32,
-        ) -> i32;
-    }
-
-    let mut events: mem::MaybeUninit<EpollEvent> = mem::MaybeUninit::uninit();
-
-    if unsafe {
-        epoll_wait(epoll_fd, events.as_mut_ptr(), 1 /*MAX_EVENTS*/, -1)
-    } == 1
-    {
-        Some(unsafe { events.assume_init().data.fd })
-    } else {
-        None
-    }
-}
-
 fn inotify_new() -> i32 {
     extern "C" {
         fn inotify_init() -> i32;
@@ -316,6 +224,7 @@ struct Event {
     name: [u8; 256], /* Optional null-terminated name */
 }
 
+// Add or remove joystick
 fn inotify_read2(port: &mut NativeManager, ev: Event) -> Option<(bool, usize)> {
     let mut name = [0; 256 + 17];
     name[0] = b'/';
@@ -345,27 +254,23 @@ fn inotify_read2(port: &mut NativeManager, ev: Event) -> Option<(bool, usize)> {
     }
 
     let namer = String::from_utf8_lossy(&name[0..length]);
-
-    let mut device = Device {
-        name,
-        fd: unsafe { open(name.as_ptr() as *const _, 0) },
-    };
-
+    let mut fd = unsafe { open(name.as_ptr() as *const _, 0) };
     if !namer.ends_with("-event-joystick") || ev.mask != 0x0000_0100 {
         return None;
     }
 
-    if device.fd == -1 {
+    if fd == -1 {
         // Avoid race condition
         std::thread::sleep(std::time::Duration::from_millis(16));
-        device.fd = unsafe { open(name.as_ptr() as *const _, 0) };
-        if device.fd == -1 {
+        fd = unsafe { open(name.as_ptr() as *const _, 0) };
+        if fd == -1 {
             return None;
         }
     }
 
-    joystick_async(device.fd);
-    epoll_add(port.fd, device.fd);
+    joystick_async(fd);
+    let async_device = AsyncDevice::new(fd, Watcher::new().input());
+    let device = Device { name, async_device };
 
     for i in 0..port.devices.len() {
         if port.devices[i].name[0] == b'\0' {
@@ -386,7 +291,7 @@ pub(crate) fn inotify_read(port: &mut NativeManager) -> Option<(bool, usize)> {
 
     let mut ev = mem::MaybeUninit::uninit();
     let ev = unsafe {
-        read(port.inotify, ev.as_mut_ptr(), mem::size_of::<Event>());
+        read(port.async_device.fd(), ev.as_mut_ptr(), mem::size_of::<Event>());
         ev.assume_init()
     };
 

@@ -315,9 +315,9 @@ impl Port {
     }
 
     /// Block thread until input is available.
-    pub fn poll(&mut self) -> Option<u8> {
-        if let Some(fd) = crate::ffi::epoll_wait(self.manager.fd) {
-            if fd == self.manager.inotify {
+    pub async fn input(&mut self) -> Option<u8> {
+        if let Some(fd) = self.manager.async_device {
+            if fd == self.manager.async_device.fd() {
                 // not a joystick (one's been plugged in).
                 let (is_add, index) =
                     crate::ffi::inotify_read(&mut self.manager)?;
