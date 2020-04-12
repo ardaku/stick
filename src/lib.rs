@@ -1,10 +1,13 @@
-//! Stick is a cross-platform Rust library for getting joystick, gamepad, or other controller input.
-
 #![warn(missing_docs)]
 #![doc(
-    html_logo_url = "https://aldarobot.plopgrizzly.com/stick/res/controller.png",
-    html_favicon_url = "https://aldarobot.plopgrizzly.com/stick/res/controller.png"
+    html_logo_url = "https://libcala.github.io/stick/res/controller.png",
+    html_favicon_url = "https://libcala.github.io/stick/res/controller.png"
 )]
+
+// New modules
+mod event;
+pub use event::Event;
+
 
 mod devices;
 

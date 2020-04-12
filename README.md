@@ -1,9 +1,11 @@
 # Stick
 ## About
-Stick is a cross-platform Rust library for getting joystick, gamepad, or other controller input.
+Stick is a cross-platform Rust library for getting joystick, gamepad, or other
+controller input.
 
 ## Features
-- Asynchronously get events from multiple joysticks on one thread, joystick state shared via atomics to the other threads.
+- Asynchronously get events from multiple joysticks on one thread, joystick
+  state shared via atomics to the other threads.
 - Get controller input (Linux)
 - Remap controller input (Linux)
 - Connect to multiple controllers (Linux)
@@ -48,10 +50,10 @@ fn main() {
 - PLATFORM: Web Assembly
 
 ## Links
-- [Website](https://aldarobot.plopgrizzly.com/stick)
+- [Website](https://libcala.github.io/stick)
 - [Cargo](https://crates.io/crates/stick)
 - [Documentation](https://docs.rs/stick)
-- [Change Log](https://aldarobot.plopgrizzly.com/stick/CHANGELOG)
-- [Contributors](https://aldarobot.plopgrizzly.com/stick/CONTRIBUTORS)
-- [Code of Conduct](https://aldarobot.plopgrizzly.com/stick/CODEOFCONDUCT)
+- [Change Log](https://libcala.github.io/stick/CHANGELOG)
+- [Contributors](https://libcala.github.io/stick/CONTRIBUTORS)
+- [Code of Conduct](https://libcala.github.io/stick/CODEOFCONDUCT)
 - [Join Cala on Zulip](https://plopgrizzly.zulipchat.com/join/pp13s6clnexk03tvlnrtjvi1)

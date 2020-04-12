@@ -30,7 +30,7 @@ exclude = [
 ]
 
 [target.'cfg(all(not(target_arch = "wasm32"), target_os = "linux"))'.dependencies]
-smelling-salts = { path = "../../RedAldaron/smelling-salts" }
+smelling-salts = { path = "../smelling-salts" }
 
 [dev-dependencies]
 pasts = "0.0.1"

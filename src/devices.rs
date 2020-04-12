@@ -23,7 +23,7 @@ struct Event {
 ///
 /// Example controller:
 ///
-/// <img src="https://aldarobot.plopgrizzly.com/stick/res/controller.png" width="292">
+/// <img src="https://libcala.github.io/stick/res/controller.png" width="292">
 #[derive(Copy, Clone)]
 #[repr(u8)]
 pub enum Btn {
@@ -99,89 +99,33 @@ impl std::fmt::Display for Device {
         let cam: (f32, f32) = (gfloat(&self.camx), gfloat(&self.camy));
         let lrt: (f32, f32) = (gfloat(&self.trgl), gfloat(&self.trgr));
 
-        let b_btn: char = if self.btn(Btn::B) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let a_btn: char = if self.btn(Btn::A) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let y_btn: char = if self.btn(Btn::Y) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let x_btn: char = if self.btn(Btn::X) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
+        fn button_symbol(state: Option<bool>) -> char {
+            if state == Some(true) {
+                '▣'
+            } else {
+                '□'
+            }
+        }
 
-        let dl: char = if self.btn(Btn::Left) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let dr: char = if self.btn(Btn::Right) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let du: char = if self.btn(Btn::Up) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let dd: char = if self.btn(Btn::Down) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
+        let b_btn: char = button_symbol(self.btn(Btn::B));
+        let a_btn: char = button_symbol(self.btn(Btn::A));
+        let y_btn: char = button_symbol(self.btn(Btn::Y));
+        let x_btn: char = button_symbol(self.btn(Btn::X));
 
-        let w_btn: char = if self.btn(Btn::W) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let z_btn: char = if self.btn(Btn::Z) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let l_btn: char = if self.btn(Btn::L) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let r_btn: char = if self.btn(Btn::R) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
+        let dl: char = button_symbol(self.btn(Btn::Left));
+        let dr: char = button_symbol(self.btn(Btn::Right));
+        let du: char = button_symbol(self.btn(Btn::Up));
+        let dd: char = button_symbol(self.btn(Btn::Down));
 
-        let d_btn: char = if self.btn(Btn::D) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let c_btn: char = if self.btn(Btn::C) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let f_btn: char = if self.btn(Btn::F) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
-        let e_btn: char = if self.btn(Btn::E) == Some(true) {
-            '▣'
-        } else {
-            '□'
-        };
+        let w_btn: char = button_symbol(self.btn(Btn::W));
+        let z_btn: char = button_symbol(self.btn(Btn::Z));
+        let l_btn: char = button_symbol(self.btn(Btn::L));
+        let r_btn: char = button_symbol(self.btn(Btn::R));
+
+        let d_btn: char = button_symbol(self.btn(Btn::D));
+        let c_btn: char = button_symbol(self.btn(Btn::C));
+        let f_btn: char = button_symbol(self.btn(Btn::F));
+        let e_btn: char = button_symbol(self.btn(Btn::E));
 
         write!(
             f,
