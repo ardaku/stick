@@ -119,9 +119,11 @@ impl NativeManager {
 }
 impl Drop for NativeManager {
     fn drop(&mut self) {
-        while let Some(device) = self.devices.pop() {
-            self.disconnect(device.async_device.fd());
+        let fds: Vec<i32> = self.devices.iter().map(|dev| dev.async_device.fd());
+        for fd in fds {
+            self.disconnect(fd);
         }
+        self.devices.clear();
         unsafe {
             let fd = self.async_device.fd();
             self.async_device.old();
