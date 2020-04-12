@@ -121,9 +121,11 @@ impl NativeManager {
 }
 impl Drop for NativeManager {
     fn drop(&mut self) {
-        while let Some(device) = self.devices.pop() {
-            self.disconnect(device.fd);
+        let fds: Vec<i32> = self.devices.iter().map(|dev| dev.fd).collect();
+        for fd in fds {
+            self.disconnect(fd);
         }
+        self.devices.clear();
         unsafe {
             close(self.fd);
         }
