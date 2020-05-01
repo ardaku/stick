@@ -34,6 +34,7 @@ pub(crate) use ffi::NativeManager;
     ),
     cfg_attr(target_os = "fuchsia", path = "ffi/fuchsia.rs"),
     cfg_attr(target_os = "redox", path = "ffi/redox.rs"),
-    cfg_attr(target_os = "none", path = "ffi/none.rs")
+    cfg_attr(target_os = "none", path = "ffi/none.rs"),
+    cfg_attr(target_os = "dummy", path = "ffi/dummy.rs")
 )]
 mod ffi;
