@@ -1,12 +1,24 @@
-use stick::Port;
 use pasts;
+use stick::Gamepads;
 
 struct AppState {
     running: bool,
-    port: Port,
+    gamepads: Gamepads,
+    ctlrs: Vec<Pin<Box<&dyn StdGamepad>>>,
+}
+
+async fn connect(state: &mut AppState) {
+    // Wait for a new gamepad to be plugged in.
+    let ctlr = state.connections.await;
+    // Add gamepad to list of controllers.
+    state.ctlrs.push(Box::pin(ctlr));
 }
 
 async fn ctlr_event(state: &mut AppState) {
+    // Poll all of the plugged in controllers at once.
+    pasts::tasks!(while true; &state.ctlrs);
+    //
+
     let id = state.port.input().await.unwrap(); // FIXME
     if let Some(state) = state.port.get(id) {
         println!("{}: {}", id, state);
@@ -14,12 +26,13 @@ async fn ctlr_event(state: &mut AppState) {
 }
 
 async fn async_main() {
-    // Connect to all devices.
     let mut state = AppState {
         running: true,
-        port: Port::new(),
+        gamepads: Gamepads::new(),
+        ctlrs: Vec::new(),
     };
-    pasts::run!(state while state.running; ctlr_event);
+    // Look for new connections while checking current gamepads.
+    pasts::tasks!(state while state.running; [connect, ctlr_event]);
 }
 
 fn main() {

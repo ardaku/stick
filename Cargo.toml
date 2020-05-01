@@ -33,4 +33,4 @@ exclude = [
 smelling-salts = { path = "../smelling-salts" }
 
 [dev-dependencies]
-pasts = "0.0.1"
+pasts = { path = "../pasts" }

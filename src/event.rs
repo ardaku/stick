@@ -31,18 +31,18 @@ pub enum Event {
     R(bool),
 
     /// Far L Throttle - "Sneak" (Ctrl)
-    Lz(i8),
+    Lz(f32),
     /// Far R Throttle - "Precision Action" (Alt)
-    Rz(i8),
+    Rz(f32),
 
     /// Right Joystick (A / D)
-    MotionH(i8),
+    MotionH(f32),
     /// Left Joystick (W / S)
-    MotionV(i8),
+    MotionV(f32),
     /// Left Joystick (Mouse X Position)
-    CameraH(i8),
+    CameraH(f32),
     /// Right Joystick (Mouse Y Position)
-    CameraV(i8),
+    CameraV(f32),
 
     /// Left Joystick Button (Middle Click)
     MotionButton(bool),

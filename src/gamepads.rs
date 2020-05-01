@@ -1,4 +1,7 @@
-use crate::Gamepad;
+use std::task::Context;
+use std::future::Future;
+
+use crate::StdGamepad;
 use crate::ffi::NativeGamepads;
 
 /// All connected joysticks / gamepads / controllers.
@@ -11,15 +14,19 @@ use crate::ffi::NativeGamepads;
 /// in the bottom right because it's the easiest to reach, but which is the
 /// bottom and which is right vary by controller.  It generally makes the most
 /// sense for Action to be the left button, and Toggle to be the top button.
-pub struct Gamepads {
-    
-}
+pub struct Gamepads(NativeGamepad);
 
 impl Gamepads {
     /// Initiate a connection with the plugged-in gamepads.
-    pub fn new(emulated: &[Box<&dyn Gamepad>]) -> Self {
-        Gamepads {
-            
-        }
+    pub fn new(emulated: &[Box<&dyn StdGamepad>]) -> Self {
+        Gamepads(NativeGamepad::new())
+    }
+}
+
+impl Future for Gamepads {
+    type Output = &mut StdGamepad;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+        self.0.poll(cx)
     }
 }

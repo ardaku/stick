@@ -1,4 +1,6 @@
-//use std::mem;
+include!("dummy.rs");
+
+/*//use std::mem;
 
 use State;
 
@@ -231,4 +233,4 @@ impl Drop for NativeManager {
         //			destroy::joystick(self.native);
         //		}
     }
-}
+}*/

@@ -8,30 +8,32 @@
 mod event;
 pub use event::Event;
 
-
 mod devices;
 
 pub use devices::{Btn, Device, Port, CONTROLLER_MAX};
 
-#[cfg(target_os = "android")]
-mod ffi {
-    mod android;
-    pub use self::android::*;
-}
-#[cfg(all(not(target_os = "macos"), unix))]
-mod ffi {
-    mod linux;
-    pub use self::linux::*;
-}
-#[cfg(target_os = "macos")]
-mod ffi {
-    mod macos;
-    pub use self::macos::*;
-}
-#[cfg(target_os = "windows")]
-mod ffi {
-    mod windows;
-    pub use self::windows::*;
-}
+pub(crate) use ffi::NativeManager;
 
-pub(crate) use self::ffi::NativeManager;
+#[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    cfg_attr(target_os = "linux", path = "ffi/linux.rs"),
+    cfg_attr(target_os = "android", path = "ffi/android.rs"),
+    cfg_attr(target_os = "macos", path = "ffi/macos.rs"),
+    cfg_attr(target_os = "ios", path = "ffi/ios.rs"),
+    cfg_attr(target_os = "windows", path = "ffi/windows.rs"),
+    cfg_attr(
+        any(
+            target_os = "freebsd",
+            target_os = "dragonfly",
+            target_os = "bitrig",
+            target_os = "openbsd",
+            target_os = "netbsd"
+        ),
+        path = "ffi/bsd.rs"
+    ),
+    cfg_attr(target_os = "fuchsia", path = "ffi/fuchsia.rs"),
+    cfg_attr(target_os = "redox", path = "ffi/redox.rs"),
+    cfg_attr(target_os = "none", path = "ffi/none.rs")
+)]
+mod ffi;

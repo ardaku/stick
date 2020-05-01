@@ -1,6 +1,6 @@
 use super::NativeManager;
 
-use std::sync::atomic::{AtomicU32, AtomicUsize, AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
 
 /// Allow the up to the ridiculous number of 64 physical joysticks.
 pub const CONTROLLER_MAX: usize = 64;
@@ -349,7 +349,8 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
     }
 
     let mut js = std::mem::MaybeUninit::uninit();
-    let bytes = unsafe { read(fd, js.as_mut_ptr(), std::mem::size_of::<Event>()) };
+    let bytes =
+        unsafe { read(fd, js.as_mut_ptr(), std::mem::size_of::<Event>()) };
     if bytes != (std::mem::size_of::<Event>() as isize) {
         return false;
     }
@@ -498,31 +499,23 @@ fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
                 40 => {} // IGNORE: Duplicate axis.
                 a => {
                     if a == cam_x {
-                        afloat(&device.camx, &|_| {
-                            value
-                        });
+                        afloat(&device.camx, &|_| value);
                     } else if a == cam_y {
-                        afloat(&device.camy, &|_| {
-                            value
-                        });
+                        afloat(&device.camy, &|_| value);
                     } else if a == lrt_l {
                         if value2 > 0.99 {
                             edit(true, device, Btn::L)
                         } else {
                             edit(false, device, Btn::L)
                         }
-                        afloat(&device.trgl, &|_| {
-                            value2
-                        });
+                        afloat(&device.trgl, &|_| value2);
                     } else if a == lrt_r {
                         if value2 > 0.99 {
                             edit(true, device, Btn::R)
                         } else {
                             edit(false, device, Btn::R)
                         }
-                        afloat(&device.trgr, &|_| {
-                            value2
-                        });
+                        afloat(&device.trgr, &|_| value2);
                     }
                 } // println!("Unknown Axis: {}", a),
             }

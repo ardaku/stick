@@ -1,4 +1,4 @@
-use smelling_salts::{Watcher, Device as AsyncDevice};
+use smelling_salts::{Device as AsyncDevice, Watcher};
 
 use std::fs;
 use std::mem;
@@ -119,7 +119,8 @@ impl NativeManager {
 }
 impl Drop for NativeManager {
     fn drop(&mut self) {
-        let fds: Vec<i32> = self.devices.iter().map(|dev| dev.async_device.fd());
+        let fds: Vec<i32> =
+            self.devices.iter().map(|dev| dev.async_device.fd());
         for fd in fds {
             self.disconnect(fd);
         }
@@ -293,7 +294,11 @@ pub(crate) fn inotify_read(port: &mut NativeManager) -> Option<(bool, usize)> {
 
     let mut ev = mem::MaybeUninit::uninit();
     let ev = unsafe {
-        read(port.async_device.fd(), ev.as_mut_ptr(), mem::size_of::<Event>());
+        read(
+            port.async_device.fd(),
+            ev.as_mut_ptr(),
+            mem::size_of::<Event>(),
+        );
         ev.assume_init()
     };
 
