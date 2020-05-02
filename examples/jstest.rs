@@ -1,40 +1,30 @@
-use pasts;
-use stick::Gamepads;
+use pasts::prelude::*;
+use stick::{Port, Event};
 
-struct AppState {
-    running: bool,
-    gamepads: Gamepads,
-    ctlrs: Vec<Pin<Box<&dyn StdGamepad>>>,
-}
-
-async fn connect(state: &mut AppState) {
-    // Wait for a new gamepad to be plugged in.
-    let ctlr = state.connections.await;
-    // Add gamepad to list of controllers.
-    state.ctlrs.push(Box::pin(ctlr));
-}
-
-async fn ctlr_event(state: &mut AppState) {
-    // Poll all of the plugged in controllers at once.
-    pasts::tasks!(while true; &state.ctlrs);
-    //
-
-    let id = state.port.input().await.unwrap(); // FIXME
-    if let Some(state) = state.port.get(id) {
-        println!("{}: {}", id, state);
+async fn event_loop() {
+    let mut port = Port::new();
+    let mut gamepads = Vec::new();
+    'e: loop {
+        match [(&mut port).fut(), gamepads.select().fut()].select().await.1 {
+            (_, Event::Connect(gamepad)) => {
+                println!("Connected p{}, id: {:X}", gamepads.len(), gamepad.id());
+                gamepads.push(gamepad);
+            }
+            (id, Event::Disconnect) => {
+                println!("Disconnected p{}", id);
+                gamepads.swap_remove(id);
+            }
+            (id, Event::Quit) => {
+                println!("p{} ended the session", id);
+                break 'e;
+            }
+            (id, event) => {
+                println!("p{}: {}", id, event);
+            }
+        }
     }
 }
 
-async fn async_main() {
-    let mut state = AppState {
-        running: true,
-        gamepads: Gamepads::new(),
-        ctlrs: Vec::new(),
-    };
-    // Look for new connections while checking current gamepads.
-    pasts::tasks!(state while state.running; [connect, ctlr_event]);
-}
-
 fn main() {
-    <pasts::ThreadInterrupt as pasts::Interrupt>::block_on(async_main())
+    pasts::ThreadInterrupt::block_on(event_loop())
 }

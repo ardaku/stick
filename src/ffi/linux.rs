@@ -1,78 +1,427 @@
 use smelling_salts::{Device as AsyncDevice, Watcher};
 
 use std::fs;
-use std::mem;
+use std::fs::File;
+use std::mem::MaybeUninit;
+use std::collections::HashSet;
+use std::os::unix::io::{RawFd, IntoRawFd};
+use std::os::raw::{c_int, c_uint, c_ulong, c_ushort, c_void};
+use std::convert::TryInto;
+use std::task::{Poll, Context};
 
-// use crate::devices::MAX_JS;
+use crate::Event;
 
-extern "C" {
-    fn open(pathname: *const u8, flags: i32) -> i32;
-    fn close(fd: i32) -> i32;
-    fn fcntl(fd: i32, cmd: i32, v: i32) -> i32;
+#[repr(C)]
+struct TimeVal {
+    tv_sec: isize,
+    tv_usec: isize,
 }
 
 #[repr(C)]
-struct Device {
-    name: [u8; 256 + 17],
-    async_device: AsyncDevice,
+struct InputId { // struct input_id, from C.
+	bustype: u16,
+	vendor: u16,
+	product: u16,
+	version: u16,
 }
 
-pub struct NativeManager {
-    // Inotify Device.
-    pub(crate) async_device: AsyncDevice,
-    // Controller File Descriptors.
-    devices: Vec<Device>,
+#[repr(C)]
+struct EvdevEv { // struct input_event, from C.
+    ev_time: TimeVal,
+    ev_type: c_ushort,
+    ev_code: c_ushort,
+    ev_value: c_uint,
 }
 
-impl NativeManager {
-    pub fn new() -> NativeManager {
-        let inotify = inotify_new();
-        let watcher = Watcher::new().input();
-        let async_device = AsyncDevice::new(inotify, watcher);
+#[repr(C)]
+struct AbsInfo { // struct input_absinfo, from C.
+    value: i32,
+    minimum: u32,
+    maximum: u32,
+    fuzz: i32,
+    flat: i32,
+    resolution: i32,
+}
 
-        let mut nm = NativeManager {
-            async_device,
-            devices: Vec::new(),
-        };
+#[repr(C)]
+struct InotifyEv {
+    wd: i32,   /* Watch descriptor */
+    mask: u32, /* Mask describing event */
+    cookie: u32, /* Unique cookie associating related
+               events (for rename(2)) */
+    len: u32,        /* Size of name field */
+    name: [u8; 256], /* Optional null-terminated name */
+}
 
-        // Look for joysticks immediately.
-        let paths = fs::read_dir("/dev/input/by-id/");
-        let paths = if let Ok(paths) = paths {
-            paths
-        } else {
-            return nm;
-        };
+extern "C" {
+    // fn open(pathname: *const u8, flags: c_int) -> c_int;
+    fn read(fd: RawFd, buf: *mut c_void, count: usize) -> isize;
+    fn close(fd: RawFd) -> c_int;
+    fn fcntl(fd: RawFd, cmd: c_int, v: c_int) -> c_int;
+    fn ioctl(fd: RawFd, request: c_ulong, v: *mut c_void) -> c_int;
 
-        for path in paths {
-            let path_str = path.unwrap().path();
-            let path_str = path_str.file_name().unwrap();
-            let path_str = path_str.to_str().unwrap();
+    fn inotify_init1(flags: c_int) -> c_int;
+    fn inotify_add_watch(fd: RawFd, pathname: *const u8, mask: u32) -> c_int;
+}
 
-            // An evdev device.
-            if path_str.ends_with("-event-joystick") {
-                let mut event = Event {
-                    wd: 0,       /* Watch descriptor */
-                    mask: 0x100, /* Mask describing event */
-                    cookie: 0,   /* Unique cookie associating related
-                                 events (for rename(2)) */
-                    len: 0,         /* Size of name field */
-                    name: [0; 256], /* Optional null-terminated name */
-                };
+/// Port
+pub(crate) struct Port {
+    device: AsyncDevice,
+    connected: HashSet<String>,
+}
 
-                let path_str = path_str.to_string().into_bytes();
-                let slice_len = path_str.len().min(255);
-
-                event.name[..slice_len]
-                    .clone_from_slice(&path_str[..slice_len]);
-
-                inotify_read2(&mut nm, event);
-            }
+impl Port {
+    pub(super) fn new() -> Self {
+        // Create an inotify on the directory where gamepad filedescriptors are.
+        let inotify = unsafe { inotify_init1(0o0004000 /*IN_NONBLOCK*/) };
+        if inotify == -1 {
+            panic!("Couldn't create inotify (1)!");
         }
+        if unsafe {
+            inotify_add_watch(
+                inotify,
+                b"/dev/input/by-id/\0".as_ptr() as *const _,
+                0x0000_0100 | 0x0000_0200,
+            )
+        } == -1
+        {
+            panic!("Couldn't create inotify (2)!");
+        }
+        
+        // Create watcher, and register with fd as a "device".
+        let watcher = Watcher::new().input();
+        let device = AsyncDevice::new(inotify, watcher);
 
-        nm
+        // Start off with an empty hash set of connected devices.
+        let connected = HashSet::new();
+
+        // Return
+        Port { device, connected }
+    }
+    
+    pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<(usize, Event)> {
+        // Read an event.
+        let mut ev = MaybeUninit::<InotifyEv>::uninit();
+        let ev = unsafe {
+            if read(
+                self.device.fd(),
+                ev.as_mut_ptr().cast(),
+                std::mem::size_of::<InotifyEv>(),
+            ) <= 0 {
+                // Search directory for new controllers.
+                'fds: for file in fs::read_dir("/dev/input/by-id/").unwrap() {
+                    let file = file.unwrap().file_name().into_string().unwrap();
+                    if file.ends_with("-event-joystick") {
+                        // Found an evdev gamepad
+                        if self.connected.contains(&file) {
+                            // Already connected.
+                            continue 'fds;
+                        }
+                        // New gamepad
+                        let mut filename = "/dev/input/by-id/".to_string();
+                        filename.push_str(&file);
+                        let fd = File::open(filename).unwrap();
+                        self.connected.insert(file);
+                        return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
+                    }
+                }
+                // Register waker for this device
+                self.device.register_waker(cx.waker());
+                // If no new controllers found, return pending.
+                return Poll::Pending;
+            }
+            ev.assume_init()
+        };
+        
+        // Add or remove
+        if (ev.mask & 0x0000_0200) != 0 {
+            // Remove flag is set.
+            let mut file = "".to_string();
+            for c in ev.name.iter().cloned() {
+                if c == b'\0' {
+                    break;
+                }
+                let c: u32 = c.into();
+                file.push(c.try_into().unwrap());
+            }
+            self.connected.remove(&file);
+        }
+        if (ev.mask & 0x0000_0100) != 0 {
+            // Add flag is set.
+            let mut file = "/dev/input/by-id/".to_string();
+            let mut name = "".to_string();
+            for c in ev.name.iter().cloned() {
+                if c == b'\0' {
+                    break;
+                }
+                let c: u32 = c.into();
+                name.push(c.try_into().unwrap());
+            }
+            if name.ends_with("-event-joystick") {
+                // Found an evdev gamepad
+                if self.connected.contains(&name) {
+                    // Already connected.
+                    return self.poll(cx);
+                }
+                // New gamepad
+                file.push_str(&name);
+                let fd = File::open(&file).unwrap();
+                self.connected.insert(name);
+                return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
+            } else {
+                return self.poll(cx);
+            }
+        } else {
+            self.poll(cx)
+        }
+    }
+}
+
+impl Drop for Port {
+    fn drop(&mut self) {
+        let fd = self.device.fd();
+        self.device.old();
+        assert_ne!(unsafe { close(fd) }, -1);
+    }
+}
+
+/// Gamepad
+pub(crate) struct Gamepad {
+    device: AsyncDevice,
+    hardware_id: u32, // Which type of controller?
+    abs_min: c_int,
+    abs_range: c_int,
+    queued: Option<Event>,
+}
+
+impl Gamepad {
+    fn new(file: File) -> Self {
+        let fd = file.into_raw_fd();
+        // Enable evdev async.
+        assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
+        // Get the hardware id of this controller.
+        let mut a = MaybeUninit::<InputId>::uninit();
+        assert_ne!(unsafe { ioctl(fd, 0x_8008_4502, a.as_mut_ptr().cast()) }, -1);
+        let a = unsafe { a.assume_init() };
+        let hardware_id = ((u32::from(a.vendor)) << 16) | (u32::from(a.product));
+        // Get the min and max absolute values for axis.
+        let mut a = MaybeUninit::<AbsInfo>::uninit();
+        assert_ne!(unsafe { ioctl(fd, 0x_8018_4540, a.as_mut_ptr().cast()) }, -1);
+        let a = unsafe { a.assume_init() };
+        let abs_min = a.minimum as c_int;
+        let abs_range = a.maximum as c_int - a.minimum as c_int;
+        // Construct device from fd, looking for input events.
+        Gamepad {
+            hardware_id, abs_min, abs_range, queued: None,
+            device: AsyncDevice::new(fd, Watcher::new().input())
+        }
+    }
+    
+    fn to_float(&self, value: u32) -> f32 {
+        (value as i32) as f32 * 0.00392156862745098
+    }
+    
+    // Apply mods
+    fn apply_mods(&self, mut event: Event) -> Event {
+        let s = |x: f32| {
+            // Scale based on advertized min and max values
+            let v = ((255.0 * x) - self.abs_min as f32) / (self.abs_range as f32);
+            // Noise Filter
+            let v = (255.0 * v).trunc() / 255.0;
+            // Deadzone
+            if (v - 0.5).abs() < 0.0625 {
+                0.5
+            } else {
+                v
+            }
+        };
+    
+        // Mods (xbox has A & B opposite of other controllers, and ps3 has X & Y
+        // opposite, gamecube needs axis to be scaled).
+        match event {
+            Event::Accept(p) => if self.hardware_id == 0x_0E6F_0501 /*xbox*/ {
+                event = Event::Cancel(p);
+            },
+            Event::Cancel(p) => if self.hardware_id == 0x_0E6F_0501 /*xbox*/ {
+                event = Event::Accept(p);
+            },
+            Event::Common(p) => if self.hardware_id == 0x_054C_0268 /*ps3*/ {
+                event = Event::Action(p);
+            },
+            Event::Action(p) => if self.hardware_id == 0x_054C_0268 /*ps3*/ {
+                event = Event::Common(p);
+            },
+            Event::MotionH(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
+                event = Event::MotionH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+            } else {
+                event = Event::MotionH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
+            },
+            Event::MotionV(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
+                event = Event::MotionV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+            } else {
+                event = Event::MotionV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
+            },
+            Event::CameraH(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
+                event = Event::Lz((v * 2.0 - 0.5).min(1.0).max(-1.0));
+            } else {
+                event = Event::CameraH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
+            },
+            Event::CameraV(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
+                event = Event::Rz((v * 2.0 - 0.5).min(1.0).max(-1.0));
+            } else {
+                event = Event::CameraV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0))
+            },
+            Event::Lz(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
+                event = Event::CameraV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+            } else {
+                event = Event::Lz(v.min(1.0).max(-1.0));
+            },
+            Event::Rz(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
+                event = Event::CameraH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+            } else {
+                event = Event::Rz(v.min(1.0).max(-1.0))
+            },
+            _ => {}
+        }
+        event
     }
 
-    pub fn get_id(&self, id: usize) -> (u32, bool) {
+    pub(super) fn id(&self) -> u32 {
+        self.hardware_id
+    }
+
+    pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<Event> {
+        if let Some(event) = self.queued.take() {
+            return Poll::Ready(self.apply_mods(event));
+        }
+    
+        // Read an event.
+        let mut ev = MaybeUninit::<EvdevEv>::uninit();
+        let ev = unsafe {
+            let bytes = read(
+                self.device.fd(),
+                ev.as_mut_ptr().cast(),
+                std::mem::size_of::<EvdevEv>(),
+            );
+            if bytes <= 0 {
+                // Register waker for this device
+                self.device.register_waker(cx.waker());
+                // If no new controllers found, return pending.
+                return Poll::Pending;
+            }
+            assert_eq!(std::mem::size_of::<EvdevEv>() as isize, bytes);
+            ev.assume_init()
+        };
+        
+        let event = match ev.ev_type {
+            // button press / release (key)
+            0x01 => {
+                let is = ev.ev_value == 1;
+
+                match ev.ev_code - 0x120 {
+                    // ABXY
+                    0 | 19 => Event::Common(is),
+                    1 | 17 => Event::Accept(is),
+                    2 | 16 => Event::Cancel(is),
+                    3 | 20 => Event::Action(is),
+                    // LT/RT
+                    4 | 24 => return self.poll(cx), // Event::Lz(is),
+                    5 | 25 => return self.poll(cx), // Event::Rz(is),
+                    // Ignore LB/RB
+                    6 | 22 => Event::L(is), // 6 is a guess.
+                    7 | 23 => Event::R(is),
+                    // Select/Start
+                    8 | 26 => Event::Back(is), // 8 is a guess.
+                    9 | 27 => Event::Forward(is),
+                    // ?
+                    10 => {
+                        eprintln!("Button 10 is Unknown, report at https://github.com/libcala/stick/issues");
+                        return self.poll(cx);
+                    },
+                    // D-PAD
+                    12 | 256 => Event::Up(is),
+                    13 | 259 => Event::Right(is),
+                    14 | 257 => Event::Down(is),
+                    15 | 258 => Event::Left(is),
+                    // 16-17 already matched
+                    18 => {
+                        eprintln!("Button 18 is Unknown, report at https://github.com/libcala/stick/issues");
+                        return self.poll(cx);
+                    },
+                    // 19-20 already matched
+                    21 => {
+                        eprintln!("Button 21 is Unknown, report at https://github.com/libcala/stick/issues");
+                        return self.poll(cx);
+                    },
+                    // 22-27 already matched
+                    28 => if is { Event::Quit } else { return self.poll(cx) },
+                    29 => Event::MotionButton(is),
+                    30 => Event::CameraButton(is),
+                    a => {
+                        eprintln!("Button {} is Unknown, report at https://github.com/libcala/stick/issues", a);
+                        return self.poll(cx);
+                    },
+                }
+            }
+            // axis move (abs)
+            0x03 => {
+                match ev.ev_code {
+                    0 => Event::MotionH(self.to_float(ev.ev_value)),
+                    1 => Event::MotionV(self.to_float(ev.ev_value)),
+                    2 => Event::Lz(self.to_float(ev.ev_value)),
+                    3 => Event::CameraH(self.to_float(ev.ev_value)),
+                    4 => Event::CameraV(self.to_float(ev.ev_value)),
+                    5 => Event::Rz(self.to_float(ev.ev_value)),
+                    16 => {
+                        let value = self.to_float(ev.ev_value);
+                        if value < 0.0 {
+                            self.queued = Some(Event::Left(true));
+                            Event::Right(false)
+                        } else if value > 0.0 {
+                            self.queued = Some(Event::Right(true));
+                            Event::Left(false)
+                        } else {
+                            self.queued = Some(Event::Right(false));
+                            Event::Left(false)
+                        }
+                    }
+                    17 => {
+                        let value = self.to_float(ev.ev_value);
+                        if value < 0.0 {
+                            self.queued = Some(Event::Up(true));
+                            Event::Down(false)
+                        } else if value > 0.0 {
+                            self.queued = Some(Event::Down(true));
+                            Event::Up(false)
+                        } else {
+                            self.queued = Some(Event::Down(false));
+                            Event::Up(false)
+                        }
+                    }
+                    40 => return self.poll(cx), // IGNORE: Duplicate axis.
+                    a => {
+                        eprintln!("Unknown Axis: {}", a);
+                        return self.poll(cx);
+                    },
+                }
+            }
+            // ignore autorepeat, relative.
+            _ => return self.poll(cx)
+        };
+        
+        Poll::Ready(self.apply_mods(event))
+    }
+}
+
+impl Drop for Gamepad {
+    fn drop(&mut self) {
+        let fd = self.device.fd();
+        self.device.old();
+        assert_ne!(unsafe { close(fd) }, -1);
+    }
+}
+
+/*    pub fn get_id(&self, id: usize) -> (u32, bool) {
         if id >= self.devices.len() {
             (0, true)
         } else {
@@ -131,57 +480,18 @@ impl Drop for NativeManager {
             close(fd);
         }
     }
-}
+}*/
 
-// Set up file descriptor for asynchronous reading.
-fn joystick_async(fd: i32) {
-    let error = unsafe { fcntl(fd, 0x4, 0x800) } == -1;
-
-    if error {
-        panic!("Joystick unplugged 2!");
-    }
-}
-
-// Get the joystick id.
+/*// Get the joystick id.
 fn joystick_id(fd: i32) -> (u32, bool) {
-    let mut a = [0u16; 4];
 
-    extern "C" {
-        fn ioctl(fd: i32, request: usize, v: *mut u16) -> i32;
-    }
-
-    if unsafe { ioctl(fd, 0x_8008_4502, &mut a[0]) } == -1 {
-        return (0, true);
-    }
-
-    (((u32::from(a[1])) << 16) | (u32::from(a[2])), false)
 }
 
 fn joystick_abs(fd: i32) -> (i32, i32, bool) {
     #[derive(Debug)]
-    #[repr(C)]
-    struct AbsInfo {
-        value: i32,
-        minimum: i32,
-        maximum: i32,
-        fuzz: i32,
-        flat: i32,
-        resolution: i32,
-    }
 
-    extern "C" {
-        fn ioctl(fd: i32, request: usize, v: *mut AbsInfo) -> i32;
-    }
 
-    let mut a = mem::MaybeUninit::uninit();
-    let a = unsafe {
-        if ioctl(fd, 0x_8018_4540, a.as_mut_ptr()) == -1 {
-            return (0, 0, true);
-        }
-        a.assume_init()
-    };
 
-    (a.minimum, a.maximum, false)
 }
 
 // Disconnect the joystick.
@@ -189,46 +499,10 @@ fn joystick_drop(fd: i32) {
     if unsafe { close(fd) == -1 } {
         panic!("Failed to disconnect joystick.");
     }
-}
+}*/
 
-fn inotify_new() -> i32 {
-    extern "C" {
-        fn inotify_init() -> i32;
-        fn inotify_add_watch(fd: i32, pathname: *const u8, mask: u32) -> i32;
-    }
-
-    let fd = unsafe { inotify_init() };
-
-    if fd == -1 {
-        panic!("Couldn't create inotify (1)!");
-    }
-
-    if unsafe {
-        inotify_add_watch(
-            fd,
-            b"/dev/input/by-id/\0".as_ptr() as *const _,
-            0x0000_0100 | 0x0000_0200,
-        )
-    } == -1
-    {
-        panic!("Couldn't create inotify (2)!");
-    }
-
-    fd
-}
-
-#[repr(C)]
-struct Event {
-    wd: i32,   /* Watch descriptor */
-    mask: u32, /* Mask describing event */
-    cookie: u32, /* Unique cookie associating related
-               events (for rename(2)) */
-    len: u32,        /* Size of name field */
-    name: [u8; 256], /* Optional null-terminated name */
-}
-
-// Add or remove joystick
-fn inotify_read2(port: &mut NativeManager, ev: Event) -> Option<(bool, usize)> {
+/*// Add or remove joystick
+fn inotify_read2(port: &mut NativeManager, ev: InotifyEv) -> Option<(bool, usize)> {
     let mut name = [0; 256 + 17];
     name[0] = b'/';
     name[1] = b'd';
@@ -271,7 +545,6 @@ fn inotify_read2(port: &mut NativeManager, ev: Event) -> Option<(bool, usize)> {
         }
     }
 
-    joystick_async(fd);
     let async_device = AsyncDevice::new(fd, Watcher::new().input());
     let device = Device { name, async_device };
 
@@ -284,23 +557,4 @@ fn inotify_read2(port: &mut NativeManager, ev: Event) -> Option<(bool, usize)> {
 
     port.devices.push(device);
     Some((true, port.devices.len() - 1))
-}
-
-// Read joystick add or remove event.
-pub(crate) fn inotify_read(port: &mut NativeManager) -> Option<(bool, usize)> {
-    extern "C" {
-        fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
-    }
-
-    let mut ev = mem::MaybeUninit::uninit();
-    let ev = unsafe {
-        read(
-            port.async_device.fd(),
-            ev.as_mut_ptr(),
-            mem::size_of::<Event>(),
-        );
-        ev.assume_init()
-    };
-
-    inotify_read2(port, ev)
-}
+}*/

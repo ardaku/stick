@@ -1,17 +1,23 @@
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+
 use crate::Event;
 
 /// A w3c "Standard Gamepad".
-pub struct Gamepad(crate::ffi::Gamepad);
+pub struct Gamepad(pub(crate) crate::ffi::Gamepad);
 
-impl Future for &mut Gamepad {
-    type Output = Event;
-
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
-        self.0.poll(cx)
+impl Gamepad {
+    /// Get a unique identifier for the specific model of gamepad.
+    pub fn id(&self) -> u32 {
+        self.0.id()
     }
 }
 
-/// Trait for implementing the "standard gamepad".
-pub trait StdGamepad {
-    pub async fn event(&mut self) -> Event;
+impl Future for Gamepad {
+    type Output = Event;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+        self.get_mut().0.poll(cx)
+    }
 }

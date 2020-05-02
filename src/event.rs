@@ -2,6 +2,11 @@
 ///
 /// ![Standard Gamepad](https://w3c.github.io/gamepad/standard_gamepad.svg)
 pub enum Event {
+    /// A new controller has just been plugged in.
+    Connect(Box<crate::Gamepad>),
+    /// Controller unplugged.
+    Disconnect,
+
     /// Bottom right cluster (A / Circle / Return / Right Click).
     Accept(bool),
     /// Bottom right cluster (B / X / Shift).
@@ -50,5 +55,39 @@ pub enum Event {
     CameraButton(bool),
 
     /// Home button (Target platform application close)
-    Exit,
+    Quit,
+}
+
+impl std::fmt::Display for Event {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use Event::*;
+    
+        let pushed = |pushed| if pushed { "Pushed" } else { "Released" };
+    
+        match *self {
+            Connect(_) => write!(f, "Controller Connected"),
+            Disconnect => write!(f, "Controller Disconnected"),
+            Accept(p) => write!(f, "Accept {}", pushed(p)),
+            Cancel(p) => write!(f, "Cancel {}", pushed(p)),
+            Common(p) => write!(f, "Common {}", pushed(p)),
+            Action(p) => write!(f, "Action {}", pushed(p)),
+            Up(p) => write!(f, "Up {}", pushed(p)),
+            Down(p) => write!(f, "Down {}", pushed(p)),
+            Left(p) => write!(f, "Left {}", pushed(p)),
+            Right(p) => write!(f, "Right {}", pushed(p)),
+            Back(p) => write!(f, "Back {}", pushed(p)),
+            Forward(p) => write!(f, "Forward {}", pushed(p)),
+            L(p) => write!(f, "L {}", pushed(p)),
+            R(p) => write!(f, "R {}", pushed(p)),
+            Lz(v) => write!(f, "Lz {}", v),
+            Rz(v) => write!(f, "Rz {}", v),
+            MotionH(v) => write!(f, "MotionH {}", v),
+            MotionV(v) => write!(f, "MotionV {}", v),
+            CameraH(v) => write!(f, "CameraH {}", v),
+            CameraV(v) => write!(f, "CameraV {}", v),
+            MotionButton(p) => write!(f, "MotionButton {}", pushed(p)),
+            CameraButton(p) => write!(f, "CameraButton {}", pushed(p)),
+            Quit => write!(f, "Quit"),
+        }
+    }
 }

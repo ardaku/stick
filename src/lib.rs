@@ -4,15 +4,9 @@
     html_favicon_url = "https://libcala.github.io/stick/res/controller.png"
 )]
 
-// New modules
 mod event;
-pub use event::Event;
-
-mod devices;
-
-pub use devices::{Btn, Device, Port, CONTROLLER_MAX};
-
-pub(crate) use ffi::NativeManager;
+mod port;
+mod gamepad;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(
@@ -38,3 +32,7 @@ pub(crate) use ffi::NativeManager;
     cfg_attr(target_os = "dummy", path = "ffi/dummy.rs")
 )]
 mod ffi;
+
+pub use event::Event;
+pub use port::Port;
+pub use gamepad::Gamepad;

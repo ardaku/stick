@@ -2,23 +2,6 @@ use super::NativeManager;
 
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
 
-/// Allow the up to the ridiculous number of 64 physical joysticks.
-pub const CONTROLLER_MAX: usize = 64;
-
-#[repr(C)]
-struct TimeVal {
-    tv_sec: isize,
-    tv_usec: isize,
-}
-
-#[repr(C)]
-struct Event {
-    ev_time: TimeVal,
-    ev_type: i16,
-    ev_code: i16,
-    ev_value: i32,
-}
-
 /// A button on a controller.
 ///
 /// Example controller:
@@ -180,8 +163,8 @@ impl Device {
         Some((gfloat(&self.trgl), gfloat(&self.trgr)))
     }
 
-    /// Return `Some(true)` if a button is pressed, `Some(false)` if not, and `None` if the button
-    /// doesn't exist.
+    /// Return `Some(true)` if a button is pressed, `Some(false)` if not, and
+    /// `None` if the button doesn't exist.
     pub fn btn<B: Into<u8>>(&self, b: B) -> Option<bool> {
         Some(self.btns.load(Ordering::Relaxed) & (1 << (b.into())) != 0)
     }
@@ -199,7 +182,6 @@ fn gfloat(float: &AtomicU32) -> f32 {
     f32::from_bits(float.load(Ordering::Relaxed))
 }
 
-/// An interface to all joystick, gamepad and controller devices.
 pub struct Port {
     // Native bindings to file descriptors
     manager: NativeManager,
@@ -345,13 +327,13 @@ impl Port {
 
 fn joystick_poll_event(fd: i32, device: &mut Device) -> bool {
     extern "C" {
-        fn read(fd: i32, buf: *mut Event, count: usize) -> isize;
+        fn read(fd: i32, buf: *mut EvdevEv, count: usize) -> isize;
     }
 
     let mut js = std::mem::MaybeUninit::uninit();
     let bytes =
-        unsafe { read(fd, js.as_mut_ptr(), std::mem::size_of::<Event>()) };
-    if bytes != (std::mem::size_of::<Event>() as isize) {
+        unsafe { read(fd, js.as_mut_ptr(), std::mem::size_of::<EvdevEv>()) };
+    if bytes != (std::mem::size_of::<EvdevEv>() as isize) {
         return false;
     }
     let js = unsafe { js.assume_init() };
@@ -545,41 +527,4 @@ fn deadzone(min: i32, max: i32, val: i32) -> (i32, i32) {
         value - deadz
     };
     (value, (range >> 1) - deadz)
-}
-
-fn transform(min: i32, max: i32, val: i32) -> f32 {
-    let (value, full) = deadzone(min, max, val);
-    // Modify integer range from (-(full) thru (full)) to -127 to 127
-    ((value * 127) / full).max(-127).min(127) as f32 / 127.0
-}
-
-fn transform2(min: i32, max: i32, val: i32) -> f32 {
-    // Modify integer range from (-(full) thru (full)) to 0 to 255
-    ((val * 255) / (max - min)).max(0).min(255) as f32 / 255.0
-}
-
-#[cfg(test)]
-mod tests {
-    /*    use super::*;
-
-    #[test]
-    fn transform_test() {
-        let a = deadzone(-100, 100, 100);
-        assert_eq!(a.0, a.1);
-        assert_eq!(75, a.1);
-        let b = deadzone(-100, 100, -100);
-        assert_eq!(b.0, -b.1);
-        assert_eq!(75, b.1);
-        let c = deadzone(-100, 100, 0);
-        assert_eq!(c.0, 0);
-        assert_eq!(75, b.1);
-
-        assert_eq!(transform(-100, 100, 100), 127);
-        assert_eq!(transform(-100, 100, -100), -127);
-        assert_eq!(transform(-100, 100, 0), 0);
-
-        assert_eq!(transform(-128, 127, 127), 127);
-        assert_eq!(transform(-128, 127, 0), 0);
-        assert_eq!(transform(-128, 127, -128), -127);
-    }*/
 }
