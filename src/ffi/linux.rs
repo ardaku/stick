@@ -292,7 +292,7 @@ pub(crate) struct Gamepad {
     abs_min: c_int,
     abs_range: c_int,
     queued: Option<Event>,
-    emulated: u8,
+    emulated: u8, // lower 4 bits are for D-pad.
 }
 
 impl Gamepad {
@@ -549,32 +549,74 @@ impl Gamepad {
                     3 => Event::CameraH(self.to_float(ev.ev_value)),
                     4 => Event::CameraV(self.to_float(ev.ev_value)),
                     5 => Event::Rz(self.to_float(ev.ev_value)),
-                    /*16 => {
-                        let value = self.to_float(ev.ev_value);
-                        if value < 0.0 {
-                            self.queued = Some(Event::Left(true));
-                            Event::Right(false)
-                        } else if value > 0.0 {
-                            self.queued = Some(Event::Right(true));
-                            Event::Left(false)
+                    16 => {
+                        let emulated = self.emulated;
+                        let value = ev.ev_value as i32;
+                        let left = 0b0000_0001;
+                        let right = 0b0000_0010;
+                        if value < 0 { // Left
+                            self.emulated |= left;
+                            if emulated & right != 0 {
+                                self.emulated &= !right;
+                                self.queued = Some(Event::Left(true));
+                                Event::Right(false)
+                            } else {
+                                Event::Left(true)
+                            }
+                        } else if value > 0 { // Right
+                            self.emulated |= right;
+                            if emulated & left != 0 {
+                                self.emulated &= !left;
+                                self.queued = Some(Event::Right(true));
+                                Event::Left(false)
+                            } else {
+                                Event::Right(true)
+                            }
                         } else {
-                            self.queued = Some(Event::Right(false));
-                            Event::Left(false)
+                            self.emulated &= !(left | right);
+                            if emulated & left != 0 {
+                                Event::Left(false)
+                            } else if emulated & right != 0 {
+                                Event::Right(false)
+                            } else {
+                                return self.poll(cx);
+                            }
                         }
                     }
                     17 => {
-                        let value = self.to_float(ev.ev_value);
-                        if value < 0.0 {
-                            self.queued = Some(Event::Up(true));
-                            Event::Down(false)
-                        } else if value > 0.0 {
-                            self.queued = Some(Event::Down(true));
-                            Event::Up(false)
+                        let emulated = self.emulated;
+                        let value = ev.ev_value as i32;
+                        let up = 0b0000_0100;
+                        let down = 0b0000_1000;
+                        if value < 0 { // Up
+                            self.emulated |= up;
+                            if emulated & down != 0 {
+                                self.emulated &= !down;
+                                self.queued = Some(Event::Up(true));
+                                Event::Down(false)
+                            } else {
+                                Event::Up(true)
+                            }
+                        } else if value > 0 { // Down
+                            self.emulated |= down;
+                            if emulated & up != 0 {
+                                self.emulated &= !up;
+                                self.queued = Some(Event::Down(true));
+                                Event::Up(false)
+                            } else {
+                                Event::Down(true)
+                            }
                         } else {
-                            self.queued = Some(Event::Down(false));
-                            Event::Up(false)
+                            self.emulated &= !(up | down);
+                            if emulated & up != 0 {
+                                Event::Up(false)
+                            } else if emulated & down != 0 {
+                                Event::Down(false)
+                            } else {
+                                return self.poll(cx)
+                            }
                         }
-                    }*/
+                    }
                     40 => return self.poll(cx), // IGNORE: Duplicate axis.
                     a => {
                         eprintln!("Unknown Axis: {}, report at \
