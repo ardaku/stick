@@ -120,7 +120,11 @@ impl Port {
                         // New gamepad
                         let mut filename = "/dev/input/by-id/".to_string();
                         filename.push_str(&file);
-                        let fd = File::open(filename).unwrap();
+                        let fd = if let Ok(f) = File::open(filename) {
+                            f
+                        } else {
+                            continue 'fds;
+                        };
                         self.connected.insert(file);
                         return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
                     }
@@ -165,7 +169,11 @@ impl Port {
                 }
                 // New gamepad
                 file.push_str(&name);
-                let fd = File::open(&file).unwrap();
+                let fd = if let Ok(fd) = File::open(&file) {
+                    fd
+                } else {
+                    return self.poll(cx);
+                };
                 self.connected.insert(name);
                 return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
             } else {
