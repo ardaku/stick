@@ -165,6 +165,16 @@ impl Port {
     }
     
     pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<(usize, Event)> {
+        // Timeout after joystick doesn't give up permissions for 1 second.
+        if let Some(ref timer) = self.timer {
+            let mut num = MaybeUninit::<u64>::uninit();
+            if unsafe { read(timer.device.fd(), num.as_mut_ptr().cast(), std::mem::size_of::<u64>()) } == std::mem::size_of::<u64>() as isize {
+                if unsafe { num.assume_init() } >= 100 {
+                    self.timer = None;
+                }
+            }
+        }
+    
         // Read an event.
         let mut ev = MaybeUninit::<InotifyEv>::uninit();
         let ev = unsafe {
@@ -210,7 +220,7 @@ impl Port {
             }
             ev.assume_init()
         };
-        
+
         // Remove flag is set, remove from HashSet.
         if (ev.mask & 0x0000_0200) != 0 {
             let mut file = "".to_string();
@@ -270,16 +280,16 @@ impl Gamepad {
             device: AsyncDevice::new(fd, Watcher::new().input())
         }
     }
-    
+
     fn to_float(&self, value: u32) -> f32 {
         (value as i32) as f32 * 0.00392156862745098
     }
-    
+
     // Apply mods
     fn apply_mods(&self, mut event: Event) -> Event {
         let s = |x: f32| {
             // Scale based on advertized min and max values
-            let v = ((255.0 * x) - self.abs_min as f32) / (self.abs_range as f32);
+            let v = ((255.0 * x) - self.abs_min as f32) / self.abs_range as f32;
             // Noise Filter
             let v = (255.0 * v).trunc() / 255.0;
             // Deadzone
