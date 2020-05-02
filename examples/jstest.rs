@@ -1,9 +1,9 @@
 use pasts::prelude::*;
-use stick::{Event, Port};
+use stick::{Event, Port, Gamepad};
 
 async fn event_loop() {
     let mut port = Port::new();
-    let mut gamepads = Vec::new();
+    let mut gamepads = Vec::<Gamepad>::new();
     'e: loop {
         match [(&mut port).fut(), gamepads.select().fut()]
             .select()
@@ -16,7 +16,7 @@ async fn event_loop() {
                     gamepads.len(),
                     gamepad.id()
                 );
-                gamepads.push(gamepad);
+                gamepads.push(*gamepad);
             }
             (id, Event::Disconnect) => {
                 println!("Disconnected p{}", id);

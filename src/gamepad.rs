@@ -12,6 +12,11 @@ impl Gamepad {
     pub fn id(&self) -> u32 {
         self.0.id()
     }
+
+    /// Get the name of this Gamepad.
+    pub fn name(&self) -> String {
+        self.0.name()
+    }
 }
 
 impl Future for Gamepad {

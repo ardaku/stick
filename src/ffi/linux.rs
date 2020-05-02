@@ -292,6 +292,7 @@ pub(crate) struct Gamepad {
     abs_min: c_int,
     abs_range: c_int,
     queued: Option<Event>,
+    emulated: u8,
 }
 
 impl Gamepad {
@@ -324,6 +325,7 @@ impl Gamepad {
             abs_range,
             queued: None,
             device: AsyncDevice::new(fd, Watcher::new().input()),
+            emulated: 0,
         }
     }
 
@@ -500,7 +502,8 @@ impl Gamepad {
                     9 | 27 => Event::Forward(is),
                     // ?
                     10 => {
-                        eprintln!("Button 10 is Unknown, report at https://github.com/libcala/stick/issues");
+                        eprintln!("Button 10 is Unknown, report at \
+                            https://github.com/libcala/stick/issues");
                         return self.poll(cx);
                     }
                     // D-PAD
@@ -510,12 +513,14 @@ impl Gamepad {
                     15 | 258 => Event::Left(is),
                     // 16-17 already matched
                     18 => {
-                        eprintln!("Button 18 is Unknown, report at https://github.com/libcala/stick/issues");
+                        eprintln!("Button 18 is Unknown, report at \
+                            https://github.com/libcala/stick/issues");
                         return self.poll(cx);
                     }
                     // 19-20 already matched
                     21 => {
-                        eprintln!("Button 21 is Unknown, report at https://github.com/libcala/stick/issues");
+                        eprintln!("Button 21 is Unknown, report at \
+                            https://github.com/libcala/stick/issues");
                         return self.poll(cx);
                     }
                     // 22-27 already matched
@@ -529,7 +534,8 @@ impl Gamepad {
                     29 => Event::MotionButton(is),
                     30 => Event::CameraButton(is),
                     a => {
-                        eprintln!("Button {} is Unknown, report at https://github.com/libcala/stick/issues", a);
+                        eprintln!("Button {} is Unknown, report at \
+                            https://github.com/libcala/stick/issues", a);
                         return self.poll(cx);
                     }
                 }
@@ -543,7 +549,7 @@ impl Gamepad {
                     3 => Event::CameraH(self.to_float(ev.ev_value)),
                     4 => Event::CameraV(self.to_float(ev.ev_value)),
                     5 => Event::Rz(self.to_float(ev.ev_value)),
-                    16 => {
+                    /*16 => {
                         let value = self.to_float(ev.ev_value);
                         if value < 0.0 {
                             self.queued = Some(Event::Left(true));
@@ -568,10 +574,11 @@ impl Gamepad {
                             self.queued = Some(Event::Down(false));
                             Event::Up(false)
                         }
-                    }
+                    }*/
                     40 => return self.poll(cx), // IGNORE: Duplicate axis.
                     a => {
-                        eprintln!("Unknown Axis: {}", a);
+                        eprintln!("Unknown Axis: {}, report at \
+                            https://github.com/libcala/stick/issues", a);
                         return self.poll(cx);
                     }
                 }
@@ -581,6 +588,10 @@ impl Gamepad {
         };
 
         Poll::Ready(self.apply_mods(event))
+    }
+    
+    pub(super) fn name(&self) -> String {
+        "Unknown".to_string() // FIXME
     }
 }
 
