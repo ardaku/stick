@@ -5,16 +5,38 @@ use std::fs::File;
 use std::mem::MaybeUninit;
 use std::collections::HashSet;
 use std::os::unix::io::{RawFd, IntoRawFd};
-use std::os::raw::{c_int, c_uint, c_ulong, c_ushort, c_void};
-use std::convert::TryInto;
+use std::os::raw::{c_int, c_uint, c_long, c_ulong, c_ushort, c_void, c_char};
 use std::task::{Poll, Context};
+use std::io::ErrorKind;
 
 use crate::Event;
 
 #[repr(C)]
-struct TimeVal {
-    tv_sec: isize,
-    tv_usec: isize,
+struct InotifyEv { // struct inotify_event, from C.
+    wd: c_int,   /* Watch descriptor */
+    mask: u32, /* Mask describing event */
+    cookie: u32, /* Unique cookie associating related
+               events (for rename(2)) */
+    len: u32,        /* Size of name field */
+    name: [c_char; 256], /* Optional null-terminated name */
+}
+
+#[repr(C)]
+struct TimeVal { // struct timeval, from C.
+    tv_sec: c_long,
+    tv_usec: c_long,
+}
+
+#[repr(C)]
+struct TimeSpec { // struct timespec, from C.
+    tv_sec: c_long,
+    tv_nsec: c_long,
+}
+
+#[repr(C)]
+struct ItimerSpec { // struct itimerspec, from C.
+    it_interval: TimeSpec,
+    it_value: TimeSpec,
 }
 
 #[repr(C)]
@@ -43,16 +65,6 @@ struct AbsInfo { // struct input_absinfo, from C.
     resolution: i32,
 }
 
-#[repr(C)]
-struct InotifyEv {
-    wd: i32,   /* Watch descriptor */
-    mask: u32, /* Mask describing event */
-    cookie: u32, /* Unique cookie associating related
-               events (for rename(2)) */
-    len: u32,        /* Size of name field */
-    name: [u8; 256], /* Optional null-terminated name */
-}
-
 extern "C" {
     fn read(fd: RawFd, buf: *mut c_void, count: usize) -> isize;
     fn close(fd: RawFd) -> c_int;
@@ -60,15 +72,64 @@ extern "C" {
     fn ioctl(fd: RawFd, request: c_ulong, v: *mut c_void) -> c_int;
 
     fn inotify_init1(flags: c_int) -> c_int;
-    fn inotify_add_watch(fd: RawFd, pathname: *const u8, mask: u32) -> c_int;
-    
+    fn inotify_add_watch(fd: RawFd, path: *const c_char, mask: u32) -> c_int;
+
+    fn timerfd_create(clockid: c_int, flags: c_int) -> RawFd;
+    fn timerfd_settime(fd: RawFd, flags: c_int, new_value: *const ItimerSpec,
+        old_value: *mut ItimerSpec) -> c_int;
+
     fn __errno_location() -> *mut c_int;
+}
+
+struct PortTimer {
+    device: AsyncDevice,
+}
+
+impl PortTimer {
+    fn new(cx: &mut Context) -> Self {
+        // Create the timer.
+        let timerfd = unsafe {
+            timerfd_create(1 /*CLOCK_MONOTONIC*/, 0o4000 /*TFD_NONBLOCK*/)
+        };
+        assert_ne!(timerfd, -1); // Should never fail (unless out of memory).
+        // Arm the timer for every 10 millis, starting in 10 millis.
+        unsafe {
+            timerfd_settime(timerfd, 0, &ItimerSpec {
+                it_interval: TimeSpec {
+                    tv_sec: 0,
+                    tv_nsec: 10_000_000, // 10 milliseconds
+                },
+                it_value: TimeSpec {
+                    tv_sec: 0,
+                    tv_nsec: 10_000_000, // 10 milliseconds
+                },
+            }, std::ptr::null_mut());
+        }
+        // Create timer device, watching for input events.
+        let device = AsyncDevice::new(timerfd, Watcher::new().input());
+        // Wake up Future when timer goes off.
+        device.register_waker(cx.waker());
+
+        // Return timer
+        PortTimer {
+            device
+        }
+    }
+}
+
+impl Drop for PortTimer {
+    fn drop(&mut self) {
+        let fd = self.device.fd();
+        self.device.old();
+        assert_ne!(unsafe { close(fd) }, -1);
+    }
 }
 
 /// Port
 pub(crate) struct Port {
     device: AsyncDevice,
     connected: HashSet<String>,
+    timer: Option<PortTimer>,
 }
 
 impl Port {
@@ -82,7 +143,7 @@ impl Port {
             inotify_add_watch(
                 inotify,
                 b"/dev/input/by-id/\0".as_ptr() as *const _,
-                0x0000_0100 | 0x0000_0200,
+                0x0000_0200 | 0x0000_0100,
             )
         } == -1
         {
@@ -96,8 +157,11 @@ impl Port {
         // Start off with an empty hash set of connected devices.
         let connected = HashSet::new();
 
+        // Start off with timer disabled.
+        let timer = None;
+
         // Return
-        Port { device, connected }
+        Port { device, connected, timer }
     }
     
     pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<(usize, Event)> {
@@ -109,6 +173,7 @@ impl Port {
                 ev.as_mut_ptr().cast(),
                 std::mem::size_of::<InotifyEv>(),
             ) <= 0 {
+                let mut all_open = true;
                 // Search directory for new controllers.
                 'fds: for file in fs::read_dir("/dev/input/by-id/").unwrap() {
                     let file = file.unwrap().file_name().into_string().unwrap();
@@ -121,14 +186,22 @@ impl Port {
                         // New gamepad
                         let mut filename = "/dev/input/by-id/".to_string();
                         filename.push_str(&file);
-                        let fd = if let Ok(f) = File::open(filename) {
-                            f
-                        } else {
-                            continue 'fds;
+                        let fd = match File::open(filename) {
+                            Ok(f) => f,
+                            Err(e) => {
+                                if e.kind() == ErrorKind::PermissionDenied {
+                                    all_open = false;
+                                }
+                                continue 'fds;
+                            }
                         };
                         self.connected.insert(file);
                         return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
                     }
+                }
+                // If all gamepads are openned, disable timer.
+                if all_open && self.timer.is_some() {
+                    self.timer = None;
                 }
                 // Register waker for this device
                 self.device.register_waker(cx.waker());
@@ -138,59 +211,23 @@ impl Port {
             ev.assume_init()
         };
         
-        // Add or remove
+        // Remove flag is set, remove from HashSet.
         if (ev.mask & 0x0000_0200) != 0 {
-            // Remove flag is set.
             let mut file = "".to_string();
-            for c in ev.name.iter().cloned() {
-                if c == b'\0' {
-                    break;
-                }
-                let c: u32 = c.into();
-                file.push(c.try_into().unwrap());
-            }
+            let name = unsafe { std::ffi::CStr::from_ptr(ev.name.as_ptr()) };
+            file.push_str(&name.to_string_lossy());
             if file.ends_with("-event-joystick") {
-                let s = self.connected.remove(&file);
+                assert!(self.connected.remove(&file));
             }
         }
-        if (ev.mask & 0x0000_0100) != 0 {
-            // Add flag is set.
-            let mut file = "/dev/input/by-id/".to_string();
-            let mut name = "".to_string();
-            for c in ev.name.iter().cloned() {
-                if c == b'\0' {
-                    break;
-                }
-                let c: u32 = c.into();
-                name.push(c.try_into().unwrap());
-            }
-            if name.ends_with("-event-joystick") {
-                // Found an evdev gamepad
-                if self.connected.contains(&name) {
-                    // Already connected.
-                    return self.poll(cx);
-                }
-                // New gamepad
-                file.push_str(&name);
-                // Loop until permissions are granted.  Unfortunately, no events
-                // are given.
-                let fd = loop { match File::open(&file) {
-                    Ok(fd) => { break fd },
-                    // Keep trying to open it, it will silently make available.
-                    Err(e) => {
-                        if e.kind() != std::io::ErrorKind::PermissionDenied {
-                            return self.poll(cx);
-                        }
-                    },
-                } };
-                self.connected.insert(name);
-                return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
-            } else {
-                return self.poll(cx);
-            }
-        } else {
-            self.poll(cx)
+        // Add flag is set, wait for permissions (unfortunately, can't rely on
+        // epoll events for this, so check every 10 milliseconds).
+        if (ev.mask & 0x0000_0100) != 0 && self.timer.is_none() {
+            self.timer = Some(PortTimer::new(cx));
         }
+        // Check for more events, Search for new controllers again, and return
+        // Pending if neither have anything to process.
+        self.poll(cx)
     }
 }
 
@@ -314,12 +351,12 @@ impl Gamepad {
     
         // Read an event.
         let mut ev = MaybeUninit::<EvdevEv>::uninit();
-        let ev = unsafe {
-            let bytes = read(
+        let ev = {
+            let bytes = unsafe { read(
                 self.device.fd(),
                 ev.as_mut_ptr().cast(),
                 std::mem::size_of::<EvdevEv>(),
-            );
+            ) };
             if bytes <= 0 {
                 let errno = unsafe { *__errno_location() };
                 if errno == 19 {
@@ -332,7 +369,7 @@ impl Gamepad {
                 return Poll::Pending;
             }
             assert_eq!(std::mem::size_of::<EvdevEv>() as isize, bytes);
-            ev.assume_init()
+            unsafe { ev.assume_init() }
         };
         
         let event = match ev.ev_type {
