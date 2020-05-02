@@ -62,6 +62,8 @@ extern "C" {
 
     fn inotify_init1(flags: c_int) -> c_int;
     fn inotify_add_watch(fd: RawFd, pathname: *const u8, mask: u32) -> c_int;
+    
+    fn __errno_location() -> *mut c_int;
 }
 
 /// Port
@@ -148,7 +150,9 @@ impl Port {
                 let c: u32 = c.into();
                 file.push(c.try_into().unwrap());
             }
-            self.connected.remove(&file);
+            if file.ends_with("-event-joystick") {
+                let s = self.connected.remove(&file);
+            }
         }
         if (ev.mask & 0x0000_0100) != 0 {
             // Add flag is set.
@@ -312,6 +316,11 @@ impl Gamepad {
                 std::mem::size_of::<EvdevEv>(),
             );
             if bytes <= 0 {
+                let errno = unsafe { *__errno_location() };
+                if errno == 19 {
+                    return Poll::Ready(Event::Disconnect);
+                }
+                assert_eq!(errno, 11);
                 // Register waker for this device
                 self.device.register_waker(cx.waker());
                 // If no new controllers found, return pending.
