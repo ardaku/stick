@@ -173,11 +173,17 @@ impl Port {
                 }
                 // New gamepad
                 file.push_str(&name);
-                let fd = if let Ok(fd) = File::open(&file) {
-                    fd
-                } else {
-                    return self.poll(cx);
-                };
+                // Loop until permissions are granted.  Unfortunately, no events
+                // are given.
+                let fd = loop { match File::open(&file) {
+                    Ok(fd) => { break fd },
+                    // Keep trying to open it, it will silently make available.
+                    Err(e) => {
+                        if e.kind() != std::io::ErrorKind::PermissionDenied {
+                            return self.poll(cx);
+                        }
+                    },
+                } };
                 self.connected.insert(name);
                 return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
             } else {
