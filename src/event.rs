@@ -61,9 +61,9 @@ pub enum Event {
 impl std::fmt::Display for Event {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use Event::*;
-    
+
         let pushed = |pushed| if pushed { "Pushed" } else { "Released" };
-    
+
         match *self {
             Connect(_) => write!(f, "Controller Connected"),
             Disconnect => write!(f, "Controller Disconnected"),

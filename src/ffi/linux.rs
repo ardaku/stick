@@ -1,54 +1,60 @@
 use smelling_salts::{Device as AsyncDevice, Watcher};
 
+use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
-use std::mem::MaybeUninit;
-use std::collections::HashSet;
-use std::os::unix::io::{RawFd, IntoRawFd};
-use std::os::raw::{c_int, c_uint, c_long, c_ulong, c_ushort, c_void, c_char};
-use std::task::{Poll, Context};
 use std::io::ErrorKind;
+use std::mem::MaybeUninit;
+use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
+use std::os::unix::io::{IntoRawFd, RawFd};
+use std::task::{Context, Poll};
 
 use crate::Event;
 
 #[repr(C)]
-struct InotifyEv { // struct inotify_event, from C.
-    wd: c_int,   /* Watch descriptor */
+struct InotifyEv {
+    // struct inotify_event, from C.
+    wd: c_int, /* Watch descriptor */
     mask: u32, /* Mask describing event */
     cookie: u32, /* Unique cookie associating related
                events (for rename(2)) */
-    len: u32,        /* Size of name field */
+    len: u32,            /* Size of name field */
     name: [c_char; 256], /* Optional null-terminated name */
 }
 
 #[repr(C)]
-struct TimeVal { // struct timeval, from C.
+struct TimeVal {
+    // struct timeval, from C.
     tv_sec: c_long,
     tv_usec: c_long,
 }
 
 #[repr(C)]
-struct TimeSpec { // struct timespec, from C.
+struct TimeSpec {
+    // struct timespec, from C.
     tv_sec: c_long,
     tv_nsec: c_long,
 }
 
 #[repr(C)]
-struct ItimerSpec { // struct itimerspec, from C.
+struct ItimerSpec {
+    // struct itimerspec, from C.
     it_interval: TimeSpec,
     it_value: TimeSpec,
 }
 
 #[repr(C)]
-struct InputId { // struct input_id, from C.
-	bustype: u16,
-	vendor: u16,
-	product: u16,
-	version: u16,
+struct InputId {
+    // struct input_id, from C.
+    bustype: u16,
+    vendor: u16,
+    product: u16,
+    version: u16,
 }
 
 #[repr(C)]
-struct EvdevEv { // struct input_event, from C.
+struct EvdevEv {
+    // struct input_event, from C.
     ev_time: TimeVal,
     ev_type: c_ushort,
     ev_code: c_ushort,
@@ -56,7 +62,8 @@ struct EvdevEv { // struct input_event, from C.
 }
 
 #[repr(C)]
-struct AbsInfo { // struct input_absinfo, from C.
+struct AbsInfo {
+    // struct input_absinfo, from C.
     value: i32,
     minimum: u32,
     maximum: u32,
@@ -75,8 +82,12 @@ extern "C" {
     fn inotify_add_watch(fd: RawFd, path: *const c_char, mask: u32) -> c_int;
 
     fn timerfd_create(clockid: c_int, flags: c_int) -> RawFd;
-    fn timerfd_settime(fd: RawFd, flags: c_int, new_value: *const ItimerSpec,
-        old_value: *mut ItimerSpec) -> c_int;
+    fn timerfd_settime(
+        fd: RawFd,
+        flags: c_int,
+        new_value: *const ItimerSpec,
+        old_value: *mut ItimerSpec,
+    ) -> c_int;
 
     fn __errno_location() -> *mut c_int;
 }
@@ -89,21 +100,29 @@ impl PortTimer {
     fn new(cx: &mut Context) -> Self {
         // Create the timer.
         let timerfd = unsafe {
-            timerfd_create(1 /*CLOCK_MONOTONIC*/, 0o4000 /*TFD_NONBLOCK*/)
+            timerfd_create(
+                1,      /*CLOCK_MONOTONIC*/
+                0o4000, /*TFD_NONBLOCK*/
+            )
         };
         assert_ne!(timerfd, -1); // Should never fail (unless out of memory).
-        // Arm the timer for every 10 millis, starting in 10 millis.
+                                 // Arm the timer for every 10 millis, starting in 10 millis.
         unsafe {
-            timerfd_settime(timerfd, 0, &ItimerSpec {
-                it_interval: TimeSpec {
-                    tv_sec: 0,
-                    tv_nsec: 10_000_000, // 10 milliseconds
+            timerfd_settime(
+                timerfd,
+                0,
+                &ItimerSpec {
+                    it_interval: TimeSpec {
+                        tv_sec: 0,
+                        tv_nsec: 10_000_000, // 10 milliseconds
+                    },
+                    it_value: TimeSpec {
+                        tv_sec: 0,
+                        tv_nsec: 10_000_000, // 10 milliseconds
+                    },
                 },
-                it_value: TimeSpec {
-                    tv_sec: 0,
-                    tv_nsec: 10_000_000, // 10 milliseconds
-                },
-            }, std::ptr::null_mut());
+                std::ptr::null_mut(),
+            );
         }
         // Create timer device, watching for input events.
         let device = AsyncDevice::new(timerfd, Watcher::new().input());
@@ -111,9 +130,7 @@ impl PortTimer {
         device.register_waker(cx.waker());
 
         // Return timer
-        PortTimer {
-            device
-        }
+        PortTimer { device }
     }
 }
 
@@ -135,7 +152,9 @@ pub(crate) struct Port {
 impl Port {
     pub(super) fn new() -> Self {
         // Create an inotify on the directory where gamepad filedescriptors are.
-        let inotify = unsafe { inotify_init1(0o0004000 /*IN_NONBLOCK*/) };
+        let inotify = unsafe {
+            inotify_init1(0o0004000 /*IN_NONBLOCK*/)
+        };
         if inotify == -1 {
             panic!("Couldn't create inotify (1)!");
         }
@@ -149,7 +168,7 @@ impl Port {
         {
             panic!("Couldn't create inotify (2)!");
         }
-        
+
         // Create watcher, and register with fd as a "device".
         let watcher = Watcher::new().input();
         let device = AsyncDevice::new(inotify, watcher);
@@ -161,20 +180,31 @@ impl Port {
         let timer = None;
 
         // Return
-        Port { device, connected, timer }
+        Port {
+            device,
+            connected,
+            timer,
+        }
     }
-    
+
     pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<(usize, Event)> {
         // Timeout after joystick doesn't give up permissions for 1 second.
         if let Some(ref timer) = self.timer {
             let mut num = MaybeUninit::<u64>::uninit();
-            if unsafe { read(timer.device.fd(), num.as_mut_ptr().cast(), std::mem::size_of::<u64>()) } == std::mem::size_of::<u64>() as isize {
+            if unsafe {
+                read(
+                    timer.device.fd(),
+                    num.as_mut_ptr().cast(),
+                    std::mem::size_of::<u64>(),
+                )
+            } == std::mem::size_of::<u64>() as isize
+            {
                 if unsafe { num.assume_init() } >= 100 {
                     self.timer = None;
                 }
             }
         }
-    
+
         // Read an event.
         let mut ev = MaybeUninit::<InotifyEv>::uninit();
         let ev = unsafe {
@@ -182,7 +212,8 @@ impl Port {
                 self.device.fd(),
                 ev.as_mut_ptr().cast(),
                 std::mem::size_of::<InotifyEv>(),
-            ) <= 0 {
+            ) <= 0
+            {
                 let mut all_open = true;
                 // Search directory for new controllers.
                 'fds: for file in fs::read_dir("/dev/input/by-id/").unwrap() {
@@ -206,7 +237,12 @@ impl Port {
                             }
                         };
                         self.connected.insert(file);
-                        return Poll::Ready((usize::MAX, Event::Connect(Box::new(crate::Gamepad(Gamepad::new(fd))))));
+                        return Poll::Ready((
+                            usize::MAX,
+                            Event::Connect(Box::new(crate::Gamepad(
+                                Gamepad::new(fd),
+                            ))),
+                        ));
                     }
                 }
                 // If all gamepads are openned, disable timer.
@@ -265,19 +301,29 @@ impl Gamepad {
         assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
         // Get the hardware id of this controller.
         let mut a = MaybeUninit::<InputId>::uninit();
-        assert_ne!(unsafe { ioctl(fd, 0x_8008_4502, a.as_mut_ptr().cast()) }, -1);
+        assert_ne!(
+            unsafe { ioctl(fd, 0x_8008_4502, a.as_mut_ptr().cast()) },
+            -1
+        );
         let a = unsafe { a.assume_init() };
-        let hardware_id = ((u32::from(a.vendor)) << 16) | (u32::from(a.product));
+        let hardware_id =
+            ((u32::from(a.vendor)) << 16) | (u32::from(a.product));
         // Get the min and max absolute values for axis.
         let mut a = MaybeUninit::<AbsInfo>::uninit();
-        assert_ne!(unsafe { ioctl(fd, 0x_8018_4540, a.as_mut_ptr().cast()) }, -1);
+        assert_ne!(
+            unsafe { ioctl(fd, 0x_8018_4540, a.as_mut_ptr().cast()) },
+            -1
+        );
         let a = unsafe { a.assume_init() };
         let abs_min = a.minimum as c_int;
         let abs_range = a.maximum as c_int - a.minimum as c_int;
         // Construct device from fd, looking for input events.
         Gamepad {
-            hardware_id, abs_min, abs_range, queued: None,
-            device: AsyncDevice::new(fd, Watcher::new().input())
+            hardware_id,
+            abs_min,
+            abs_range,
+            queued: None,
+            device: AsyncDevice::new(fd, Watcher::new().input()),
         }
     }
 
@@ -299,52 +345,100 @@ impl Gamepad {
                 v
             }
         };
-    
+
         // Mods (xbox has A & B opposite of other controllers, and ps3 has X & Y
         // opposite, gamecube needs axis to be scaled).
         match event {
-            Event::Accept(p) => if self.hardware_id == 0x_0E6F_0501 /*xbox*/ {
-                event = Event::Cancel(p);
-            },
-            Event::Cancel(p) => if self.hardware_id == 0x_0E6F_0501 /*xbox*/ {
-                event = Event::Accept(p);
-            },
-            Event::Common(p) => if self.hardware_id == 0x_054C_0268 /*ps3*/ {
-                event = Event::Action(p);
-            },
-            Event::Action(p) => if self.hardware_id == 0x_054C_0268 /*ps3*/ {
-                event = Event::Common(p);
-            },
-            Event::MotionH(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
-                event = Event::MotionH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-            } else {
-                event = Event::MotionH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
-            },
-            Event::MotionV(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
-                event = Event::MotionV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-            } else {
-                event = Event::MotionV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
-            },
-            Event::CameraH(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
-                event = Event::Lz((v * 2.0 - 0.5).min(1.0).max(-1.0));
-            } else {
-                event = Event::CameraH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
-            },
-            Event::CameraV(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
-                event = Event::Rz((v * 2.0 - 0.5).min(1.0).max(-1.0));
-            } else {
-                event = Event::CameraV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0))
-            },
-            Event::Lz(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
-                event = Event::CameraV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-            } else {
-                event = Event::Lz(v.min(1.0).max(-1.0));
-            },
-            Event::Rz(v) => if self.hardware_id == 0x_0079_1844 /*gc*/ {
-                event = Event::CameraH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-            } else {
-                event = Event::Rz(v.min(1.0).max(-1.0))
-            },
+            Event::Accept(p) => {
+                if self.hardware_id == 0x_0E6F_0501
+                /*xbox*/
+                {
+                    event = Event::Cancel(p);
+                }
+            }
+            Event::Cancel(p) => {
+                if self.hardware_id == 0x_0E6F_0501
+                /*xbox*/
+                {
+                    event = Event::Accept(p);
+                }
+            }
+            Event::Common(p) => {
+                if self.hardware_id == 0x_054C_0268
+                /*ps3*/
+                {
+                    event = Event::Action(p);
+                }
+            }
+            Event::Action(p) => {
+                if self.hardware_id == 0x_054C_0268
+                /*ps3*/
+                {
+                    event = Event::Common(p);
+                }
+            }
+            Event::MotionH(v) => {
+                if self.hardware_id == 0x_0079_1844
+                /*gc*/
+                {
+                    event =
+                        Event::MotionH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+                } else {
+                    event =
+                        Event::MotionH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
+                }
+            }
+            Event::MotionV(v) => {
+                if self.hardware_id == 0x_0079_1844
+                /*gc*/
+                {
+                    event =
+                        Event::MotionV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+                } else {
+                    event =
+                        Event::MotionV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
+                }
+            }
+            Event::CameraH(v) => {
+                if self.hardware_id == 0x_0079_1844
+                /*gc*/
+                {
+                    event = Event::Lz((v * 2.0 - 0.5).min(1.0).max(-1.0));
+                } else {
+                    event =
+                        Event::CameraH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
+                }
+            }
+            Event::CameraV(v) => {
+                if self.hardware_id == 0x_0079_1844
+                /*gc*/
+                {
+                    event = Event::Rz((v * 2.0 - 0.5).min(1.0).max(-1.0));
+                } else {
+                    event =
+                        Event::CameraV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0))
+                }
+            }
+            Event::Lz(v) => {
+                if self.hardware_id == 0x_0079_1844
+                /*gc*/
+                {
+                    event =
+                        Event::CameraV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+                } else {
+                    event = Event::Lz(v.min(1.0).max(-1.0));
+                }
+            }
+            Event::Rz(v) => {
+                if self.hardware_id == 0x_0079_1844
+                /*gc*/
+                {
+                    event =
+                        Event::CameraH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+                } else {
+                    event = Event::Rz(v.min(1.0).max(-1.0))
+                }
+            }
             _ => {}
         }
         event
@@ -358,15 +452,17 @@ impl Gamepad {
         if let Some(event) = self.queued.take() {
             return Poll::Ready(self.apply_mods(event));
         }
-    
+
         // Read an event.
         let mut ev = MaybeUninit::<EvdevEv>::uninit();
         let ev = {
-            let bytes = unsafe { read(
-                self.device.fd(),
-                ev.as_mut_ptr().cast(),
-                std::mem::size_of::<EvdevEv>(),
-            ) };
+            let bytes = unsafe {
+                read(
+                    self.device.fd(),
+                    ev.as_mut_ptr().cast(),
+                    std::mem::size_of::<EvdevEv>(),
+                )
+            };
             if bytes <= 0 {
                 let errno = unsafe { *__errno_location() };
                 if errno == 19 {
@@ -381,7 +477,7 @@ impl Gamepad {
             assert_eq!(std::mem::size_of::<EvdevEv>() as isize, bytes);
             unsafe { ev.assume_init() }
         };
-        
+
         let event = match ev.ev_type {
             // button press / release (key)
             0x01 => {
@@ -406,7 +502,7 @@ impl Gamepad {
                     10 => {
                         eprintln!("Button 10 is Unknown, report at https://github.com/libcala/stick/issues");
                         return self.poll(cx);
-                    },
+                    }
                     // D-PAD
                     12 | 256 => Event::Up(is),
                     13 | 259 => Event::Right(is),
@@ -416,20 +512,26 @@ impl Gamepad {
                     18 => {
                         eprintln!("Button 18 is Unknown, report at https://github.com/libcala/stick/issues");
                         return self.poll(cx);
-                    },
+                    }
                     // 19-20 already matched
                     21 => {
                         eprintln!("Button 21 is Unknown, report at https://github.com/libcala/stick/issues");
                         return self.poll(cx);
-                    },
+                    }
                     // 22-27 already matched
-                    28 => if is { Event::Quit } else { return self.poll(cx) },
+                    28 => {
+                        if is {
+                            Event::Quit
+                        } else {
+                            return self.poll(cx);
+                        }
+                    }
                     29 => Event::MotionButton(is),
                     30 => Event::CameraButton(is),
                     a => {
                         eprintln!("Button {} is Unknown, report at https://github.com/libcala/stick/issues", a);
                         return self.poll(cx);
-                    },
+                    }
                 }
             }
             // axis move (abs)
@@ -471,13 +573,13 @@ impl Gamepad {
                     a => {
                         eprintln!("Unknown Axis: {}", a);
                         return self.poll(cx);
-                    },
+                    }
                 }
             }
             // ignore autorepeat, relative.
-            _ => return self.poll(cx)
+            _ => return self.poll(cx),
         };
-        
+
         Poll::Ready(self.apply_mods(event))
     }
 }

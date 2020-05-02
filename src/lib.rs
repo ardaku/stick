@@ -5,8 +5,8 @@
 )]
 
 mod event;
-mod port;
 mod gamepad;
+mod port;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(
@@ -34,5 +34,5 @@ mod gamepad;
 mod ffi;
 
 pub use event::Event;
-pub use port::Port;
 pub use gamepad::Gamepad;
+pub use port::Port;
