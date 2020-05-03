@@ -12,9 +12,10 @@ async fn event_loop() {
         {
             (_, Event::Connect(gamepad)) => {
                 println!(
-                    "Connected p{}, id: {:X}",
+                    "Connected p{}, id: {:X}, name: {}",
                     gamepads.len(),
-                    gamepad.id()
+                    gamepad.id(),
+                    gamepad.name(),
                 );
                 gamepads.push(*gamepad);
             }

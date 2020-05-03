@@ -660,7 +660,15 @@ impl Gamepad {
     }
 
     pub(super) fn name(&self) -> String {
-        "Unknown".to_string() // FIXME
+        let fd = self.device.fd();
+        let mut a = MaybeUninit::<[c_char; 256]>::uninit();
+        assert_ne!(
+            unsafe { ioctl(fd, 0x80FF_4506, a.as_mut_ptr().cast()) },
+            -1
+        );
+        let a = unsafe { a.assume_init() };
+        let name = unsafe { std::ffi::CStr::from_ptr(a.as_ptr()) };
+        name.to_string_lossy().to_string()
     }
 
     pub(super) fn rumble(&mut self, v: f32) {
@@ -668,8 +676,6 @@ impl Gamepad {
             joystick_ff(self.device.fd(), self.rumble, v);
         }
     }
-
-    pub(super) fn leds(&mut self, pattern: [bool; 4]) {}
 }
 
 impl Drop for Gamepad {
@@ -780,27 +786,21 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
         joystick_haptic(fd, code, value);
     }
 
-    let code = code.try_into().unwrap();
-    
-    #[repr(C)]
-    struct InputEvent {
-        sec: c_ulong,
-        usec: c_ulong,
-        stype: u16,
-        code: u16,
-        value: i32,
-    };
-    let play = &InputEvent {
-        sec: 0,
-        usec: 0,
-        stype: 0x15, /*EV_FF*/
-        code,
-        value: if is_powered { 1 } else { 0 },
+    let ev_code = code.try_into().unwrap();
+
+    let play = &EvdevEv {
+        ev_time: TimeVal {
+            tv_sec: 0,
+            tv_usec: 0,
+        },
+        ev_type: 0x15, /*EV_FF*/
+        ev_code,
+        ev_value: if is_powered { 1 } else { 0 },
     };
     let play: *const _ = play;
     unsafe {
-        if write(fd, play.cast(), std::mem::size_of::<InputEvent>())
-            != std::mem::size_of::<InputEvent>() as isize
+        if write(fd, play.cast(), std::mem::size_of::<EvdevEv>())
+            != std::mem::size_of::<EvdevEv>() as isize
         {
             panic!("Write exited with {}", *__errno_location());
         }

@@ -23,11 +23,6 @@ impl Gamepad {
     pub fn rumble(&mut self, power: f32) {
         self.0.rumble(power.min(1.0).max(0.0));
     }
-
-    /// Set LED light pattern
-    pub fn leds(&mut self, pattern: [bool; 4]) {
-        self.0.leds(pattern);
-    }
 }
 
 impl Future for Gamepad {
