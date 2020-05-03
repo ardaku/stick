@@ -109,7 +109,7 @@ struct PortTimer {
 }
 
 impl PortTimer {
-    fn new(cx: &mut Context) -> Self {
+    fn new(cx: &mut Context<'_>) -> Self {
         // Create the timer.
         let timerfd = unsafe {
             timerfd_create(
@@ -199,7 +199,7 @@ impl Port {
         }
     }
 
-    pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<(usize, Event)> {
+    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<(usize, Event)> {
         // Timeout after joystick doesn't give up permissions for 1 second.
         if let Some(ref timer) = self.timer {
             let mut num = MaybeUninit::<u64>::uninit();
@@ -559,7 +559,7 @@ impl Gamepad {
         })
     }
 
-    pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<Event> {
+    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
         if let Some(event) = self.queued.take() {
             return Poll::Ready(self.apply_mods(event));
         }

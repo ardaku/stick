@@ -10,6 +10,7 @@
 /// An event on the "Standard Gamepad" from w3c shown below.
 ///
 /// ![Standard Gamepad](https://w3c.github.io/gamepad/standard_gamepad.svg)
+#[derive(Debug)]
 pub enum Event {
     /// A new controller has just been plugged in.
     Connect(Box<crate::Gamepad>),

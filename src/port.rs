@@ -14,6 +14,7 @@ use std::task::{Context, Poll};
 use crate::Event;
 
 /// A future that looks for new gamepad devices.
+#[allow(missing_debug_implementations)]
 pub struct Port(crate::ffi::Port);
 
 impl Port {
@@ -26,7 +27,7 @@ impl Port {
 impl Future for Port {
     type Output = (usize, Event);
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         self.get_mut().0.poll(cx)
     }
 }

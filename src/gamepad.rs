@@ -16,6 +16,12 @@ use crate::Event;
 /// A w3c "Standard Gamepad".
 pub struct Gamepad(pub(crate) crate::ffi::Gamepad);
 
+impl std::fmt::Debug for Gamepad {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Gamepad")
+    }
+}
+
 impl Gamepad {
     /// Get a unique identifier for the specific model of gamepad.
     pub fn id(&self) -> u32 {
@@ -37,7 +43,7 @@ impl Gamepad {
 impl Future for Gamepad {
     type Output = Event;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         self.get_mut().0.poll(cx)
     }
 }
