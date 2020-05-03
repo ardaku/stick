@@ -13,22 +13,22 @@ async fn event_loop() {
             (_, Event::Connect(gamepad)) => {
                 println!(
                     "Connected p{}, id: {:X}, name: {}",
-                    gamepads.len(),
+                    gamepads.len() + 1,
                     gamepad.id(),
                     gamepad.name(),
                 );
                 gamepads.push(*gamepad);
             }
             (id, Event::Disconnect) => {
-                println!("Disconnected p{}", id);
+                println!("Disconnected p{}", id + 1);
                 gamepads.swap_remove(id);
             }
             (id, Event::Quit) => {
-                println!("p{} ended the session", id);
+                println!("p{} ended the session", id + 1);
                 break 'e;
             }
             (id, event) => {
-                println!("p{}: {}", id, event);
+                println!("p{}: {}", id + 1, event);
                 match event {
                     Event::Accept(pressed) => {
                         gamepads[id].rumble(if pressed { 0.25 } else { 0.0 });
