@@ -1,36 +1,45 @@
 # Stick
 #
-# Copyright © 2017-2020 Jeron Aldaron Lau.
-# Dual-licensed under either the MIT License or the Boost Software License,
-# Version 1.0. (See accompanying file LICENSE_BSL.txt or copy at
-# https://www.boost.org/LICENSE_1_0.txt, and accompanying file LICENSE_MIT.txt
-# or copy at https://opensource.org/licenses/MIT)
+# Copyright (c) 2017-2020 Jeron Aldaron Lau
+# 
+# Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
+# https://apache.org/licenses/LICENSE-2.0>, or the Zlib License, <LICENSE-ZLIB
+# or http://opensource.org/licenses/Zlib>, at your option. This file may not be
+# copied, modified, or distributed except according to those terms.
 
 [package]
 name = "stick"
-version = "0.7.1"
+version = "0.8.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
+license = "Apache-2.0 OR Zlib"
+
+description = "Platform-agnostic asynchronous gamepad library for Rust"
+repository = "https://github.com/libcala/stick"
+documentation = "https://docs.rs/stick"
+homepage = "https://github.com/libcala/stick/blob/master/CHANGELOG.md"
+include = ["Cargo.toml", "README.md", "LICENSE-ZLIB", "LICENSE-APACHE", "src/*"]
+categories = ["hardware-support", "asynchronous", "game-development"]
+keywords = ["ux", "joystick", "gamepad", "platform-agnostic", "controller"]
+readme = "README.md"
 edition = "2018"
 
-license = "MIT OR BSL-1.0"
-documentation = "https://docs.rs/stick"
-homepage = "https://libcala.github.io/stick"
-repository = "https://github.com/libcala/stick"
-
-readme = "README.md"
-description = "Get input from joysticks, gamepads, and other controllers"
-keywords = [
-	"ux", "joystick", "gamepad", "platform-agnostic", "controller"
-]
-categories = ["hardware-support", "asynchronous", "game-development"]
-
-exclude = [
-	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
-	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
-]
+[badges]
+travis-ci = { repository = "libcala/stick" }
+is-it-maintained-issue-resolution = { repository = "libcala/stick" }
+is-it-maintained-open-issues = { repository = "libcala/stick" }
+maintenance = { status = "actively-developed" }
 
 [target.'cfg(all(not(target_arch = "wasm32"), target_os = "linux"))'.dependencies]
 smelling_salts = "0.1"
 
 [dev-dependencies]
 pasts = "0.1"
+
+[package.metadata.docs.rs]
+all-features = true
+default-target = "x86_64-unknown-linux-gnu"
+
+[features]
+default = []
+std = []
+docs-rs = []

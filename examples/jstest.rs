@@ -1,3 +1,5 @@
+//! Example is in the public domain.
+
 use pasts::prelude::*;
 use stick::{Event, Gamepad, Port};
 
