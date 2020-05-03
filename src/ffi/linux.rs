@@ -465,6 +465,90 @@ impl Gamepad {
     pub(super) fn id(&self) -> u32 {
         self.hardware_id
     }
+    
+    fn dpad_h(&mut self, value: c_int) -> Option<Event> {
+        let emulated = self.emulated;
+        let left = 0b0000_0001;
+        let right = 0b0000_0010;
+        Some(if value < 0 {
+            // Left
+            if emulated & left != 0 {
+                return None;
+            }
+            self.emulated |= left;
+            if emulated & right != 0 {
+                self.emulated &= !right;
+                self.queued = Some(Event::Left(true));
+                Event::Right(false)
+            } else {
+                Event::Left(true)
+            }
+        } else if value > 0 {
+            // Right
+            if emulated & right != 0 {
+                return None;
+            }
+            self.emulated |= right;
+            if emulated & left != 0 {
+                self.emulated &= !left;
+                self.queued = Some(Event::Right(true));
+                Event::Left(false)
+            } else {
+                Event::Right(true)
+            }
+        } else {
+            self.emulated &= !(left | right);
+            if emulated & left != 0 {
+                Event::Left(false)
+            } else if emulated & right != 0 {
+                Event::Right(false)
+            } else {
+                return None;
+            }
+        })
+    }
+    
+    fn dpad_v(&mut self, value: c_int) -> Option<Event> {
+        let emulated = self.emulated;
+        let up = 0b0000_0100;
+        let down = 0b0000_1000;
+        Some(if value < 0 {
+            // Up
+            if emulated & up != 0 {
+                return None;
+            }
+            self.emulated |= up;
+            if emulated & down != 0 {
+                self.emulated &= !down;
+                self.queued = Some(Event::Up(true));
+                Event::Down(false)
+            } else {
+                Event::Up(true)
+            }
+        } else if value > 0 {
+            // Down
+            if emulated & down != 0 {
+                return None;
+            }
+            self.emulated |= down;
+            if emulated & up != 0 {
+                self.emulated &= !up;
+                self.queued = Some(Event::Down(true));
+                Event::Up(false)
+            } else {
+                Event::Down(true)
+            }
+        } else {
+            self.emulated &= !(up | down);
+            if emulated & up != 0 {
+                Event::Up(false)
+            } else if emulated & down != 0 {
+                Event::Down(false)
+            } else {
+                return None;
+            }
+        })
+    }
 
     pub(super) fn poll(&mut self, cx: &mut Context) -> Poll<Event> {
         if let Some(event) = self.queued.take() {
@@ -525,10 +609,34 @@ impl Gamepad {
                         return self.poll(cx);
                     }
                     // D-PAD
-                    12 | 256 => Event::Up(is),
-                    13 | 259 => Event::Right(is),
-                    14 | 257 => Event::Down(is),
-                    15 | 258 => Event::Left(is),
+                    12 | 256 => {
+                        if let Some(ev) = self.dpad_v(if is { -1 } else { 0 }) {
+                            ev
+                        } else {
+                            return self.poll(cx);
+                        }
+                    }
+                    13 | 259 => {
+                        if let Some(ev) = self.dpad_h(if is { 1 } else { 0 }) {
+                            ev
+                        } else {
+                            return self.poll(cx);
+                        }
+                    }
+                    14 | 257 => {
+                        if let Some(ev) = self.dpad_v(if is { 1 } else { 0 }) {
+                            ev
+                        } else {
+                            return self.poll(cx);
+                        }
+                    }
+                    15 | 258 => {
+                        if let Some(ev) = self.dpad_h(if is { -1 } else { 0 }) {
+                            ev
+                        } else {
+                            return self.poll(cx);
+                        }
+                    }
                     // 16-17 already matched
                     18 => {
                         eprintln!(
@@ -575,75 +683,17 @@ impl Gamepad {
                     4 => Event::CameraV(self.to_float(ev.ev_value)),
                     5 => Event::Rz(self.to_float(ev.ev_value)),
                     16 => {
-                        let emulated = self.emulated;
-                        let value = ev.ev_value as i32;
-                        let left = 0b0000_0001;
-                        let right = 0b0000_0010;
-                        if value < 0 {
-                            // Left
-                            self.emulated |= left;
-                            if emulated & right != 0 {
-                                self.emulated &= !right;
-                                self.queued = Some(Event::Left(true));
-                                Event::Right(false)
-                            } else {
-                                Event::Left(true)
-                            }
-                        } else if value > 0 {
-                            // Right
-                            self.emulated |= right;
-                            if emulated & left != 0 {
-                                self.emulated &= !left;
-                                self.queued = Some(Event::Right(true));
-                                Event::Left(false)
-                            } else {
-                                Event::Right(true)
-                            }
+                        if let Some(event) = self.dpad_h(ev.ev_value as c_int) {
+                            event
                         } else {
-                            self.emulated &= !(left | right);
-                            if emulated & left != 0 {
-                                Event::Left(false)
-                            } else if emulated & right != 0 {
-                                Event::Right(false)
-                            } else {
-                                return self.poll(cx);
-                            }
+                            return self.poll(cx);
                         }
                     }
                     17 => {
-                        let emulated = self.emulated;
-                        let value = ev.ev_value as i32;
-                        let up = 0b0000_0100;
-                        let down = 0b0000_1000;
-                        if value < 0 {
-                            // Up
-                            self.emulated |= up;
-                            if emulated & down != 0 {
-                                self.emulated &= !down;
-                                self.queued = Some(Event::Up(true));
-                                Event::Down(false)
-                            } else {
-                                Event::Up(true)
-                            }
-                        } else if value > 0 {
-                            // Down
-                            self.emulated |= down;
-                            if emulated & up != 0 {
-                                self.emulated &= !up;
-                                self.queued = Some(Event::Down(true));
-                                Event::Up(false)
-                            } else {
-                                Event::Down(true)
-                            }
+                        if let Some(event) = self.dpad_v(ev.ev_value as c_int) {
+                            event
                         } else {
-                            self.emulated &= !(up | down);
-                            if emulated & up != 0 {
-                                Event::Up(false)
-                            } else if emulated & down != 0 {
-                                Event::Down(false)
-                            } else {
-                                return self.poll(cx);
-                            }
+                            return self.poll(cx);
                         }
                     }
                     40 => return self.poll(cx), // IGNORE: Duplicate axis.
