@@ -199,7 +199,10 @@ impl Port {
         }
     }
 
-    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<(usize, Event)> {
+    pub(super) fn poll(
+        &mut self,
+        cx: &mut Context<'_>,
+    ) -> Poll<(usize, Event)> {
         // Timeout after joystick doesn't give up permissions for 1 second.
         if let Some(ref timer) = self.timer {
             let mut num = MaybeUninit::<u64>::uninit();
@@ -356,7 +359,11 @@ impl Gamepad {
     // Apply mods
     fn apply_mods(&self, mut event: Event) -> Event {
         // Deadzone multiply
-        let dm = if self.hardware_id == 0x_07B5_0316 { 2.0 } else { 1.0 };
+        let dm = if self.hardware_id == 0x_07B5_0316 {
+            2.0
+        } else {
+            1.0
+        };
 
         let s = |x: f32| {
             // Scale based on advertized min and max values
@@ -474,7 +481,7 @@ impl Gamepad {
     pub(super) fn id(&self) -> u32 {
         self.hardware_id
     }
-    
+
     fn dpad_h(&mut self, value: c_int) -> Option<Event> {
         let emulated = self.emulated;
         let left = 0b0000_0001;
@@ -516,7 +523,7 @@ impl Gamepad {
             }
         })
     }
-    
+
     fn dpad_v(&mut self, value: c_int) -> Option<Event> {
         let emulated = self.emulated;
         let up = 0b0000_0100;
@@ -829,7 +836,7 @@ union FfUnion {
     ramp: FfRampEffect,
     periodic: FfPeriodicEffect,
     condition: [FfConditionEffect; 2], /* One for each axis */
-    rumble: FfRumbleEffect, // Not supported
+    rumble: FfRumbleEffect,            // Not supported
 }
 
 #[repr(C)]
@@ -887,11 +894,11 @@ fn joystick_haptic(fd: RawFd, id: i16, power: f32) -> i16 {
         },
         u: FfUnion {
             periodic: FfPeriodicEffect {
-                waveform: 0x5a,                         /*sine wave*/
-                period: 0,                              /*milliseconds*/
-                magnitude: (32767.0 * power) as i16,    /*peak value*/
-                offset: 0,                              /*mean value of wave*/
-                phase: 0,                               /*horizontal shift*/
+                waveform: 0x5a,                      /*sine wave*/
+                period: 0,                           /*milliseconds*/
+                magnitude: (32767.0 * power) as i16, /*peak value*/
+                offset: 0,                           /*mean value of wave*/
+                phase: 0,                            /*horizontal shift*/
                 envelope: FfEnvelope {
                     attack_length: 0,
                     attack_level: 0,

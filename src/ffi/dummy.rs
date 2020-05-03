@@ -11,32 +11,31 @@ use std::task::{Context, Poll};
 
 use crate::Event;
 
-pub(crate) struct Port {
-}
+pub(crate) struct Port {}
 
 impl Port {
     pub(super) fn new() -> Self {
-        Port {
-        }
+        Port {}
     }
 
-    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<(usize, Event)> {
+    pub(super) fn poll(
+        &mut self,
+        cx: &mut Context<'_>,
+    ) -> Poll<(usize, Event)> {
         let _ = cx;
-    
+
         Poll::Pending
     }
 }
 
-pub(crate) struct Gamepad {
-}
+pub(crate) struct Gamepad {}
 
 impl Gamepad {
     #[allow(unused)]
     fn new(device: ()) -> Self {
         let _ = device;
-    
-        Gamepad {
-        }
+
+        Gamepad {}
     }
 
     pub(super) fn id(&self) -> u32 {
@@ -45,7 +44,7 @@ impl Gamepad {
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
         let _ = cx;
-    
+
         Poll::Pending
     }
 
