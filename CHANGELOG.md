@@ -5,6 +5,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
 
 ## [0.8.0] - Unreleased
+### Added
+- Async/await support
+- Haptic support with `.rumble()` on `Gamepad`.
+- Linux implementation of `.name()` on `Gamepad`.
+- `Event` enum.
+
+### Changed
+- Renamed `Device` to `Gamepad`.
+- Back to an event-based API with `Event`.
+
+### Removed
+- `Btn` enum, use `Event` instead.
+
+### Fixed
+- Panic on drop (joystick disconnected)
+
+### Contributors
+Thanks to everyone who contributed to make this version of stick possible!
+
+- [AldaronLau](https://github.com/AldaronLau)
+- [jannic](https://github.com/jannic)
 
 ## [0.7.1] - 2019-07-18
 ### Fixed

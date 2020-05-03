@@ -45,7 +45,7 @@ stick = "0.8"
 ### Example
 This example can be used to test joystick input and haptic feedback.
 
-```rust
+```rust,no_run
 use pasts::prelude::*;
 use stick::{Event, Gamepad, Port};
 
