@@ -341,18 +341,21 @@ impl Gamepad {
     }
 
     fn to_float(&self, value: u32) -> f32 {
-        (value as i32) as f32 * 0.00392156862745098
+        (value as i32) as f32 * 0.005
     }
 
     // Apply mods
     fn apply_mods(&self, mut event: Event) -> Event {
+        // Deadzone multiply
+        let dm = if self.hardware_id == 0x_07B5_0316 { 2.0 } else { 1.0 };
+
         let s = |x: f32| {
             // Scale based on advertized min and max values
-            let v = ((255.0 * x) - self.abs_min as f32) / self.abs_range as f32;
+            let v = ((200.0 * x) - self.abs_min as f32) / self.abs_range as f32;
             // Noise Filter
-            let v = (255.0 * v).trunc() / 255.0;
+            let v = (200.0 * v).trunc() / 200.0;
             // Deadzone
-            if (v - 0.5).abs() < 0.0625 {
+            if (v - 0.5).abs() < dm * 0.0625 {
                 0.5
             } else {
                 v
@@ -416,7 +419,7 @@ impl Gamepad {
                 if self.hardware_id == 0x_0079_1844
                 /*gc*/
                 {
-                    event = Event::Lz((v * 2.0 - 0.5).min(1.0).max(-1.0));
+                    event = Event::Lz((v * 2.0 - 0.5).min(1.0).max(0.0));
                 } else {
                     event =
                         Event::CameraH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
@@ -426,20 +429,22 @@ impl Gamepad {
                 if self.hardware_id == 0x_0079_1844
                 /*gc*/
                 {
-                    event = Event::Rz((v * 2.0 - 0.5).min(1.0).max(-1.0));
+                    event = Event::Rz((v * 2.0 - 0.5).min(1.0).max(0.0));
                 } else {
                     event =
                         Event::CameraV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0))
                 }
             }
             Event::Lz(v) => {
-                if self.hardware_id == 0x_0079_1844
-                /*gc*/
-                {
+                if self.hardware_id == 0x_0079_1844 {
+                    // GameCube
                     event =
                         Event::CameraV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
+                } else if self.hardware_id == 0x_07B5_0316 {
+                    // Flight Controller
+                    event = Event::Lz((v + 0.5).min(1.0).max(0.0));
                 } else {
-                    event = Event::Lz(v.min(1.0).max(-1.0));
+                    event = Event::Lz(v.min(1.0).max(0.0));
                 }
             }
             Event::Rz(v) => {
@@ -449,7 +454,7 @@ impl Gamepad {
                     event =
                         Event::CameraH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
                 } else {
-                    event = Event::Rz(v.min(1.0).max(-1.0))
+                    event = Event::Rz(v.min(1.0).max(0.0))
                 }
             }
             _ => {}
