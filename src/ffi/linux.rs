@@ -353,7 +353,7 @@ impl Gamepad {
             // Scale based on advertized min and max values
             let v = ((200.0 * x) - self.abs_min as f32) / self.abs_range as f32;
             // Noise Filter
-            let v = (200.0 * v).trunc() / 200.0;
+            let v = (200.0 * v).trunc() / 199.0;
             // Deadzone
             if (v - 0.5).abs() < dm * 0.0625 {
                 0.5
