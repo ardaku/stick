@@ -1,8 +1,10 @@
 use smelling_salts::{Device as AsyncDevice, Watcher};
 
 use std::collections::HashSet;
+use std::convert::TryInto;
 use std::fs;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::ErrorKind;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
@@ -74,6 +76,7 @@ struct AbsInfo {
 
 extern "C" {
     fn read(fd: RawFd, buf: *mut c_void, count: usize) -> isize;
+    fn write(fd: RawFd, buf: *const c_void, count: usize) -> isize;
     fn close(fd: RawFd) -> c_int;
     fn fcntl(fd: RawFd, cmd: c_int, v: c_int) -> c_int;
     fn ioctl(fd: RawFd, request: c_ulong, v: *mut c_void) -> c_int;
@@ -227,7 +230,11 @@ impl Port {
                         // New gamepad
                         let mut filename = "/dev/input/by-id/".to_string();
                         filename.push_str(&file);
-                        let fd = match File::open(filename) {
+                        let fd = match OpenOptions::new()
+                            .read(true)
+                            .append(true)
+                            .open(filename)
+                        {
                             Ok(f) => f,
                             Err(e) => {
                                 if e.kind() == ErrorKind::PermissionDenied {
@@ -293,6 +300,7 @@ pub(crate) struct Gamepad {
     abs_range: c_int,
     queued: Option<Event>,
     emulated: u8, // lower 4 bits are for D-pad.
+    rumble: i16,
 }
 
 impl Gamepad {
@@ -318,6 +326,8 @@ impl Gamepad {
         let a = unsafe { a.assume_init() };
         let abs_min = a.minimum as c_int;
         let abs_range = a.maximum as c_int - a.minimum as c_int;
+        // Query the controller for haptic support.
+        let rumble = joystick_haptic(fd, -1, 0.0);
         // Construct device from fd, looking for input events.
         Gamepad {
             hardware_id,
@@ -326,6 +336,7 @@ impl Gamepad {
             queued: None,
             device: AsyncDevice::new(fd, Watcher::new().input()),
             emulated: 0,
+            rumble,
         }
     }
 
@@ -502,8 +513,10 @@ impl Gamepad {
                     9 | 27 => Event::Forward(is),
                     // ?
                     10 => {
-                        eprintln!("Button 10 is Unknown, report at \
-                            https://github.com/libcala/stick/issues");
+                        eprintln!(
+                            "Button 10 is Unknown, report at \
+                            https://github.com/libcala/stick/issues"
+                        );
                         return self.poll(cx);
                     }
                     // D-PAD
@@ -513,14 +526,18 @@ impl Gamepad {
                     15 | 258 => Event::Left(is),
                     // 16-17 already matched
                     18 => {
-                        eprintln!("Button 18 is Unknown, report at \
-                            https://github.com/libcala/stick/issues");
+                        eprintln!(
+                            "Button 18 is Unknown, report at \
+                            https://github.com/libcala/stick/issues"
+                        );
                         return self.poll(cx);
                     }
                     // 19-20 already matched
                     21 => {
-                        eprintln!("Button 21 is Unknown, report at \
-                            https://github.com/libcala/stick/issues");
+                        eprintln!(
+                            "Button 21 is Unknown, report at \
+                            https://github.com/libcala/stick/issues"
+                        );
                         return self.poll(cx);
                     }
                     // 22-27 already matched
@@ -534,8 +551,11 @@ impl Gamepad {
                     29 => Event::MotionButton(is),
                     30 => Event::CameraButton(is),
                     a => {
-                        eprintln!("Button {} is Unknown, report at \
-                            https://github.com/libcala/stick/issues", a);
+                        eprintln!(
+                            "Button {} is Unknown, report at \
+                            https://github.com/libcala/stick/issues",
+                            a
+                        );
                         return self.poll(cx);
                     }
                 }
@@ -554,7 +574,8 @@ impl Gamepad {
                         let value = ev.ev_value as i32;
                         let left = 0b0000_0001;
                         let right = 0b0000_0010;
-                        if value < 0 { // Left
+                        if value < 0 {
+                            // Left
                             self.emulated |= left;
                             if emulated & right != 0 {
                                 self.emulated &= !right;
@@ -563,7 +584,8 @@ impl Gamepad {
                             } else {
                                 Event::Left(true)
                             }
-                        } else if value > 0 { // Right
+                        } else if value > 0 {
+                            // Right
                             self.emulated |= right;
                             if emulated & left != 0 {
                                 self.emulated &= !left;
@@ -588,7 +610,8 @@ impl Gamepad {
                         let value = ev.ev_value as i32;
                         let up = 0b0000_0100;
                         let down = 0b0000_1000;
-                        if value < 0 { // Up
+                        if value < 0 {
+                            // Up
                             self.emulated |= up;
                             if emulated & down != 0 {
                                 self.emulated &= !down;
@@ -597,7 +620,8 @@ impl Gamepad {
                             } else {
                                 Event::Up(true)
                             }
-                        } else if value > 0 { // Down
+                        } else if value > 0 {
+                            // Down
                             self.emulated |= down;
                             if emulated & up != 0 {
                                 self.emulated &= !up;
@@ -613,14 +637,17 @@ impl Gamepad {
                             } else if emulated & down != 0 {
                                 Event::Down(false)
                             } else {
-                                return self.poll(cx)
+                                return self.poll(cx);
                             }
                         }
                     }
                     40 => return self.poll(cx), // IGNORE: Duplicate axis.
                     a => {
-                        eprintln!("Unknown Axis: {}, report at \
-                            https://github.com/libcala/stick/issues", a);
+                        eprintln!(
+                            "Unknown Axis: {}, report at \
+                            https://github.com/libcala/stick/issues",
+                            a
+                        );
                         return self.poll(cx);
                     }
                 }
@@ -631,10 +658,18 @@ impl Gamepad {
 
         Poll::Ready(self.apply_mods(event))
     }
-    
+
     pub(super) fn name(&self) -> String {
         "Unknown".to_string() // FIXME
     }
+
+    pub(super) fn rumble(&mut self, v: f32) {
+        if self.rumble >= 0 {
+            joystick_ff(self.device.fd(), self.rumble, v);
+        }
+    }
+
+    pub(super) fn leds(&mut self, pattern: [bool; 4]) {}
 }
 
 impl Drop for Gamepad {
@@ -643,4 +678,172 @@ impl Drop for Gamepad {
         self.device.old();
         assert_ne!(unsafe { close(fd) }, -1);
     }
+}
+
+// From: https://github.com/torvalds/linux/blob/master/include/uapi/linux/input.h
+
+#[repr(C)]
+struct FfTrigger {
+    button: u16,
+    interval: u16,
+}
+
+#[repr(C)]
+struct FfReplay {
+    length: u16,
+    delay: u16,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct FfEnvelope {
+    attack_length: u16,
+    attack_level: u16,
+    fade_length: u16,
+    fade_level: u16,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct FfConstantEffect {
+    level: i16,
+    envelope: FfEnvelope,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct FfRampEffect {
+    start_level: i16,
+    end_level: i16,
+    envelope: FfEnvelope,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct FfPeriodicEffect {
+    waveform: u16,
+    period: u16,
+    magnitude: i16,
+    offset: i16,
+    phase: u16,
+
+    envelope: FfEnvelope,
+
+    custom_len: u32,
+    custom_data: *mut i16,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct FfConditionEffect {
+    right_saturation: u16,
+    left_saturation: u16,
+
+    right_coeff: i16,
+    left_coeff: i16,
+
+    deadband: u16,
+    center: i16,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct FfRumbleEffect {
+    strong_magnitude: u16,
+    weak_magnitude: u16,
+}
+
+#[repr(C)]
+union FfUnion {
+    constant: FfConstantEffect, // Not supported.
+    ramp: FfRampEffect,
+    periodic: FfPeriodicEffect,
+    condition: [FfConditionEffect; 2], /* One for each axis */
+    rumble: FfRumbleEffect, // Not supported
+}
+
+#[repr(C)]
+struct FfEffect {
+    stype: u16,
+    id: i16,
+    direction: u16,
+
+    trigger: FfTrigger,
+    replay: FfReplay,
+
+    u: FfUnion,
+}
+
+fn joystick_ff(fd: RawFd, code: i16, value: f32) {
+    let is_powered = value != 0.0;
+    if is_powered {
+        joystick_haptic(fd, code, value);
+    }
+
+    let code = code.try_into().unwrap();
+    
+    #[repr(C)]
+    struct InputEvent {
+        sec: c_ulong,
+        usec: c_ulong,
+        stype: u16,
+        code: u16,
+        value: i32,
+    };
+    let play = &InputEvent {
+        sec: 0,
+        usec: 0,
+        stype: 0x15, /*EV_FF*/
+        code,
+        value: if is_powered { 1 } else { 0 },
+    };
+    let play: *const _ = play;
+    unsafe {
+        if write(fd, play.cast(), std::mem::size_of::<InputEvent>())
+            != std::mem::size_of::<InputEvent>() as isize
+        {
+            panic!("Write exited with {}", *__errno_location());
+        }
+    }
+}
+
+// Get ID's for rumble and vibrate, if they're supported (otherwise, -1).
+fn joystick_haptic(fd: RawFd, id: i16, power: f32) -> i16 {
+    let a = &mut FfEffect {
+        stype: 0x51,
+        id, /*allocate new effect*/
+        direction: 0,
+        trigger: FfTrigger {
+            button: 0,
+            interval: 0,
+        },
+        replay: FfReplay {
+            length: 0,
+            delay: 0,
+        },
+        u: FfUnion {
+            periodic: FfPeriodicEffect {
+                waveform: 0x5a,                         /*sine wave*/
+                period: 0,                              /*milliseconds*/
+                magnitude: (32767.0 * power) as i16,    /*peak value*/
+                offset: 0,                              /*mean value of wave*/
+                phase: 0,                               /*horizontal shift*/
+                envelope: FfEnvelope {
+                    attack_length: 0,
+                    attack_level: 0,
+                    fade_length: 0,
+                    fade_level: 0,
+                },
+                custom_len: 0,
+                custom_data: std::ptr::null_mut(),
+            },
+        },
+    };
+    let b: *mut _ = a;
+    let rumble = if unsafe { ioctl(fd, 0x40304580, b.cast()) } == -1 {
+        -1
+    } else {
+        a.id
+    };
+    rumble
 }

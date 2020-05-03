@@ -1,5 +1,5 @@
 use pasts::prelude::*;
-use stick::{Event, Port, Gamepad};
+use stick::{Event, Gamepad, Port};
 
 async fn event_loop() {
     let mut port = Port::new();
@@ -28,6 +28,15 @@ async fn event_loop() {
             }
             (id, event) => {
                 println!("p{}: {}", id, event);
+                match event {
+                    Event::Accept(pressed) => {
+                        gamepads[id].rumble(if pressed { 0.25 } else { 0.0 });
+                    }
+                    Event::Cancel(pressed) => {
+                        gamepads[id].rumble(if pressed { 1.0 } else { 0.0 });
+                    }
+                    _ => {}
+                }
             }
         }
     }
