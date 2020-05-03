@@ -7,51 +7,53 @@
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-//! Dummy implementation
+use std::task::{Context, Poll};
 
-pub struct NativeManager {/*pub native: i32*/}
+use crate::Event;
 
-impl NativeManager {
-    pub fn create() -> NativeManager {
-        /*		let joystick = joystick_create::joystick_create();
+pub(crate) struct Port {
+}
 
-        if joystick != -1 {
-            joystick_async::joystick_async(joystick);
-        }*/
-
-        NativeManager { /*native: joystick*/ }
+impl Port {
+    pub(super) fn new() -> Self {
+        Port {
+        }
     }
 
-    pub fn map(&self) -> (usize, usize, bool) {
-        /*		joystick_map::joystick_map(self.native)*/
-        (0, 0, true) // unplugged
-    }
-
-    pub fn is_plugged_in(&self) -> bool {
-        //		self.native != -1
-        false
-    }
-
-    pub fn disconnect(&mut self) -> () {
-        //		destroy::joystick(self.native);
-        //		self.native = -1;
-    }
-
-    pub fn name(&self) -> String {
-        //		joystick_name::joystick_name(self.native)
-        "unknown".to_string()
-    }
-
-    pub fn poll_event(&self, _: &mut (Vec<f32>, Vec<bool>)) -> bool {
-        //		joystick_poll_event::joystick_poll_event(self.native,
-        //			&mut state.0, &mut state.1)
-        false
+    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<(usize, Event)> {
+        let _ = cx;
+    
+        Poll::Pending
     }
 }
-impl Drop for NativeManager {
-    fn drop(&mut self) -> () {
-        //		if self.native != -1 {
-        //			destroy::joystick(self.native);
-        //		}
+
+pub(crate) struct Gamepad {
+}
+
+impl Gamepad {
+    #[allow(unused)]
+    fn new(device: ()) -> Self {
+        let _ = device;
+    
+        Gamepad {
+        }
+    }
+
+    pub(super) fn id(&self) -> u32 {
+        0xFFFF_FFFF
+    }
+
+    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
+        let _ = cx;
+    
+        Poll::Pending
+    }
+
+    pub(super) fn name(&self) -> String {
+        "Unknown".to_string()
+    }
+
+    pub(super) fn rumble(&mut self, v: f32) {
+        let _ = v;
     }
 }
