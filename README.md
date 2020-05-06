@@ -38,7 +38,7 @@ Add the following to your `Cargo.toml`.
 
 ```toml
 [dependencies]
-pasts = "0.1"
+pasts = "0.2"
 stick = "0.8"
 ```
 
@@ -53,7 +53,7 @@ async fn event_loop() {
     let mut port = Port::new();
     let mut gamepads = Vec::<Gamepad>::new();
     'e: loop {
-        match [(&mut port).fut(), gamepads.select().fut()]
+        match [port.fut(), gamepads.select().fut()]
             .select()
             .await
             .1

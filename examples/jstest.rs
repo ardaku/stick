@@ -7,7 +7,7 @@ async fn event_loop() {
     let mut port = Port::new();
     let mut gamepads = Vec::<Gamepad>::new();
     'e: loop {
-        match [(&mut port).fut(), gamepads.select().fut()]
+        match [port.fut(), gamepads.select().fut()]
             .select()
             .await
             .1
