@@ -22,6 +22,33 @@ use std::task::{Context, Poll};
 
 use crate::Event;
 
+const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_0E8F_3075;
+const HARDWARE_ID_SIXAXIS_PS3_COMPAT: u32 = 0x_054C_0268;
+const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
+const HARDWARE_ID_THRUSTMASTER: u32 = 0x_07B5_0316;
+const HARDWARE_ID_XBOX_PDP: u32 = 0x0E6F_02A8;
+
+struct HardwareId(u32);
+
+impl HardwareId {
+    fn is_playstation(&self) -> bool {
+        self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
+            || self.0 == HARDWARE_ID_SIXAXIS_PS3_COMPAT
+    }
+    
+    fn is_playstation_compat(&self) -> bool {
+        self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
+    }
+    
+    fn is_xbox(&self) -> bool {
+        !self.is_playstation() && !self.is_gamecube()
+    }
+    
+    fn is_gamecube(&self) -> bool {
+        self.0 == HARDWARE_ID_MAYFLASH_GAMECUBE
+    }
+}
+
 #[repr(C)]
 struct InotifyEv {
     // struct inotify_event, from C.
@@ -313,6 +340,12 @@ pub(crate) struct Gamepad {
     queued: Option<Event>,
     emulated: u8, // lower 4 bits are for D-pad.
     rumble: i16,
+    movx: f32,
+    movy: f32,
+    camx: f32,
+    camy: f32,
+    lt: f32,
+    rt: f32,
 }
 
 impl Gamepad {
@@ -349,133 +382,61 @@ impl Gamepad {
             device: AsyncDevice::new(fd, Watcher::new().input()),
             emulated: 0,
             rumble,
+            movx: 0.0, movy: 0.0, camx: 0.0, camy: 0.0, lt: 0.0, rt: 0.0,
         }
     }
 
-    fn to_float(&self, value: u32) -> f32 {
-        (value as i32) as f32 * 0.005
+    // Convert value as though it were a trigger axis (returns 0 to 1).
+    fn trigger_float(&self, x: c_int) -> f32 {
+        // Deadzone multiply
+        let dm = match self.hardware_id {
+            HARDWARE_ID_MAYFLASH_GAMECUBE => 2.0,
+            HARDWARE_ID_THRUSTMASTER => 0.0,
+            _ => 1.0,
+        };
+    
+        let scale = match self.hardware_id {
+            HARDWARE_ID_XBOX_PDP => 0.25,
+            HARDWARE_ID_THRUSTMASTER => 1.5,
+            _ => 1.0
+        };
+        let offset = match self.hardware_id {
+            HARDWARE_ID_THRUSTMASTER => scale / 2.0,
+            _ => 0.0
+        };
+    
+        let x = (x as f32 * scale / 255.0 + offset).min(1.0).max(0.0);
+        if x < dm * 0.075 {
+            0.0
+        } else {
+            x
+        }
     }
 
-    // Apply mods
-    fn apply_mods(&self, mut event: Event) -> Event {
+    // Convert value as though it were a joystick axis (returns -1 to 1).
+    fn joyaxis_float(&self, x: c_int) -> f32 {
         // Deadzone multiply
         let dm = if self.hardware_id == 0x_07B5_0316 {
             2.0
         } else {
             1.0
         };
-
-        let s = |x: f32| {
-            // Scale based on advertized min and max values
-            let v = ((200.0 * x) - self.abs_min as f32) / self.abs_range as f32;
-            // Noise Filter
-            let v = (200.0 * v).trunc() / 199.0;
-            // Deadzone
-            if (v - 0.5).abs() < dm * 0.0625 {
-                0.5
-            } else {
-                v
-            }
+        
+        let scale = if self.hardware_id == HARDWARE_ID_MAYFLASH_GAMECUBE {
+            1.5
+        } else {
+            1.0
         };
 
-        // Mods (xbox has A & B opposite of other controllers, and ps3 has X & Y
-        // opposite, gamecube needs axis to be scaled).
-        match event {
-            Event::Accept(p) => {
-                if self.hardware_id == 0x_0E6F_0501
-                /*xbox*/
-                {
-                    event = Event::Cancel(p);
-                }
-            }
-            Event::Cancel(p) => {
-                if self.hardware_id == 0x_0E6F_0501
-                /*xbox*/
-                {
-                    event = Event::Accept(p);
-                }
-            }
-            Event::Common(p) => {
-                if self.hardware_id == 0x_054C_0268
-                /*ps3*/
-                {
-                    event = Event::Action(p);
-                }
-            }
-            Event::Action(p) => {
-                if self.hardware_id == 0x_054C_0268
-                /*ps3*/
-                {
-                    event = Event::Common(p);
-                }
-            }
-            Event::MotionH(v) => {
-                if self.hardware_id == 0x_0079_1844
-                /*gc*/
-                {
-                    event =
-                        Event::MotionH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-                } else {
-                    event =
-                        Event::MotionH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
-                }
-            }
-            Event::MotionV(v) => {
-                if self.hardware_id == 0x_0079_1844
-                /*gc*/
-                {
-                    event =
-                        Event::MotionV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-                } else {
-                    event =
-                        Event::MotionV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
-                }
-            }
-            Event::CameraH(v) => {
-                if self.hardware_id == 0x_0079_1844
-                /*gc*/
-                {
-                    event = Event::Lz((v * 2.0 - 0.5).min(1.0).max(0.0));
-                } else {
-                    event =
-                        Event::CameraH((s(v) * 2.0 - 1.0).min(1.0).max(-1.0));
-                }
-            }
-            Event::CameraV(v) => {
-                if self.hardware_id == 0x_0079_1844
-                /*gc*/
-                {
-                    event = Event::Rz((v * 2.0 - 0.5).min(1.0).max(0.0));
-                } else {
-                    event =
-                        Event::CameraV((s(v) * 2.0 - 1.0).min(1.0).max(-1.0))
-                }
-            }
-            Event::Lz(v) => {
-                if self.hardware_id == 0x_0079_1844 {
-                    // GameCube
-                    event =
-                        Event::CameraV((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-                } else if self.hardware_id == 0x_07B5_0316 {
-                    // Flight Controller
-                    event = Event::Lz((v + 0.5).min(1.0).max(0.0));
-                } else {
-                    event = Event::Lz(v.min(1.0).max(0.0));
-                }
-            }
-            Event::Rz(v) => {
-                if self.hardware_id == 0x_0079_1844
-                /*gc*/
-                {
-                    event =
-                        Event::CameraH((s(v) * 4.0 - 2.0).min(1.0).max(-1.0));
-                } else {
-                    event = Event::Rz(v.min(1.0).max(0.0))
-                }
-            }
-            _ => {}
+        let x = (x - self.abs_min) as f32 / self.abs_range as f32;
+        // Noise Filter
+        let x = (200.0 * x).round() / 200.0;
+        // Deadzone
+        if (x - 0.5).abs() < dm * 0.0625 {
+            0.0
+        } else {
+            (x * 2.0 * scale - scale).min(1.0).max(-1.0)
         }
-        event
     }
 
     pub(super) fn id(&self) -> u32 {
@@ -566,9 +527,67 @@ impl Gamepad {
         })
     }
 
+    // Trigger axis disabled when trigger button pressed?
+    fn tad(&self) -> bool {
+        let hwid = HardwareId(self.hardware_id);
+        hwid.is_gamecube()
+    }
+    
+    fn remapping(&self, mut id: u16) -> u16 {
+        dbg!(id);
+
+        let hwid = HardwareId(self.hardware_id);
+        
+        // Swap Accept and Cancel Buttons, Action and Common Buttons
+        if hwid.is_playstation() {
+            if hwid.is_playstation_compat() {
+                id = match id {
+                    17 => 20, // "Cancel" -> Action
+                    20 => 22, // "Action" -> L
+                    22 => 24, // "L" -> LT
+                    23 => 25, // "R" -> RT
+                    24 => 26, // "LT" -> Back
+                    25 => 27, // "RT" -> Forward
+                    26 => 29, // Back -> MotionStick
+                    27 => 30, // Forward -> CameraStick
+                    x => x,
+                };
+            } else {
+                id = match id {
+                    17 => 16, // Accept <-> Cancel
+                    16 => 17, // Accept <-> Cancel
+                    19 => 20, // Common <-> Action
+                    20 => 19, // Common <-> Action
+                    x => x,
+                };
+            }
+        }
+
+        id
+    }
+    
+    fn axis_remapping(&self, mut id: u16) -> u16 {
+        // dbg!(id);
+    
+        let hwid = HardwareId(self.hardware_id);
+        
+        // Swap axis on Gamecube & Speedlink
+        if hwid.is_gamecube() || hwid.is_playstation_compat() {
+            id = match id {
+                2 => 4,
+                5 => 3,
+                3 => 2,
+                4 => 5,
+                x => x,
+            };
+        }
+        
+        id
+    }
+
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
         if let Some(event) = self.queued.take() {
-            return Poll::Ready(self.apply_mods(event));
+            return Poll::Ready(event);
         }
 
         // Read an event.
@@ -596,34 +615,37 @@ impl Gamepad {
             unsafe { ev.assume_init() }
         };
 
+        // Convert the event.
         let event = match ev.ev_type {
             // button press / release (key)
             0x01 => {
                 let is = ev.ev_value == 1;
 
-                match ev.ev_code - 0x120 {
-                    // ABXY
-                    0 | 19 => Event::Common(is),
-                    1 | 17 => Event::Accept(is),
-                    2 | 16 => Event::Cancel(is),
-                    3 | 20 => Event::Action(is),
-                    // LT/RT
-                    4 | 24 => return self.poll(cx), // Event::Lz(is),
-                    5 | 25 => return self.poll(cx), // Event::Rz(is),
-                    // Ignore LB/RB
-                    6 | 22 => Event::L(is), // 6 is a guess.
-                    7 | 23 => Event::R(is),
-                    // Select/Start
-                    8 | 26 => Event::Back(is), // 8 is a guess.
+                match self.remapping(ev.ev_code - 0x120) {
+                    // Fallback Event IDs
+                    0 | 20 => Event::Action(is),
+                    1 | 16 => Event::Accept(is),
+                    2 | 17 | 18 => Event::Cancel(is),
+                    3 | 19 => Event::Common(is),
+                    4 | 24 => Event::Lt(if is {
+                        self.emulated |= 0b0001_0000;
+                        1.0
+                    } else {
+                        self.emulated &= !0b0001_0000;
+                        self.lt
+                    }),
+                    5 | 25 => Event::Rt(if is {
+                        self.emulated |= 0b0010_0000;
+                        1.0
+                    } else {
+                        self.emulated &= !0b0010_0000;
+                        self.rt
+                    }),
+                    6 | 22 => Event::L(is), // 6 is Guess
+                    7 | 23 | 21 => Event::R(is),
+                    8 | 26 => Event::Back(is), // 8 is Guess
                     9 | 27 => Event::Forward(is),
-                    // ?
-                    10 => {
-                        eprintln!(
-                            "Button 10 is Unknown, report at \
-                            https://github.com/libcala/stick/issues"
-                        );
-                        return self.poll(cx);
-                    }
+                    // Skip 10,11
                     // D-PAD
                     12 | 256 => {
                         if let Some(ev) = self.dpad_v(if is { -1 } else { 0 }) {
@@ -653,23 +675,6 @@ impl Gamepad {
                             return self.poll(cx);
                         }
                     }
-                    // 16-17 already matched
-                    18 => {
-                        eprintln!(
-                            "Button 18 is Unknown, report at \
-                            https://github.com/libcala/stick/issues"
-                        );
-                        return self.poll(cx);
-                    }
-                    // 19-20 already matched
-                    21 => {
-                        eprintln!(
-                            "Button 21 is Unknown, report at \
-                            https://github.com/libcala/stick/issues"
-                        );
-                        return self.poll(cx);
-                    }
-                    // 22-27 already matched
                     28 => {
                         if is {
                             Event::Quit
@@ -679,6 +684,12 @@ impl Gamepad {
                     }
                     29 => Event::MotionButton(is),
                     30 => Event::CameraButton(is),
+                    // 31 thru 47 are unknown
+                    48 => Event::ExtPaddleL(is),
+                    49 => Event::ExtPaddleR(is),
+                    50 => Event::ExtPaddleLz(is), // Guess
+                    51 => Event::ExtPaddleRz(is), // Guess
+                    // 52 thru 255 are unknown
                     a => {
                         eprintln!(
                             "Button {} is Unknown, report at \
@@ -691,13 +702,59 @@ impl Gamepad {
             }
             // axis move (abs)
             0x03 => {
-                match ev.ev_code {
-                    0 => Event::MotionH(self.to_float(ev.ev_value)),
-                    1 => Event::MotionV(self.to_float(ev.ev_value)),
-                    2 => Event::Lz(self.to_float(ev.ev_value)),
-                    3 => Event::CameraH(self.to_float(ev.ev_value)),
-                    4 => Event::CameraV(self.to_float(ev.ev_value)),
-                    5 => Event::Rz(self.to_float(ev.ev_value)),
+                match self.axis_remapping(ev.ev_code) {
+                    0 => Event::MotionH({
+                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        if value == self.movx {
+                            return self.poll(cx);
+                        }
+                        self.movx = value;
+                        value
+                    }),
+                    1 => Event::MotionV({
+                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        if value == self.movy {
+                            return self.poll(cx);
+                        }
+                        self.movy = value;
+                        value
+                    }),
+                    21 | 2 => Event::Lt({
+                        let old = self.lt;
+                        self.lt = self.trigger_float(ev.ev_value as c_int);
+                        if (self.emulated & 0b0001_0000 != 0 && self.tad())
+                            || old == self.lt
+                        {
+                            return self.poll(cx);
+                        }
+                        self.lt
+                    }),
+                    3 => Event::CameraH({
+                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        if value == self.camx {
+                            return self.poll(cx);
+                        }
+                        self.camx = value;
+                        value
+                    }),
+                    4 => Event::CameraV({
+                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        if value == self.camy {
+                            return self.poll(cx);
+                        }
+                        self.camy = value;
+                        value
+                    }),
+                    20 | 5 => Event::Rt({
+                        let old = self.rt;
+                        self.rt = self.trigger_float(ev.ev_value as c_int);
+                        if (self.emulated & 0b0010_0000 != 0 && self.tad())
+                            || old == self.rt
+                        {
+                            return self.poll(cx);
+                        }
+                        self.rt
+                    }),
                     16 => {
                         if let Some(event) = self.dpad_h(ev.ev_value as c_int) {
                             event
@@ -727,7 +784,7 @@ impl Gamepad {
             _ => return self.poll(cx),
         };
 
-        Poll::Ready(self.apply_mods(event))
+        Poll::Ready(event)
     }
 
     pub(super) fn name(&self) -> String {

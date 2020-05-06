@@ -33,7 +33,7 @@ async fn event_loop() {
                 println!("p{}: {}", id + 1, event);
                 match event {
                     Event::Accept(pressed) => {
-                        gamepads[id].rumble(if pressed { 0.25 } else { 0.0 });
+                        gamepads[id].rumble(if pressed { 0.5 } else { 0.0 });
                     }
                     Event::Cancel(pressed) => {
                         gamepads[id].rumble(if pressed { 1.0 } else { 0.0 });

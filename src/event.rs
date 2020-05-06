@@ -46,9 +46,9 @@ pub enum Event {
     R(bool),
 
     /// Far L Throttle - "Sneak" (Ctrl)
-    Lz(f32),
+    Lt(f32),
     /// Far R Throttle - "Precision Action" (Alt)
-    Rz(f32),
+    Rt(f32),
 
     /// Right Joystick (A / D)
     MotionH(f32),
@@ -63,6 +63,16 @@ pub enum Event {
     MotionButton(bool),
     /// Right Joystick Button (F)
     CameraButton(bool),
+
+    /// Upper Left Paddle
+    ExtPaddleL(bool),
+    /// Upper Right Paddle
+    ExtPaddleR(bool),
+    
+    /// Lower Left Paddle
+    ExtPaddleLz(bool),
+    /// Lower Right Paddle
+    ExtPaddleRz(bool),
 
     /// Home button (Target platform application close)
     Quit,
@@ -89,14 +99,18 @@ impl std::fmt::Display for Event {
             Forward(p) => write!(f, "Forward {}", pushed(p)),
             L(p) => write!(f, "L {}", pushed(p)),
             R(p) => write!(f, "R {}", pushed(p)),
-            Lz(v) => write!(f, "Lz {}", v),
-            Rz(v) => write!(f, "Rz {}", v),
+            Lt(v) => write!(f, "Lt {}", v),
+            Rt(v) => write!(f, "Rt {}", v),
             MotionH(v) => write!(f, "MotionH {}", v),
             MotionV(v) => write!(f, "MotionV {}", v),
             CameraH(v) => write!(f, "CameraH {}", v),
             CameraV(v) => write!(f, "CameraV {}", v),
             MotionButton(p) => write!(f, "MotionButton {}", pushed(p)),
             CameraButton(p) => write!(f, "CameraButton {}", pushed(p)),
+            ExtPaddleL(p) => write!(f, "ExtPaddleL {}", pushed(p)),
+            ExtPaddleR(p) => write!(f, "ExtPaddleR {}", pushed(p)),
+            ExtPaddleLz(p) => write!(f, "ExtPaddleLz {}", pushed(p)),
+            ExtPaddleRz(p) => write!(f, "ExtPaddleRz {}", pushed(p)),
             Quit => write!(f, "Quit"),
         }
     }
