@@ -863,7 +863,7 @@ impl Gamepad {
                 return self.poll(cx);
             }
             u => {
-                eprintln!("Unknown {} {}.", ev.ev_code, ev.ev_value);
+                eprintln!("Unknown {} {} {}.", u, ev.ev_code, ev.ev_value);
                 return self.poll(cx);
             }
         };
