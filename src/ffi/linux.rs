@@ -808,15 +808,27 @@ impl Gamepad {
                         self.lt
                     }),
                     3 => Event::CameraH({
-                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        let value = if HardwareId(self.hardware_id).is_thrustmaster() {
+                            self.trigger_float(ev.ev_value as c_int) * 2.0 - 1.0
+                        } else {
+                            self.joyaxis_float(ev.ev_value as c_int)
+                        };
                         if value == self.camx {
                             return self.poll(cx);
                         }
                         self.camx = value;
                         value
                     }),
-                    4 | 6 => Event::CameraV({
+                    4 => Event::CameraV({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
+                        if value == self.camy {
+                            return self.poll(cx);
+                        }
+                        self.camy = value;
+                        value
+                    }),
+                    6 => Event::CameraV({
+                        let value = self.trigger_float(ev.ev_value as c_int) * 2.0 - 1.0;
                         if value == self.camy {
                             return self.poll(cx);
                         }
