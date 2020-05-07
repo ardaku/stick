@@ -28,6 +28,7 @@ const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
 const HARDWARE_ID_THRUSTMASTER: u32 = 0x_07B5_0316;
 const HARDWARE_ID_XBOX_PDP: u32 = 0x_0E6F_02A8;
 const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_0738_1718;
+const HARDWARE_ID_PS4_DUAL_SHOCK: u32 = 0x_054C_05C4;
 
 struct HardwareId(u32);
 
@@ -35,6 +36,7 @@ impl HardwareId {
     fn is_playstation(&self) -> bool {
         self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
             || self.0 == HARDWARE_ID_SIXAXIS_PS3_COMPAT
+            || self.0 == HARDWARE_ID_PS4_DUAL_SHOCK
     }
     
     fn is_playstation_compat(&self) -> bool {
@@ -42,7 +44,7 @@ impl HardwareId {
     }
     
     fn is_xbox(&self) -> bool {
-        !self.is_playstation() && !self.is_gamecube()
+        !self.is_playstation() && !self.is_gamecube() && !self.is_mouse()
     }
     
     fn is_gamecube(&self) -> bool {
