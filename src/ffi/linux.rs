@@ -27,7 +27,8 @@ use crate::Event;
 const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_0E8F_3075;
 const HARDWARE_ID_SIXAXIS_PS3_COMPAT: u32 = 0x_054C_0268;
 const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
-const HARDWARE_ID_THRUSTMASTER: u32 = 0x_07B5_0316;
+const HARDWARE_ID_THRUSTMASTER1: u32 = 0x_07B5_0316;
+const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_044F_B10A;
 const HARDWARE_ID_XBOX_PDP: u32 = 0x_0E6F_02A8;
 const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_0738_1718;
 const HARDWARE_ID_PS4_DUAL_SHOCK: u32 = 0x_054C_05C4;
@@ -46,7 +47,10 @@ impl HardwareId {
     }
 
     fn is_xbox(&self) -> bool {
-        !self.is_playstation() && !self.is_gamecube() && !self.is_mouse()
+        !self.is_playstation()
+            && !self.is_gamecube()
+            && !self.is_mouse()
+            && !self.is_thrustmaster()
     }
 
     fn is_gamecube(&self) -> bool {
@@ -55,6 +59,11 @@ impl HardwareId {
 
     fn is_mouse(&self) -> bool {
         self.0 == HARDWARE_ID_MAD_CATZ_RAT_MOUSE
+    }
+
+    fn is_thrustmaster(&self) -> bool {
+        self.0 == HARDWARE_ID_THRUSTMASTER1
+            || self.0 == HARDWARE_ID_THRUSTMASTER2
     }
 }
 
@@ -405,21 +414,15 @@ impl Gamepad {
         // Deadzone multiply
         let dm = match self.hardware_id {
             HARDWARE_ID_MAYFLASH_GAMECUBE => 2.0,
-            HARDWARE_ID_THRUSTMASTER => 0.0,
             _ => 1.0,
         };
 
         let scale = match self.hardware_id {
             HARDWARE_ID_XBOX_PDP => 0.25,
-            HARDWARE_ID_THRUSTMASTER => 1.5,
             _ => 1.0,
         };
-        let offset = match self.hardware_id {
-            HARDWARE_ID_THRUSTMASTER => scale / 2.0,
-            _ => 0.0,
-        };
 
-        let x = (x as f32 * scale / 255.0 + offset).min(1.0).max(0.0);
+        let x = (x as f32 * scale / 255.0).min(1.0).max(0.0);
         if x < dm * 0.075 {
             0.0
         } else {
@@ -443,8 +446,6 @@ impl Gamepad {
         };
 
         let x = (x - self.abs_min) as f32 / self.abs_range as f32;
-        // Noise Filter
-        let x = (200.0 * x).round() / 200.0;
         // Deadzone
         if (x - 0.5).abs() < dm * 0.0625 {
             0.0
@@ -582,7 +583,25 @@ impl Gamepad {
                 4 => 27, // "Lt" -> Forward
                 5 => 4,  // "Rt" -> "Lt"
                 x => x,
-            }
+            };
+        } else if hwid.is_thrustmaster() {
+            id = match id {
+                // Left Custom Buttons
+                4 => 48, // Guess
+                5 => 50, // Guess
+                6 => 52, // Guess
+                7 => 54, // Guess
+                8 => 56, // Guess
+                9 => 58, // Guess
+                // Right Custom Buttons
+                10 => 49, // Guess
+                11 => 51, // Guess
+                12 => 53, // Guess
+                13 => 55, // Guess
+                14 => 57, // Guess
+                15 => 59, // Guess
+                x => x,
+            };
         }
 
         id
@@ -594,13 +613,22 @@ impl Gamepad {
         let hwid = HardwareId(self.hardware_id);
 
         // Swap axis on Gamecube & Speedlink
-        if hwid.is_gamecube() || hwid.is_playstation_compat() || hwid.is_mouse()
+        if hwid.is_gamecube()
+            || hwid.is_playstation_compat()
+            || hwid.is_thrustmaster()
         {
             id = match id {
                 2 => 4,
                 5 => 3,
                 3 => 2,
                 4 => 5,
+                x => x,
+            };
+        } else if hwid.is_mouse() {
+            id = match id {
+                0 => 3, // Mouse movement -> Camera
+                1 => 4, // Mouse movement -> Camera
+                5 => 0, // Scroll Wheel Horizontal -> Movement
                 x => x,
             };
         }
@@ -639,8 +667,9 @@ impl Gamepad {
         };
 
         // Convert the event.
-        dbg!((ev.ev_type, ev.ev_code, ev.ev_value));
+        // dbg!((ev.ev_type, ev.ev_code, ev.ev_value));
         let event = match ev.ev_type {
+            0x00 => return self.poll(cx), // Ignore SYN events.
             // button press / release (key)
             0x01 => {
                 let is = ev.ev_value == 1;
@@ -709,11 +738,19 @@ impl Gamepad {
                     29 => Event::MotionButton(is),
                     30 => Event::CameraButton(is),
                     // 31 thru 47 are unknown
-                    48 => Event::ExtPaddleL(is),
-                    49 => Event::ExtPaddleR(is),
-                    50 => Event::ExtPaddleLz(is), // Guess
-                    51 => Event::ExtPaddleRz(is), // Guess
-                    // 52 thru 255 are unknown
+                    48 => Event::ExtL(0, is),
+                    49 => Event::ExtR(0, is),
+                    50 => Event::ExtL(1, is), // Guess
+                    51 => Event::ExtR(1, is), // Guess
+                    52 => Event::ExtL(2, is), // Guess
+                    53 => Event::ExtR(2, is), // Guess
+                    54 => Event::ExtL(3, is), // Guess
+                    55 => Event::ExtR(3, is), // Guess
+                    56 => Event::ExtL(4, is), // Guess
+                    57 => Event::ExtR(4, is), // Guess
+                    58 => Event::ExtL(5, is), // Guess
+                    59 => Event::ExtR(5, is), // Guess
+                    // 60 thru 255 are unknown
                     a => {
                         eprintln!(
                             "Button {} is Unknown, report at \
@@ -724,7 +761,24 @@ impl Gamepad {
                     }
                 }
             }
-            // axis move (abs)
+            // Relative axis movement
+            0x02 => {
+                match ev.ev_code {
+                    8 => Event::MotionV({
+                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        if value == self.movy {
+                            return self.poll(cx);
+                        }
+                        self.movy = value;
+                        value
+                    }),
+                    u => {
+                        eprintln!("Unknown Relative Axis {}", u);
+                        return self.poll(cx)
+                    }
+                }
+            }
+            // Absolute axis movement (abs)
             0x03 => {
                 match self.axis_remapping(ev.ev_code) {
                     0 => Event::MotionH({
@@ -761,7 +815,7 @@ impl Gamepad {
                         self.camx = value;
                         value
                     }),
-                    4 => Event::CameraV({
+                    4 | 6 => Event::CameraV({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
                         if value == self.camy {
                             return self.poll(cx);
@@ -793,7 +847,7 @@ impl Gamepad {
                             return self.poll(cx);
                         }
                     }
-                    40 => return self.poll(cx), // IGNORE: Duplicate axis.
+                    40 | 11 => return self.poll(cx), // IGNORE: Duplicate axis.
                     a => {
                         eprintln!(
                             "Unknown Axis: {}, report at \
@@ -804,8 +858,14 @@ impl Gamepad {
                     }
                 }
             }
-            // ignore autorepeat, relative.
-            _ => return self.poll(cx),
+            0x04 => {
+                eprintln!("Misc {} {}.", ev.ev_code, ev.ev_value);
+                return self.poll(cx);
+            }
+            u => {
+                eprintln!("Unknown {} {}.", ev.ev_code, ev.ev_value);
+                return self.poll(cx);
+            }
         };
 
         Poll::Ready(event)

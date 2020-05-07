@@ -64,15 +64,10 @@ pub enum Event {
     /// Right Joystick Button (F)
     CameraButton(bool),
 
-    /// Upper Left Paddle
-    ExtPaddleL(bool),
-    /// Upper Right Paddle
-    ExtPaddleR(bool),
-    
-    /// Lower Left Paddle
-    ExtPaddleLz(bool),
-    /// Lower Right Paddle
-    ExtPaddleRz(bool),
+    /// Upper Left Extra buttons (Upper to lower)
+    ExtL(u8, bool),
+    /// Upper Right Extra buttons (Upper to lower)
+    ExtR(u8, bool),
 
     /// Home button (Target platform application close)
     Quit,
@@ -107,10 +102,8 @@ impl std::fmt::Display for Event {
             CameraV(v) => write!(f, "CameraV {}", v),
             MotionButton(p) => write!(f, "MotionButton {}", pushed(p)),
             CameraButton(p) => write!(f, "CameraButton {}", pushed(p)),
-            ExtPaddleL(p) => write!(f, "ExtPaddleL {}", pushed(p)),
-            ExtPaddleR(p) => write!(f, "ExtPaddleR {}", pushed(p)),
-            ExtPaddleLz(p) => write!(f, "ExtPaddleLz {}", pushed(p)),
-            ExtPaddleRz(p) => write!(f, "ExtPaddleRz {}", pushed(p)),
+            ExtL(l, p) => write!(f, "ExtL{} {}", l, pushed(p)),
+            ExtR(l, p) => write!(f, "ExtR{} {}", l, pushed(p)),
             Quit => write!(f, "Quit"),
         }
     }

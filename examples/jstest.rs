@@ -7,11 +7,7 @@ async fn event_loop() {
     let mut port = Port::new();
     let mut gamepads = Vec::<Gamepad>::new();
     'e: loop {
-        match [port.fut(), gamepads.select().fut()]
-            .select()
-            .await
-            .1
-        {
+        match [port.fut(), gamepads.select().fut()].select().await.1 {
             (_, Event::Connect(gamepad)) => {
                 println!(
                     "Connected p{}, id: {:X}, name: {}",
