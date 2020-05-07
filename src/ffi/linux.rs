@@ -26,7 +26,8 @@ const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_0E8F_3075;
 const HARDWARE_ID_SIXAXIS_PS3_COMPAT: u32 = 0x_054C_0268;
 const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
 const HARDWARE_ID_THRUSTMASTER: u32 = 0x_07B5_0316;
-const HARDWARE_ID_XBOX_PDP: u32 = 0x0E6F_02A8;
+const HARDWARE_ID_XBOX_PDP: u32 = 0x_0E6F_02A8;
+const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_0738_1718;
 
 struct HardwareId(u32);
 
@@ -46,6 +47,10 @@ impl HardwareId {
     
     fn is_gamecube(&self) -> bool {
         self.0 == HARDWARE_ID_MAYFLASH_GAMECUBE
+    }
+    
+    fn is_mouse(&self) -> bool {
+        self.0 == HARDWARE_ID_MAD_CATZ_RAT_MOUSE
     }
 }
 
@@ -542,14 +547,15 @@ impl Gamepad {
         if hwid.is_playstation() {
             if hwid.is_playstation_compat() {
                 id = match id {
-                    17 => 20, // "Cancel" -> Action
+                    17 => 16, // "Cancel" -> Accept
+                    16 => 20, // "Accept" -> Action
                     20 => 22, // "Action" -> L
                     22 => 24, // "L" -> LT
                     23 => 25, // "R" -> RT
                     24 => 26, // "LT" -> Back
                     25 => 27, // "RT" -> Forward
-                    26 => 29, // Back -> MotionStick
-                    27 => 30, // Forward -> CameraStick
+                    26 => 29, // "Back" -> MotionStick
+                    27 => 30, // "Forward" -> CameraStick
                     x => x,
                 };
             } else {
@@ -561,6 +567,13 @@ impl Gamepad {
                     x => x,
                 };
             }
+        } else if hwid.is_mouse() {
+            id = match id {
+                3 => 26, // "Common" -> Back
+                4 => 27, // "Lt" -> Forward
+                5 => 4, // "Rt" -> "Lt"
+                x => x,
+            }
         }
 
         id
@@ -568,11 +581,13 @@ impl Gamepad {
     
     fn axis_remapping(&self, mut id: u16) -> u16 {
         // dbg!(id);
-    
+
         let hwid = HardwareId(self.hardware_id);
-        
+
         // Swap axis on Gamecube & Speedlink
-        if hwid.is_gamecube() || hwid.is_playstation_compat() {
+        if hwid.is_gamecube() || hwid.is_playstation_compat()
+            || hwid.is_mouse()
+        {
             id = match id {
                 2 => 4,
                 5 => 3,
@@ -616,6 +631,7 @@ impl Gamepad {
         };
 
         // Convert the event.
+        dbg!((ev.ev_type, ev.ev_code, ev.ev_value));
         let event = match ev.ev_type {
             // button press / release (key)
             0x01 => {
@@ -952,7 +968,7 @@ fn joystick_haptic(fd: RawFd, id: i16, power: f32) -> i16 {
         u: FfUnion {
             periodic: FfPeriodicEffect {
                 waveform: 0x5a,                      /*sine wave*/
-                period: 0,                           /*milliseconds*/
+                period: 100,                         /*milliseconds*/
                 magnitude: (32767.0 * power) as i16, /*peak value*/
                 offset: 0,                           /*mean value of wave*/
                 phase: 0,                            /*horizontal shift*/
