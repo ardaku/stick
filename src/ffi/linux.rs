@@ -9,16 +9,18 @@
 
 use smelling_salts::{Device as AsyncDevice, Watcher};
 
-use std::collections::HashSet;
-use std::convert::TryInto;
-use std::fs;
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::io::ErrorKind;
-use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
-use std::os::unix::io::{IntoRawFd, RawFd};
-use std::task::{Context, Poll};
+use std::{
+    collections::HashSet,
+    convert::TryInto,
+    fs::{self, File, OpenOptions},
+    io::ErrorKind,
+    mem::MaybeUninit,
+    os::{
+        raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void},
+        unix::io::{IntoRawFd, RawFd},
+    },
+    task::{Context, Poll},
+};
 
 use crate::Event;
 
