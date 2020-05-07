@@ -9,16 +9,18 @@
 
 use smelling_salts::{Device as AsyncDevice, Watcher};
 
-use std::collections::HashSet;
-use std::convert::TryInto;
-use std::fs;
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::io::ErrorKind;
-use std::mem::MaybeUninit;
-use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
-use std::os::unix::io::{IntoRawFd, RawFd};
-use std::task::{Context, Poll};
+use std::{
+    collections::HashSet,
+    convert::TryInto,
+    fs::{self, File, OpenOptions},
+    io::ErrorKind,
+    mem::MaybeUninit,
+    os::{
+        raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void},
+        unix::io::{IntoRawFd, RawFd},
+    },
+    task::{Context, Poll},
+};
 
 use crate::Event;
 
@@ -38,19 +40,19 @@ impl HardwareId {
             || self.0 == HARDWARE_ID_SIXAXIS_PS3_COMPAT
             || self.0 == HARDWARE_ID_PS4_DUAL_SHOCK
     }
-    
+
     fn is_playstation_compat(&self) -> bool {
         self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
     }
-    
+
     fn is_xbox(&self) -> bool {
         !self.is_playstation() && !self.is_gamecube() && !self.is_mouse()
     }
-    
+
     fn is_gamecube(&self) -> bool {
         self.0 == HARDWARE_ID_MAYFLASH_GAMECUBE
     }
-    
+
     fn is_mouse(&self) -> bool {
         self.0 == HARDWARE_ID_MAD_CATZ_RAT_MOUSE
     }
@@ -291,7 +293,7 @@ impl Port {
                         };
                         self.connected.insert(file);
                         return Poll::Ready((
-                            usize::MAX,
+                            std::usize::MAX,
                             Event::Connect(Box::new(crate::Gamepad(
                                 Gamepad::new(fd),
                             ))),
@@ -389,7 +391,12 @@ impl Gamepad {
             device: AsyncDevice::new(fd, Watcher::new().input()),
             emulated: 0,
             rumble,
-            movx: 0.0, movy: 0.0, camx: 0.0, camy: 0.0, lt: 0.0, rt: 0.0,
+            movx: 0.0,
+            movy: 0.0,
+            camx: 0.0,
+            camy: 0.0,
+            lt: 0.0,
+            rt: 0.0,
         }
     }
 
@@ -401,17 +408,17 @@ impl Gamepad {
             HARDWARE_ID_THRUSTMASTER => 0.0,
             _ => 1.0,
         };
-    
+
         let scale = match self.hardware_id {
             HARDWARE_ID_XBOX_PDP => 0.25,
             HARDWARE_ID_THRUSTMASTER => 1.5,
-            _ => 1.0
+            _ => 1.0,
         };
         let offset = match self.hardware_id {
             HARDWARE_ID_THRUSTMASTER => scale / 2.0,
-            _ => 0.0
+            _ => 0.0,
         };
-    
+
         let x = (x as f32 * scale / 255.0 + offset).min(1.0).max(0.0);
         if x < dm * 0.075 {
             0.0
@@ -428,7 +435,7 @@ impl Gamepad {
         } else {
             1.0
         };
-        
+
         let scale = if self.hardware_id == HARDWARE_ID_MAYFLASH_GAMECUBE {
             1.5
         } else {
@@ -539,12 +546,12 @@ impl Gamepad {
         let hwid = HardwareId(self.hardware_id);
         hwid.is_gamecube()
     }
-    
+
     fn remapping(&self, mut id: u16) -> u16 {
         dbg!(id);
 
         let hwid = HardwareId(self.hardware_id);
-        
+
         // Swap Accept and Cancel Buttons, Action and Common Buttons
         if hwid.is_playstation() {
             if hwid.is_playstation_compat() {
@@ -573,22 +580,21 @@ impl Gamepad {
             id = match id {
                 3 => 26, // "Common" -> Back
                 4 => 27, // "Lt" -> Forward
-                5 => 4, // "Rt" -> "Lt"
+                5 => 4,  // "Rt" -> "Lt"
                 x => x,
             }
         }
 
         id
     }
-    
+
     fn axis_remapping(&self, mut id: u16) -> u16 {
         // dbg!(id);
 
         let hwid = HardwareId(self.hardware_id);
 
         // Swap axis on Gamecube & Speedlink
-        if hwid.is_gamecube() || hwid.is_playstation_compat()
-            || hwid.is_mouse()
+        if hwid.is_gamecube() || hwid.is_playstation_compat() || hwid.is_mouse()
         {
             id = match id {
                 2 => 4,
@@ -598,7 +604,7 @@ impl Gamepad {
                 x => x,
             };
         }
-        
+
         id
     }
 
