@@ -64,9 +64,9 @@ pub enum Event {
     /// Right Joystick Button (F)
     CameraButton(bool),
 
-    /// Upper Left Extra buttons (Upper to lower)
+    /// Left Extra buttons (Upper to lower)
     ExtL(u8, bool),
-    /// Upper Right Extra buttons (Upper to lower)
+    /// Right Extra buttons (Upper to lower)
     ExtR(u8, bool),
 
     /// Home button (Target platform application close)
