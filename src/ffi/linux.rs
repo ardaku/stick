@@ -24,6 +24,7 @@ use std::{
 
 use crate::Event;
 
+const HARDWARE_ID_MAYFLASH_ARCADE_FIGHTSTICK_PS3_COMPAT: u32 = 0x_0079_1830;
 const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
 
 const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_044F_B10A;
@@ -53,6 +54,7 @@ impl HardwareId {
     fn is_playstation_compat(&self) -> bool {
         self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
             || self.0 == HARDWARE_ID_AFTERGLOW_PS3_COMPAT
+            || self.0 == HARDWARE_ID_MAYFLASH_ARCADE_FIGHTSTICK_PS3_COMPAT
     }
 
     fn is_gamecube(&self) -> bool {
@@ -888,6 +890,9 @@ impl Gamepad {
             }
             0x04 => {
                 eprintln!("Misc {} {}.", ev.ev_code, ev.ev_value);
+                return self.poll(cx);
+            }
+            0x15 => { // Force Feedback echo, ignore
                 return self.poll(cx);
             }
             u => {
