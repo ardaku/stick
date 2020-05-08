@@ -24,33 +24,35 @@ use std::{
 
 use crate::Event;
 
-const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_0E8F_3075;
-const HARDWARE_ID_SIXAXIS_PS3_COMPAT: u32 = 0x_054C_0268;
 const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
-const HARDWARE_ID_THRUSTMASTER1: u32 = 0x_07B5_0316;
+
 const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_044F_B10A;
-const HARDWARE_ID_XBOX_PDP: u32 = 0x_0E6F_02A8;
+
+const HARDWARE_ID_PLAYSTATION_LOGITECH: u32 = 0x_046D_C216;
+
+const HARDWARE_ID_SIXAXIS_PS3: u32 = 0x_054C_0268;
+const HARDWARE_ID_DUALSHOCK_PS4: u32 = 0x_054C_05C4;
+
 const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_0738_1718;
-const HARDWARE_ID_PS4_DUAL_SHOCK: u32 = 0x_054C_05C4;
+
+const HARDWARE_ID_THRUSTMASTER1: u32 = 0x_07B5_0316;
+
+const HARDWARE_ID_XBOX_PDP: u32 = 0x_0E6F_02A8;
+
+const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_0E8F_3075;
+const HARDWARE_ID_AFTERGLOW_PS3_COMPAT: u32 = 0x_0E6F_6302;
 
 struct HardwareId(u32);
 
 impl HardwareId {
-    fn is_playstation(&self) -> bool {
-        self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
-            || self.0 == HARDWARE_ID_SIXAXIS_PS3_COMPAT
-            || self.0 == HARDWARE_ID_PS4_DUAL_SHOCK
+    fn is_playstation_official(&self) -> bool {
+        self.0 == HARDWARE_ID_SIXAXIS_PS3
+            || self.0 == HARDWARE_ID_DUALSHOCK_PS4
     }
 
     fn is_playstation_compat(&self) -> bool {
         self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
-    }
-
-    fn is_xbox(&self) -> bool {
-        !self.is_playstation()
-            && !self.is_gamecube()
-            && !self.is_mouse()
-            && !self.is_thrustmaster()
+            || self.0 == HARDWARE_ID_AFTERGLOW_PS3_COMPAT
     }
 
     fn is_gamecube(&self) -> bool {
@@ -64,6 +66,10 @@ impl HardwareId {
     fn is_thrustmaster(&self) -> bool {
         self.0 == HARDWARE_ID_THRUSTMASTER1
             || self.0 == HARDWARE_ID_THRUSTMASTER2
+    }
+    
+    fn is_playstation_logitech(&self) -> bool {
+        self.0 == HARDWARE_ID_PLAYSTATION_LOGITECH
     }
 }
 
@@ -554,29 +560,39 @@ impl Gamepad {
         let hwid = HardwareId(self.hardware_id);
 
         // Swap Accept and Cancel Buttons, Action and Common Buttons
-        if hwid.is_playstation() {
-            if hwid.is_playstation_compat() {
-                id = match id {
-                    17 => 16, // "Cancel" -> Accept
-                    16 => 20, // "Accept" -> Action
-                    20 => 22, // "Action" -> L
-                    22 => 24, // "L" -> LT
-                    23 => 25, // "R" -> RT
-                    24 => 26, // "LT" -> Back
-                    25 => 27, // "RT" -> Forward
-                    26 => 29, // "Back" -> MotionStick
-                    27 => 30, // "Forward" -> CameraStick
-                    x => x,
-                };
-            } else {
-                id = match id {
-                    17 => 16, // Accept <-> Cancel
-                    16 => 17, // Accept <-> Cancel
-                    19 => 20, // Common <-> Action
-                    20 => 19, // Common <-> Action
-                    x => x,
-                };
-            }
+        if hwid.is_playstation_official() {
+            id = match id {
+                17 => 16, // Accept <-> Cancel
+                16 => 17, // Accept <-> Cancel
+                19 => 20, // Common <-> Action
+                20 => 19, // Common <-> Action
+                x => x,
+            };
+        } else if hwid.is_playstation_logitech() {
+            id = match id {
+                17 => 16, // Accept <-> Cancel
+                16 => 17, // Accept <-> Cancel
+                19 => 20, // Common <-> Action
+                20 => 19, // Common <-> Action
+                4 => 6, // LT <-> L
+                6 => 4, // LT <-> L
+                5 => 7, // RT <-> R
+                7 => 5, // RT <-> R
+                x => x,
+            };
+        } else if hwid.is_playstation_compat() {
+            id = match id {
+                17 => 16, // "Cancel" -> Accept
+                16 => 20, // "Accept" -> Action
+                20 => 22, // "Action" -> L
+                22 => 24, // "L" -> LT
+                23 => 25, // "R" -> RT
+                24 => 26, // "LT" -> Back
+                25 => 27, // "RT" -> Forward
+                26 => 29, // "Back" -> MotionStick
+                27 => 30, // "Forward" -> CameraStick
+                x => x,
+            };
         } else if hwid.is_mouse() {
             id = match id {
                 3 => 26, // "Common" -> Back
@@ -616,6 +632,7 @@ impl Gamepad {
         if hwid.is_gamecube()
             || hwid.is_playstation_compat()
             || hwid.is_thrustmaster()
+            || hwid.is_playstation_logitech()
         {
             id = match id {
                 2 => 4,
@@ -698,7 +715,8 @@ impl Gamepad {
                     7 | 23 | 21 => Event::R(is),
                     8 | 26 => Event::Back(is), // 8 is Guess
                     9 | 27 => Event::Forward(is),
-                    // Skip 10,11
+                    10 | 29 => Event::MotionButton(is),
+                    11 | 30 => Event::CameraButton(is),
                     // D-PAD
                     12 | 256 => {
                         if let Some(ev) = self.dpad_v(if is { -1 } else { 0 }) {
@@ -735,8 +753,6 @@ impl Gamepad {
                             return self.poll(cx);
                         }
                     }
-                    29 => Event::MotionButton(is),
-                    30 => Event::CameraButton(is),
                     // 31 thru 47 are unknown
                     48 => Event::ExtL(0, is),
                     49 => Event::ExtR(0, is),
