@@ -9,7 +9,7 @@
 
 [package]
 name = "stick"
-version = "0.8.1"
+version = "0.9.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 license = "Apache-2.0 OR Zlib"
 
@@ -33,7 +33,7 @@ maintenance = { status = "actively-developed" }
 smelling_salts = "0.1"
 
 [dev-dependencies]
-pasts = "0.3"
+pasts = "0.4"
 
 [package.metadata.docs.rs]
 all-features = true

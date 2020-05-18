@@ -1,6 +1,6 @@
 //! Example is in the public domain.
 
-use pasts::prelude::*;
+use pasts::{CvarExec, prelude::*};
 use stick::{Event, Gamepad, Port};
 
 async fn event_loop() {
@@ -42,5 +42,7 @@ async fn event_loop() {
 }
 
 fn main() {
-    pasts::ThreadInterrupt::block_on(event_loop())
+    static EXECUTOR: CvarExec = CvarExec::new();
+
+    EXECUTOR.block_on(event_loop())
 }

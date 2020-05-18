@@ -4,10 +4,20 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
 
-## [0.8.1] - Unreleased
+## [0.9.0] - 2020-05-18
+### Added
+- Support for a lot of different kinds of joysticks.
+- `ExtL` and `ExtR` variants of `Event` enum for buttons that aren't on the W3C
+  standard gamepad.
+
 ### Changed
-- Update documentation/examples to use pasts 0.2
+- Update documentation/examples to use pasts 0.4
 - Remove unneeded `(&mut )` in example/documentation.
+- `Lz` and `Rz` variants on `Event` are renamed to `Lt` and `Rt`
+
+### Contributions
+- Thanks to everyone who helped test joysticks at
+  [https://github.com/libcala/stick/issues/5](https://github.com/libcala/stick/issues/5)!
 
 ## [0.8.0] - 2020-05-03
 ### Added
