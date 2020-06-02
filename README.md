@@ -74,10 +74,10 @@ async fn event_loop() {
             (id, event) => {
                 println!("p{}: {}", id + 1, event);
                 match event {
-                    Event::Do(pressed) => {
+                    Event::Primary(pressed) => {
                         gamepads[id].rumble(if pressed { 1.0 } else { 0.0 });
                     }
-                    Event::Go(pressed) => {
+                    Event::Secondary(pressed) => {
                         gamepads[id].rumble(if pressed { 0.25 } else { 0.0 });
                     }
                     _ => {}

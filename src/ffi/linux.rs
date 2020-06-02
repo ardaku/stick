@@ -691,26 +691,26 @@ impl Gamepad {
 
                 match self.remapping(ev.ev_code - 0x120) {
                     // Fallback Event IDs
-                    0 | 20 => Event::Top(is),
-                    1 | 16 => Event::Do(is),
-                    2 | 17 | 18 => Event::Go(is),
-                    3 | 19 => Event::Use(is),
-                    4 | 24 => Event::LShoulderTrigger(if is {
+                    0 | 20 => Event::Action(is),
+                    1 | 16 => Event::Primary(is),
+                    2 | 17 | 18 => Event::Secondary(is),
+                    3 | 19 => Event::Item(is),
+                    4 | 24 => Event::ShoulderTriggerL(if is {
                         self.emulated |= 0b0001_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0001_0000;
                         self.lt
                     }),
-                    5 | 25 => Event::RShoulderTrigger(if is {
+                    5 | 25 => Event::ShoulderTriggerR(if is {
                         self.emulated |= 0b0010_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0010_0000;
                         self.rt
                     }),
-                    6 | 22 => Event::LShoulder(is), // 6 is Guess
-                    7 | 23 | 21 => Event::RShoulder(is),
+                    6 | 22 => Event::ShoulderL(is), // 6 is Guess
+                    7 | 23 | 21 => Event::ShoulderR(is),
                     8 | 26 => Event::Back(is), // 8 is Guess
                     9 | 27 => Event::Forward(is),
                     10 | 29 => Event::JoystickButton(is),
@@ -809,7 +809,7 @@ impl Gamepad {
                         self.movy = value;
                         value
                     }),
-                    21 | 2 => Event::LShoulderTrigger({
+                    21 | 2 => Event::ShoulderTriggerL({
                         let old = self.lt;
                         self.lt = self.trigger_float(ev.ev_value as c_int);
                         if (self.emulated & 0b0001_0000 != 0 && self.tad())
@@ -851,7 +851,7 @@ impl Gamepad {
                         self.camy = value;
                         value
                     }),
-                    20 | 5 => Event::RShoulderTrigger({
+                    20 | 5 => Event::ShoulderTriggerR({
                         let old = self.rt;
                         self.rt = self.trigger_float(ev.ev_value as c_int);
                         if (self.emulated & 0b0010_0000 != 0 && self.tad())
@@ -889,7 +889,8 @@ impl Gamepad {
             0x04 => {
                 if ev.ev_code == 4
                 /* scan */
-                { /* ignore */ } else {
+                { /* ignore */
+                } else {
                     eprintln!("Misc {} {}.", ev.ev_code, ev.ev_value);
                 }
                 return self.poll(cx);
@@ -1056,7 +1057,11 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
             if errno != 19
             /* 19 = device unplugged, ignore */
             {
-                panic!("Write {:?} exited with {}", (code, new_id), *__errno_location());
+                panic!(
+                    "Write {:?} exited with {}",
+                    (code, new_id),
+                    *__errno_location()
+                );
             }
         }
     }

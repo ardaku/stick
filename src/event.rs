@@ -7,9 +7,17 @@
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-/// An event on the "Standard Gamepad" from w3c shown below.
+/// An event from a `Stick`.  A `Stick` may refer to a gamepad or flightstick or
+/// possibly some other device that isn't captured by the operating system's
+/// window manager.
 ///
-/// ![Standard Gamepad](https://w3c.github.io/gamepad/standard_gamepad.svg)
+/// # Gamepad Types
+/// ## Standard Gamepad
+/// A gamepad similar to w3c's "standard gamepad":
+///
+/// ## Flightstick
+/// A joystick typically used in flight simulations and robotics:
+///
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Event {
@@ -29,23 +37,26 @@ pub enum Event {
      */
 
     /* Main button cluster */
-    /// A / Circle / Return / Left Click.  Main action button to do something.
-    Do(bool),
-    /// B / Cross / Shift.  Button to exit out of a menu, speed up, or lower.
-    Go(bool),
+    /// A / 1 / Circle / Return / Left Click.  Main action button to do
+    /// something.
+    Primary(bool),
+    /// B / 2 / Cross / Shift.  Button to exit out of a menu, speed up, or
+    /// lower.
+    Secondary(bool),
     /// Y / X / Square / Right Click.  Use item.
-    Use(bool),
-    /// X / Y / Triangle / Space.  Jumping / special move.
-    Top(bool),
+    Item(bool),
+    /// X / Y / Triangle / Space.  Jumping / special move.  Always the topmost
+    /// button in the cluster.
+    Action(bool),
 
     /* D-PAD / Hat */
-    /// Up arrow / D-pad
+    /// D-pad / Hat / Arrow Up
     Up(bool),
-    /// Down arrow / D-pad
+    /// D-pad / Hat / Arrow Down
     Down(bool),
-    /// Left arrow / D-pad
+    /// D-pad / Hat / Arrow Left
     Left(bool),
-    /// Right arrow / D-pad
+    /// D-pad / Hat / Arrow Right
     Right(bool),
 
     /* Center buttons */
@@ -56,16 +67,16 @@ pub enum Event {
 
     /* Shoulder Buttons (L, R, Z - 1) */
     /// Left shoulder button (near button if no trigger) - "Inventory" (E)
-    LShoulder(bool),
+    ShoulderL(bool),
     /// Right shoulder button (near button if no trigger) - "Use" (R)
-    RShoulder(bool),
+    ShoulderR(bool),
 
     /* Shoulder Triggers (LZ, RZ - 2)  */
     /// Left Shoulder Trigger (far button if no trigger) - "Sneak" (Ctrl)
-    LShoulderTrigger(f32),
+    ShoulderTriggerL(f32),
     /// Right Shoulder Trigger (far button if no trigger) - "Precision Action"
     /// (Alt)
-    RShoulderTrigger(f32),
+    ShoulderTriggerR(f32),
 
     /* Joystick */
     /// Main joystick X axis (A / D)
@@ -102,7 +113,7 @@ pub enum Event {
     /*
      * Realistic flight simulation stick extra buttons, switches, etc.
      */
-     
+
     /*
      * Mice-like controllers extra buttons, scroll wheel
      */
@@ -117,20 +128,20 @@ impl std::fmt::Display for Event {
         match *self {
             Connect(_) => write!(f, "Controller Connected"),
             Disconnect => write!(f, "Controller Disconnected"),
-            Do(p) => write!(f, "Do {}", pushed(p)),
-            Go(p) => write!(f, "Go {}", pushed(p)),
-            Use(p) => write!(f, "Use {}", pushed(p)),
-            Top(p) => write!(f, "Top {}", pushed(p)),
+            Primary(p) => write!(f, "Primary {}", pushed(p)),
+            Secondary(p) => write!(f, "Secondary {}", pushed(p)),
+            Item(p) => write!(f, "Item {}", pushed(p)),
+            Action(p) => write!(f, "Action {}", pushed(p)),
             Up(p) => write!(f, "Up {}", pushed(p)),
             Down(p) => write!(f, "Down {}", pushed(p)),
             Left(p) => write!(f, "Left {}", pushed(p)),
             Right(p) => write!(f, "Right {}", pushed(p)),
             Back(p) => write!(f, "Back {}", pushed(p)),
             Forward(p) => write!(f, "Forward {}", pushed(p)),
-            LShoulder(p) => write!(f, "LShoulder {}", pushed(p)),
-            RShoulder(p) => write!(f, "RShoulder {}", pushed(p)),
-            LShoulderTrigger(v) => write!(f, "LShoulderTrigger {}", v),
-            RShoulderTrigger(v) => write!(f, "RShoulderTrigger {}", v),
+            ShoulderL(p) => write!(f, "ShoulderL {}", pushed(p)),
+            ShoulderR(p) => write!(f, "ShoulderR {}", pushed(p)),
+            ShoulderTriggerL(v) => write!(f, "ShoulderTriggerL {}", v),
+            ShoulderTriggerR(v) => write!(f, "ShoulderTriggerR {}", v),
             JoystickH(v) => write!(f, "JoystickH {}", v),
             JoystickV(v) => write!(f, "JoystickV {}", v),
             JoystickR(v) => write!(f, "JoystickR {}", v),
