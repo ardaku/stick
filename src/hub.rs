@@ -13,8 +13,7 @@ use std::task::{Context, Poll};
 
 use crate::Event;
 
-/// A future that looks for new gamepad devices on the computer's USB hub or
-/// equivalent.
+/// A future that looks for new `Pad`s on the computer's USB hub or equivalent.
 #[allow(missing_debug_implementations)]
 pub struct Hub(crate::ffi::Hub);
 
