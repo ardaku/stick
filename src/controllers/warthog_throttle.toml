@@ -1,4 +1,4 @@
-name = 'ThrustmasterWarthogThrottle'
+name = 'Thrustmaster Warthog Throttle'
 id = '44F0404'
 
 [[axes]]
@@ -25,8 +25,6 @@ name = 'ThrottleL'
 [axes.action]
 code = 6
 name = 'Slew'
-
-[triggers]
 
 [[buttons]]
 code = 713
@@ -156,3 +154,9 @@ name = 'ChForward'
 code = 299
 name = 'ChBackward'
 
+[[hats]]
+name = "Hat"
+north = 544
+south = 545
+west = 546
+east = 547

@@ -9,20 +9,14 @@ use toml::value::{ Table};
 #[derive(Deserialize, Debug, Serialize)]
 /// Describes some hardware joystick mapping
 pub(crate) struct DeviceDescriptor {
-    /// Name of device.
     pub(crate) name: String,
-    /// Hardware ID of device.
     pub(crate) id: String,
-    /// Collection of axes belonging to this device.
     pub(crate) axes: Vec<AxisEvent>,
-    /// Collection of triggers belonging to this device.
-    pub(crate) triggers: Table,
-    /// Collection of buttons belonging to this device.
     pub(crate) buttons: Vec<ButtonEvent>,
-    /// Collection of two-way switches belonging to this device.
     pub(crate) two_way: Vec<TwoWaySwitchEvent>,
-    /// Collection of three-way switches belonging to this device.
     pub(crate) three_way: Vec<ThreeWaySwitchEvent>,
+    pub(crate) triggers: Option<Vec<AxisEvent>>,
+    pub(crate) hats: Option<Vec<HatEvent>>,
 }
 
 impl DeviceDescriptor {
@@ -84,4 +78,20 @@ pub(crate) struct ThreeWaySwitchEvent {
     pub(crate) high: Event,
     // Name of event emitted when the switch is in its Low "down" state
     pub(crate) low: Event,
+}
+
+
+#[derive(Serialize, Deserialize, Debug)]
+/// Hat.
+pub(crate) struct HatEvent {
+    /// Hat's name
+    pub(crate) name: String,
+    /// ID of north event.
+    pub(crate) north: u32,
+    /// ID of south event.
+    pub(crate) south: u32,
+    /// ID of west event.
+    pub(crate) west: u32,
+    // ID of east event.
+    pub(crate) east: u32,
 }
