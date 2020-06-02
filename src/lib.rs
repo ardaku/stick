@@ -35,7 +35,6 @@
 mod event;
 mod gamepad;
 mod port;
-mod descriptor;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(

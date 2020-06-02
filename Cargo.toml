@@ -32,6 +32,11 @@ maintenance = { status = "actively-developed" }
 [target.'cfg(all(not(target_arch = "wasm32"), target_os = "linux"))'.dependencies]
 smelling_salts = "0.1"
 
+[build-dependencies]
+toml = "0.5.6"
+serde = "1.0.110"
+serde_derive = "1.0.110"
+
 [dev-dependencies]
 pasts = "0.4"
 
@@ -43,8 +48,3 @@ default-target = "x86_64-unknown-linux-gnu"
 default = []
 std = []
 docs-rs = []
-
-[dependencies]
-toml = "0.5.6"
-serde = "1.0.110"
-serde_derive = "1.0.110"
