@@ -558,8 +558,6 @@ impl Gamepad {
     }
 
     fn remapping(&self, mut id: u16) -> u16 {
-        dbg!(id);
-
         let hwid = HardwareId(self.hardware_id);
 
         // Swap Accept and Cancel Buttons, Action and Common Buttons
@@ -627,8 +625,6 @@ impl Gamepad {
     }
 
     fn axis_remapping(&self, mut id: u16) -> u16 {
-        // dbg!(id);
-
         let hwid = HardwareId(self.hardware_id);
 
         // Swap axis on Gamecube & Speedlink
@@ -687,7 +683,6 @@ impl Gamepad {
         };
 
         // Convert the event.
-        // dbg!((ev.ev_type, ev.ev_code, ev.ev_value));
         let event = match ev.ev_type {
             0x00 => return self.poll(cx), // Ignore SYN events.
             // button press / release (key)
@@ -700,26 +695,26 @@ impl Gamepad {
                     1 | 16 => Event::Do(is),
                     2 | 17 | 18 => Event::Go(is),
                     3 | 19 => Event::Use(is),
-                    4 | 24 => Event::Lt(if is {
+                    4 | 24 => Event::LShoulderTrigger(if is {
                         self.emulated |= 0b0001_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0001_0000;
                         self.lt
                     }),
-                    5 | 25 => Event::Rt(if is {
+                    5 | 25 => Event::RShoulderTrigger(if is {
                         self.emulated |= 0b0010_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0010_0000;
                         self.rt
                     }),
-                    6 | 22 => Event::L(is), // 6 is Guess
-                    7 | 23 | 21 => Event::R(is),
+                    6 | 22 => Event::LShoulder(is), // 6 is Guess
+                    7 | 23 | 21 => Event::RShoulder(is),
                     8 | 26 => Event::Back(is), // 8 is Guess
                     9 | 27 => Event::Forward(is),
-                    10 | 29 => Event::MotionButton(is),
-                    11 | 30 => Event::CameraButton(is),
+                    10 | 29 => Event::JoystickButton(is),
+                    11 | 30 => Event::CStickButton(is),
                     // D-PAD
                     12 | 256 => {
                         if let Some(ev) = self.dpad_v(if is { -1 } else { 0 }) {
@@ -751,24 +746,24 @@ impl Gamepad {
                     }
                     28 => {
                         if is {
-                            Event::Quit
+                            Event::Cmd
                         } else {
                             return self.poll(cx);
                         }
                     }
                     // 31 thru 47 are unknown
-                    48 => Event::ExtL(0, is),
-                    49 => Event::ExtR(0, is),
-                    50 => Event::ExtL(1, is), // Guess
-                    51 => Event::ExtR(1, is), // Guess
-                    52 => Event::ExtL(2, is), // Guess
-                    53 => Event::ExtR(2, is), // Guess
-                    54 => Event::ExtL(3, is), // Guess
-                    55 => Event::ExtR(3, is), // Guess
-                    56 => Event::ExtL(4, is), // Guess
-                    57 => Event::ExtR(4, is), // Guess
-                    58 => Event::ExtL(5, is), // Guess
-                    59 => Event::ExtR(5, is), // Guess
+                    48 => Event::Generic(0, is),
+                    49 => Event::Generic(1, is),
+                    50 => Event::Generic(2, is), // Guess
+                    51 => Event::Generic(3, is), // Guess
+                    52 => Event::Generic(4, is), // Guess
+                    53 => Event::Generic(5, is), // Guess
+                    54 => Event::Generic(6, is), // Guess
+                    55 => Event::Generic(7, is), // Guess
+                    56 => Event::Generic(8, is), // Guess
+                    57 => Event::Generic(9, is), // Guess
+                    58 => Event::Generic(10, is), // Guess
+                    59 => Event::Generic(11, is), // Guess
                     // 60 thru 255 are unknown
                     a => {
                         eprintln!(
@@ -782,7 +777,7 @@ impl Gamepad {
             }
             // Relative axis movement
             0x02 => match ev.ev_code {
-                8 => Event::MotionV({
+                8 => Event::JoystickV({
                     let value = self.joyaxis_float(ev.ev_value as c_int);
                     if value == self.movy {
                         return self.poll(cx);
@@ -798,7 +793,7 @@ impl Gamepad {
             // Absolute axis movement (abs)
             0x03 => {
                 match self.axis_remapping(ev.ev_code) {
-                    0 => Event::MotionH({
+                    0 => Event::JoystickH({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
                         if value == self.movx {
                             return self.poll(cx);
@@ -806,7 +801,7 @@ impl Gamepad {
                         self.movx = value;
                         value
                     }),
-                    1 => Event::MotionV({
+                    1 => Event::JoystickV({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
                         if value == self.movy {
                             return self.poll(cx);
@@ -814,7 +809,7 @@ impl Gamepad {
                         self.movy = value;
                         value
                     }),
-                    21 | 2 => Event::Lt({
+                    21 | 2 => Event::LShoulderTrigger({
                         let old = self.lt;
                         self.lt = self.trigger_float(ev.ev_value as c_int);
                         if (self.emulated & 0b0001_0000 != 0 && self.tad())
@@ -824,7 +819,7 @@ impl Gamepad {
                         }
                         self.lt
                     }),
-                    3 => Event::CameraH({
+                    3 => Event::CStickH({
                         let value = if HardwareId(self.hardware_id)
                             .is_thrustmaster()
                         {
@@ -838,7 +833,7 @@ impl Gamepad {
                         self.camx = value;
                         value
                     }),
-                    4 => Event::CameraV({
+                    4 => Event::CStickV({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
                         if value == self.camy {
                             return self.poll(cx);
@@ -846,7 +841,7 @@ impl Gamepad {
                         self.camy = value;
                         value
                     }),
-                    6 => Event::CameraV({
+                    6 => Event::CStickV({
                         let value = self.trigger_float(ev.ev_value as c_int)
                             * 2.0
                             - 1.0;
@@ -856,7 +851,7 @@ impl Gamepad {
                         self.camy = value;
                         value
                     }),
-                    20 | 5 => Event::Rt({
+                    20 | 5 => Event::RShoulderTrigger({
                         let old = self.rt;
                         self.rt = self.trigger_float(ev.ev_value as c_int);
                         if (self.emulated & 0b0010_0000 != 0 && self.tad())
@@ -894,8 +889,9 @@ impl Gamepad {
             0x04 => {
                 if ev.ev_code == 4
                 /* scan */
-                { /* ignore */ }
-                eprintln!("Misc {} {}.", ev.ev_code, ev.ev_value);
+                { /* ignore */ } else {
+                    eprintln!("Misc {} {}.", ev.ev_code, ev.ev_value);
+                }
                 return self.poll(cx);
             }
             0x15 => {
@@ -1057,9 +1053,10 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
             != std::mem::size_of::<EvdevEv>() as isize
         {
             let errno = *__errno_location();
-            if errno != 19 /* 19 = device has been unplugged, so ignore */ {
-                dbg!((code, new_id));
-                panic!("Write exited with {}", *__errno_location());
+            if errno != 19
+            /* 19 = device unplugged, ignore */
+            {
+                panic!("Write {:?} exited with {}", (code, new_id), *__errno_location());
             }
         }
     }

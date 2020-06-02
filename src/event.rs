@@ -11,12 +11,24 @@
 ///
 /// ![Standard Gamepad](https://w3c.github.io/gamepad/standard_gamepad.svg)
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Event {
+    /*
+     * Connecting and disconnecting (common to all controllers)
+     */
+
+    /*  */
     /// A new controller has just been plugged in.
     Connect(Box<crate::Gamepad>),
     /// Controller unplugged.
     Disconnect,
 
+    /*
+     * Events based on the w3 Standard Gamepad (may appear on other gamepads as
+     * well)
+     */
+
+    /* Main button cluster */
     /// A / Circle / Return / Left Click.  Main action button to do something.
     Do(bool),
     /// B / Cross / Shift.  Button to exit out of a menu, speed up, or lower.
@@ -26,6 +38,7 @@ pub enum Event {
     /// X / Y / Triangle / Space.  Jumping / special move.
     Top(bool),
 
+    /* D-PAD / Hat */
     /// Up arrow / D-pad
     Up(bool),
     /// Down arrow / D-pad
@@ -35,42 +48,64 @@ pub enum Event {
     /// Right arrow / D-pad
     Right(bool),
 
+    /* Center buttons */
     /// Back / Select Button (Escape)
     Back(bool),
     /// Forward / Start Button (Tab)
     Forward(bool),
 
-    /// Near L - "Inventory" (E)
-    L(bool),
-    /// Near R - "Use" (R)
-    R(bool),
+    /* Shoulder Buttons (L, R, Z - 1) */
+    /// Left shoulder button (near button if no trigger) - "Inventory" (E)
+    LShoulder(bool),
+    /// Right shoulder button (near button if no trigger) - "Use" (R)
+    RShoulder(bool),
 
-    /// Far L Throttle - "Sneak" (Ctrl)
-    Lt(f32),
-    /// Far R Throttle - "Precision Action" (Alt)
-    Rt(f32),
+    /* Shoulder Triggers (LZ, RZ - 2)  */
+    /// Left Shoulder Trigger (far button if no trigger) - "Sneak" (Ctrl)
+    LShoulderTrigger(f32),
+    /// Right Shoulder Trigger (far button if no trigger) - "Precision Action"
+    /// (Alt)
+    RShoulderTrigger(f32),
 
-    /// Right Joystick (A / D)
-    MotionH(f32),
-    /// Left Joystick (W / S)
-    MotionV(f32),
-    /// Left Joystick (Mouse X Position)
-    CameraH(f32),
-    /// Right Joystick (Mouse Y Position)
-    CameraV(f32),
+    /* Joystick */
+    /// Main joystick X axis (A / D)
+    JoystickH(f32),
+    /// Main joystick Y axis (W / S)
+    JoystickV(f32),
+    /// Main joystick Z axis
+    JoystickR(f32),
+    /// Secondary Joystick X axis (Mouse X Position)
+    CStickH(f32),
+    /// Secondary Joystick Y axis (Mouse Y Position)
+    CStickV(f32),
+    /// Secondary Joystick Z axis
+    CStickR(f32),
 
     /// Left Joystick Button (Middle Click)
-    MotionButton(bool),
+    JoystickButton(bool),
     /// Right Joystick Button (F)
-    CameraButton(bool),
+    CStickButton(bool),
 
-    /// Left Extra buttons (Upper to lower)
-    ExtL(u8, bool),
-    /// Right Extra buttons (Upper to lower)
-    ExtR(u8, bool),
+    /// Command button (Exit gameplay, usually into a menu)
+    Cmd,
 
-    /// Home button (Target platform application close)
-    Quit,
+    /*
+     * Generic Extra Buttons
+     */
+    /// Extra unlabeled buttons (Indexed Left to Right, Upper to lower)
+    Generic(u16, bool),
+
+    /*
+     * Special XBox Controllers Extra Buttons
+     */
+
+    /*
+     * Realistic flight simulation stick extra buttons, switches, etc.
+     */
+     
+    /*
+     * Mice-like controllers extra buttons, scroll wheel
+     */
 }
 
 impl std::fmt::Display for Event {
@@ -92,19 +127,20 @@ impl std::fmt::Display for Event {
             Right(p) => write!(f, "Right {}", pushed(p)),
             Back(p) => write!(f, "Back {}", pushed(p)),
             Forward(p) => write!(f, "Forward {}", pushed(p)),
-            L(p) => write!(f, "L {}", pushed(p)),
-            R(p) => write!(f, "R {}", pushed(p)),
-            Lt(v) => write!(f, "Lt {}", v),
-            Rt(v) => write!(f, "Rt {}", v),
-            MotionH(v) => write!(f, "MotionH {}", v),
-            MotionV(v) => write!(f, "MotionV {}", v),
-            CameraH(v) => write!(f, "CameraH {}", v),
-            CameraV(v) => write!(f, "CameraV {}", v),
-            MotionButton(p) => write!(f, "MotionButton {}", pushed(p)),
-            CameraButton(p) => write!(f, "CameraButton {}", pushed(p)),
-            ExtL(l, p) => write!(f, "ExtL{} {}", l, pushed(p)),
-            ExtR(l, p) => write!(f, "ExtR{} {}", l, pushed(p)),
-            Quit => write!(f, "Quit"),
+            LShoulder(p) => write!(f, "LShoulder {}", pushed(p)),
+            RShoulder(p) => write!(f, "RShoulder {}", pushed(p)),
+            LShoulderTrigger(v) => write!(f, "LShoulderTrigger {}", v),
+            RShoulderTrigger(v) => write!(f, "RShoulderTrigger {}", v),
+            JoystickH(v) => write!(f, "JoystickH {}", v),
+            JoystickV(v) => write!(f, "JoystickV {}", v),
+            JoystickR(v) => write!(f, "JoystickR {}", v),
+            CStickH(v) => write!(f, "CStickH {}", v),
+            CStickV(v) => write!(f, "CStickV {}", v),
+            CStickR(v) => write!(f, "CStickR {}", v),
+            JoystickButton(p) => write!(f, "JoystickButton {}", pushed(p)),
+            CStickButton(p) => write!(f, "CStickButton {}", pushed(p)),
+            Generic(l, p) => write!(f, "Generic{} {}", l, pushed(p)),
+            Cmd => write!(f, "Cmd"),
         }
     }
 }

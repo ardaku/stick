@@ -21,7 +21,7 @@ async fn event_loop() {
                 println!("Disconnected p{}", id + 1);
                 gamepads.swap_remove(id);
             }
-            (id, Event::Quit) => {
+            (id, Event::Cmd) => {
                 println!("p{} ended the session", id + 1);
                 break 'e;
             }
