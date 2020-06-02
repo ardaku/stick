@@ -47,8 +47,7 @@ struct HardwareId(u32);
 
 impl HardwareId {
     fn is_playstation_official(&self) -> bool {
-        self.0 == HARDWARE_ID_SIXAXIS_PS3
-            || self.0 == HARDWARE_ID_DUALSHOCK_PS4
+        self.0 == HARDWARE_ID_SIXAXIS_PS3 || self.0 == HARDWARE_ID_DUALSHOCK_PS4
     }
 
     fn is_playstation_compat(&self) -> bool {
@@ -69,7 +68,7 @@ impl HardwareId {
         self.0 == HARDWARE_ID_THRUSTMASTER1
             || self.0 == HARDWARE_ID_THRUSTMASTER2
     }
-    
+
     fn is_playstation_logitech(&self) -> bool {
         self.0 == HARDWARE_ID_PLAYSTATION_LOGITECH
     }
@@ -335,7 +334,9 @@ impl Port {
             let name = unsafe { std::ffi::CStr::from_ptr(ev.name.as_ptr()) };
             file.push_str(&name.to_string_lossy());
             if file.ends_with("-event-joystick") {
-                assert!(self.connected.remove(&file));
+                // Remove it if it exists, sometimes gamepads get "removed"
+                // twice because adds are condensed in innotify (not 100% sure).
+                let _ = self.connected.remove(&file);
             }
         }
         // Add flag is set, wait for permissions (unfortunately, can't rely on
@@ -576,10 +577,10 @@ impl Gamepad {
                 16 => 17, // Accept <-> Cancel
                 19 => 20, // Common <-> Action
                 20 => 19, // Common <-> Action
-                4 => 6, // LT <-> L
-                6 => 4, // LT <-> L
-                5 => 7, // RT <-> R
-                7 => 5, // RT <-> R
+                4 => 6,   // LT <-> L
+                6 => 4,   // LT <-> L
+                5 => 7,   // RT <-> R
+                7 => 5,   // RT <-> R
                 x => x,
             };
         } else if hwid.is_playstation_compat() {
@@ -695,10 +696,10 @@ impl Gamepad {
 
                 match self.remapping(ev.ev_code - 0x120) {
                     // Fallback Event IDs
-                    0 | 20 => Event::Action(is),
-                    1 | 16 => Event::Accept(is),
-                    2 | 17 | 18 => Event::Cancel(is),
-                    3 | 19 => Event::Common(is),
+                    0 | 20 => Event::Top(is),
+                    1 | 16 => Event::Do(is),
+                    2 | 17 | 18 => Event::Go(is),
+                    3 | 19 => Event::Use(is),
                     4 | 24 => Event::Lt(if is {
                         self.emulated |= 0b0001_0000;
                         1.0
@@ -780,22 +781,20 @@ impl Gamepad {
                 }
             }
             // Relative axis movement
-            0x02 => {
-                match ev.ev_code {
-                    8 => Event::MotionV({
-                        let value = self.joyaxis_float(ev.ev_value as c_int);
-                        if value == self.movy {
-                            return self.poll(cx);
-                        }
-                        self.movy = value;
-                        value
-                    }),
-                    u => {
-                        eprintln!("Unknown Relative Axis {}", u);
-                        return self.poll(cx)
+            0x02 => match ev.ev_code {
+                8 => Event::MotionV({
+                    let value = self.joyaxis_float(ev.ev_value as c_int);
+                    if value == self.movy {
+                        return self.poll(cx);
                     }
+                    self.movy = value;
+                    value
+                }),
+                u => {
+                    eprintln!("Unknown Relative Axis {}", u);
+                    return self.poll(cx);
                 }
-            }
+            },
             // Absolute axis movement (abs)
             0x03 => {
                 match self.axis_remapping(ev.ev_code) {
@@ -826,7 +825,9 @@ impl Gamepad {
                         self.lt
                     }),
                     3 => Event::CameraH({
-                        let value = if HardwareId(self.hardware_id).is_thrustmaster() {
+                        let value = if HardwareId(self.hardware_id)
+                            .is_thrustmaster()
+                        {
                             self.trigger_float(ev.ev_value as c_int) * 2.0 - 1.0
                         } else {
                             self.joyaxis_float(ev.ev_value as c_int)
@@ -846,7 +847,9 @@ impl Gamepad {
                         value
                     }),
                     6 => Event::CameraV({
-                        let value = self.trigger_float(ev.ev_value as c_int) * 2.0 - 1.0;
+                        let value = self.trigger_float(ev.ev_value as c_int)
+                            * 2.0
+                            - 1.0;
                         if value == self.camy {
                             return self.poll(cx);
                         }
@@ -889,10 +892,14 @@ impl Gamepad {
                 }
             }
             0x04 => {
+                if ev.ev_code == 4
+                /* scan */
+                { /* ignore */ }
                 eprintln!("Misc {} {}.", ev.ev_code, ev.ev_value);
                 return self.poll(cx);
             }
-            0x15 => { // Force Feedback echo, ignore
+            0x15 => {
+                // Force Feedback echo, ignore
                 return self.poll(cx);
             }
             u => {
@@ -1027,9 +1034,11 @@ struct FfEffect {
 
 fn joystick_ff(fd: RawFd, code: i16, value: f32) {
     let is_powered = value != 0.0;
-    if is_powered {
-        joystick_haptic(fd, code, value);
-    }
+    let new_id = if is_powered {
+        joystick_haptic(fd, code, value)
+    } else {
+        -3
+    };
 
     let ev_code = code.try_into().unwrap();
 
@@ -1047,7 +1056,11 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
         if write(fd, play.cast(), std::mem::size_of::<EvdevEv>())
             != std::mem::size_of::<EvdevEv>() as isize
         {
-            panic!("Write exited with {}", *__errno_location());
+            let errno = *__errno_location();
+            if errno != 19 /* 19 = device has been unplugged, so ignore */ {
+                dbg!((code, new_id));
+                panic!("Write exited with {}", *__errno_location());
+            }
         }
     }
 }
@@ -1085,10 +1098,9 @@ fn joystick_haptic(fd: RawFd, id: i16, power: f32) -> i16 {
         },
     };
     let b: *mut _ = a;
-    let rumble = if unsafe { ioctl(fd, 0x40304580, b.cast()) } == -1 {
+    if unsafe { ioctl(fd, 0x40304580, b.cast()) } == -1 {
         -1
     } else {
         a.id
-    };
-    rumble
+    }
 }

@@ -17,14 +17,14 @@ pub enum Event {
     /// Controller unplugged.
     Disconnect,
 
-    /// Bottom right cluster (A / Circle / Return / Right Click).
-    Accept(bool),
-    /// Bottom right cluster (B / X / Shift).
-    Cancel(bool),
-    /// Leftmost button in right cluster (Y / X / Square / Left Click).
-    Common(bool),
-    /// Topmost button in right cluster (X / Y / Triangle / Space).
-    Action(bool),
+    /// A / Circle / Return / Left Click.  Main action button to do something.
+    Do(bool),
+    /// B / Cross / Shift.  Button to exit out of a menu, speed up, or lower.
+    Go(bool),
+    /// Y / X / Square / Right Click.  Use item.
+    Use(bool),
+    /// X / Y / Triangle / Space.  Jumping / special move.
+    Top(bool),
 
     /// Up arrow / D-pad
     Up(bool),
@@ -82,10 +82,10 @@ impl std::fmt::Display for Event {
         match *self {
             Connect(_) => write!(f, "Controller Connected"),
             Disconnect => write!(f, "Controller Disconnected"),
-            Accept(p) => write!(f, "Accept {}", pushed(p)),
-            Cancel(p) => write!(f, "Cancel {}", pushed(p)),
-            Common(p) => write!(f, "Common {}", pushed(p)),
-            Action(p) => write!(f, "Action {}", pushed(p)),
+            Do(p) => write!(f, "Do {}", pushed(p)),
+            Go(p) => write!(f, "Go {}", pushed(p)),
+            Use(p) => write!(f, "Use {}", pushed(p)),
+            Top(p) => write!(f, "Top {}", pushed(p)),
             Up(p) => write!(f, "Up {}", pushed(p)),
             Down(p) => write!(f, "Down {}", pushed(p)),
             Left(p) => write!(f, "Left {}", pushed(p)),
