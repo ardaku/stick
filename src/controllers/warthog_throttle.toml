@@ -1,0 +1,162 @@
+name = 'Thrustmaster Warthog Throttle'
+id = '44F0404'
+
+[[axes]]
+[axes.action]
+code = 0
+name = 'ScXAction'
+
+[[axes]]
+[axes.action]
+code = 1
+name = 'ScYAction'
+
+[[axes]]
+[axes.action]
+code = 2
+name = 'ThrottleR'
+
+[[axes]]
+[axes.action]
+code = 5
+name = 'ThrottleL'
+
+[[axes]]
+[axes.action]
+code = 6
+name = 'Slew'
+
+[[buttons]]
+code = 713
+pressed_name = 'AutopilotTogglePressed'
+released_name = 'AutopilotToggleReleased'
+
+[[buttons]]
+code = 708
+pressed_name = 'LandingGearSilencePressed'
+released_name = 'LandingGearSilenceReleased'
+
+[[buttons]]
+code = 302
+pressed_name = 'LtbPressed'
+released_name = 'LtbReleased'
+
+[[two_way]]
+code = 711
+high = 'EacArm'
+neutral = 'EacOff'
+
+[[two_way]]
+code = 712
+high = 'RadarAltimeterNormal'
+neutral = 'RadarAltimeterDisarm'
+
+[[two_way]]
+code = 707
+high = 'ApuStart'
+neutral = 'ApuOff'
+
+[[two_way]]
+code = 303
+high = 'EngineLeftNormal'
+neutral = 'EngineLeftOverride'
+
+[[two_way]]
+code = 704
+high = 'EngineRightNormal'
+neutral = 'EngineRightOverride'
+
+[[three_way]]
+neutral = 'AltitudeHeading'
+
+[three_way.high]
+code = 714
+name = 'Path'
+
+[three_way.low]
+code = 715
+name = 'Alt'
+
+[[three_way]]
+neutral = 'Maneuver'
+
+[three_way.high]
+code = 709
+name = 'Up'
+
+[three_way.low]
+code = 710
+name = 'Down'
+
+[[three_way]]
+neutral = 'LeftNormal'
+
+[three_way.high]
+code = 718
+name = 'LeftIgnition'
+
+[three_way.low]
+code = 705
+name = 'LeftMotor'
+
+[[three_way]]
+neutral = 'RightNormal'
+
+[three_way.high]
+code = 719
+name = 'RightIgnition'
+
+[three_way.low]
+code = 706
+name = 'RightMotor'
+
+[[three_way]]
+neutral = 'PsNeutral'
+
+[three_way.high]
+code = 300
+name = 'PsForward'
+
+[three_way.low]
+code = 301
+name = 'PsBackward'
+
+[[three_way]]
+neutral = 'SpdNeutral'
+
+[three_way.high]
+code = 294
+name = 'SpdForward'
+
+[three_way.low]
+code = 295
+name = 'SpdBackward'
+
+[[three_way]]
+neutral = 'BsNeutral'
+
+[three_way.high]
+code = 296
+name = 'BsForward'
+
+[three_way.low]
+code = 297
+name = 'BsBackward'
+
+[[three_way]]
+neutral = 'ChNeutral'
+
+[three_way.high]
+code = 298
+name = 'ChForward'
+
+[three_way.low]
+code = 299
+name = 'ChBackward'
+
+[[hats]]
+name = "Hat"
+north = 544
+south = 545
+west = 546
+east = 547
