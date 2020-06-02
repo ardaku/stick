@@ -10,25 +10,26 @@
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
+use std::fmt::Debug;
 
 use crate::Event;
 
-/// A w3c "Standard Gamepad".
-pub struct Gamepad(pub(crate) crate::ffi::Gamepad);
+/// A gamepad, flightstick, or other controller.
+pub struct Pad(pub(crate) crate::ffi::Pad);
 
-impl std::fmt::Debug for Gamepad {
+impl Debug for Pad {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Gamepad")
+        write!(f, "Pad(\"{}\")", self.name())
     }
 }
 
-impl Gamepad {
+impl Pad {
     /// Get a unique identifier for the specific model of gamepad.
     pub fn id(&self) -> u32 {
         self.0.id()
     }
 
-    /// Get the name of this Gamepad.
+    /// Get the name of this Pad.
     pub fn name(&self) -> String {
         self.0.name()
     }
@@ -40,7 +41,7 @@ impl Gamepad {
     }
 }
 
-impl Future for Gamepad {
+impl Future for Pad {
     type Output = Event;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {

@@ -7,13 +7,11 @@
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-/// An event from a `Stick`.  A `Stick` may refer to a gamepad or flightstick or
-/// possibly some other device that isn't captured by the operating system's
-/// window manager.
+/// An event from a `Pad`.
 ///
 /// # Gamepad Types
 /// ## Standard Gamepad
-/// A gamepad similar to w3c's "standard gamepad":
+/// A video game controller similar to w3c's "standard gamepad":
 ///
 /// ## Flightstick
 /// A joystick typically used in flight simulations and robotics:
@@ -26,9 +24,9 @@ pub enum Event {
      */
 
     /*  */
-    /// A new controller has just been plugged in.
-    Connect(Box<crate::Gamepad>),
-    /// Controller unplugged.
+    /// A new pad has just been plugged in.
+    Connect(Box<crate::Pad>),
+    /// Pad unplugged.
     Disconnect,
 
     /*

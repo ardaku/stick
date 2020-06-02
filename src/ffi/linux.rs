@@ -156,11 +156,11 @@ extern "C" {
     fn __errno_location() -> *mut c_int;
 }
 
-struct PortTimer {
+struct HubTimer {
     device: AsyncDevice,
 }
 
-impl PortTimer {
+impl HubTimer {
     fn new(cx: &mut Context<'_>) -> Self {
         // Create the timer.
         let timerfd = unsafe {
@@ -194,11 +194,11 @@ impl PortTimer {
         device.register_waker(cx.waker());
 
         // Return timer
-        PortTimer { device }
+        HubTimer { device }
     }
 }
 
-impl Drop for PortTimer {
+impl Drop for HubTimer {
     fn drop(&mut self) {
         let fd = self.device.fd();
         self.device.old();
@@ -206,14 +206,13 @@ impl Drop for PortTimer {
     }
 }
 
-/// Port
-pub(crate) struct Port {
+pub(crate) struct Hub {
     device: AsyncDevice,
     connected: HashSet<String>,
-    timer: Option<PortTimer>,
+    timer: Option<HubTimer>,
 }
 
-impl Port {
+impl Hub {
     pub(super) fn new() -> Self {
         // Create an inotify on the directory where gamepad filedescriptors are.
         let inotify = unsafe {
@@ -244,7 +243,7 @@ impl Port {
         let timer = None;
 
         // Return
-        Port {
+        Hub {
             device,
             connected,
             timer,
@@ -310,8 +309,8 @@ impl Port {
                         self.connected.insert(file);
                         return Poll::Ready((
                             std::usize::MAX,
-                            Event::Connect(Box::new(crate::Gamepad(
-                                Gamepad::new(fd),
+                            Event::Connect(Box::new(crate::Pad(
+                                Pad::new(fd),
                             ))),
                         ));
                     }
@@ -342,7 +341,7 @@ impl Port {
         // Add flag is set, wait for permissions (unfortunately, can't rely on
         // epoll events for this, so check every 10 milliseconds).
         if (ev.mask & 0x0000_0100) != 0 && self.timer.is_none() {
-            self.timer = Some(PortTimer::new(cx));
+            self.timer = Some(HubTimer::new(cx));
         }
         // Check for more events, Search for new controllers again, and return
         // Pending if neither have anything to process.
@@ -350,7 +349,7 @@ impl Port {
     }
 }
 
-impl Drop for Port {
+impl Drop for Hub {
     fn drop(&mut self) {
         let fd = self.device.fd();
         self.device.old();
@@ -358,8 +357,8 @@ impl Drop for Port {
     }
 }
 
-/// Gamepad
-pub(crate) struct Gamepad {
+/// Gamepad / Other HID
+pub(crate) struct Pad {
     device: AsyncDevice,
     hardware_id: u32, // Which type of controller?
     abs_min: c_int,
@@ -375,7 +374,7 @@ pub(crate) struct Gamepad {
     rt: f32,
 }
 
-impl Gamepad {
+impl Pad {
     fn new(file: File) -> Self {
         let fd = file.into_raw_fd();
         // Enable evdev async.
@@ -401,7 +400,7 @@ impl Gamepad {
         // Query the controller for haptic support.
         let rumble = joystick_haptic(fd, -1, 0.0);
         // Construct device from fd, looking for input events.
-        Gamepad {
+        Pad {
             hardware_id,
             abs_min,
             abs_range,
@@ -927,7 +926,7 @@ impl Gamepad {
     }
 }
 
-impl Drop for Gamepad {
+impl Drop for Pad {
     fn drop(&mut self) {
         let fd = self.device.fd();
         self.device.old();

@@ -95,17 +95,17 @@ struct HatEvent {
 }
 
 #[cfg(target_arch = "wasm32")]
-const GAMEPAD_DB: &str = "./gamepad_db/wasm32/";
+const GAMEPAD_DB: &str = "./pad_db/wasm32/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "linux"))]
-const GAMEPAD_DB: &str = "./gamepad_db/linux/";
+const GAMEPAD_DB: &str = "./pad_db/linux/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "android"))]
-const GAMEPAD_DB: &str = "./gamepad_db/android/";
+const GAMEPAD_DB: &str = "./pad_db/android/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "macos"))]
-const GAMEPAD_DB: &str = "./gamepad_db/macos/";
+const GAMEPAD_DB: &str = "./pad_db/macos/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "ios"))]
-const GAMEPAD_DB: &str = "./gamepad_db/ios/";
+const GAMEPAD_DB: &str = "./pad_db/ios/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "windows"))]
-const GAMEPAD_DB: &str = "./gamepad_db/windows/";
+const GAMEPAD_DB: &str = "./pad_db/windows/";
 #[cfg(all(
     not(target_arch = "wasm32"),
     any(
@@ -116,13 +116,13 @@ const GAMEPAD_DB: &str = "./gamepad_db/windows/";
         target_os = "netbsd"
     )
 ))]
-const GAMEPAD_DB: &str = "./gamepad_db/bsd/";
+const GAMEPAD_DB: &str = "./pad_db/bsd/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "fuchsia"))]
-const GAMEPAD_DB: &str = "./gamepad_db/fuchsia/";
+const GAMEPAD_DB: &str = "./pad_db/fuchsia/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "redox"))]
-const GAMEPAD_DB: &str = "./gamepad_db/redox/";
+const GAMEPAD_DB: &str = "./pad_db/redox/";
 #[cfg(all(not(target_arch = "wasm32"), target_os = "none"))]
-const GAMEPAD_DB: &str = "./gamepad_db/none/";
+const GAMEPAD_DB: &str = "./pad_db/none/";
 
 #[cfg(target_os = "dummy")]
 fn generate_from_database() {}

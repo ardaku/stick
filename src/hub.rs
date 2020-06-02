@@ -13,18 +13,19 @@ use std::task::{Context, Poll};
 
 use crate::Event;
 
-/// A future that looks for new gamepad devices.
+/// A future that looks for new gamepad devices on the computer's USB hub or
+/// equivalent.
 #[allow(missing_debug_implementations)]
-pub struct Port(crate::ffi::Port);
+pub struct Hub(crate::ffi::Hub);
 
-impl Port {
+impl Hub {
     /// Create a future to start looking for new connections to gamepads.
     pub fn new() -> Self {
-        Port(crate::ffi::Port::new())
+        Hub(crate::ffi::Hub::new())
     }
 }
 
-impl Future for Port {
+impl Future for Hub {
     type Output = (usize, Event);
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
