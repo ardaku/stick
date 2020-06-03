@@ -1,158 +1,158 @@
-name = 'Thrustmaster Warthog Throttle'
-id = '44F0404'
+name = "Thrustmaster Warthog Throttle"
+id = "44F0404"
 
 [[axes]]
 [axes.action]
 code = 0
-name = 'ScXAction'
+name = "ScXAction"
 
 [[axes]]
 [axes.action]
 code = 1
-name = 'ScYAction'
+name = "ScYAction"
 
 [[axes]]
 [axes.action]
 code = 2
-name = 'ThrottleR'
+name = "ThrottleR"
 
 [[axes]]
 [axes.action]
 code = 5
-name = 'ThrottleL'
+name = "ThrottleL"
 
 [[axes]]
 [axes.action]
 code = 6
-name = 'Slew'
+name = "Slew"
 
 [[buttons]]
 code = 713
-pressed_name = 'AutopilotTogglePressed'
-released_name = 'AutopilotToggleReleased'
+pressed_name = "AutopilotTogglePressed"
+released_name = "AutopilotToggleReleased"
 
 [[buttons]]
 code = 708
-pressed_name = 'LandingGearSilencePressed'
-released_name = 'LandingGearSilenceReleased'
+pressed_name = "LandingGearSilencePressed"
+released_name = "LandingGearSilenceReleased"
 
 [[buttons]]
 code = 302
-pressed_name = 'LtbPressed'
-released_name = 'LtbReleased'
+pressed_name = "LtbPressed"
+released_name = "LtbReleased"
 
 [[two_way]]
 code = 711
-high = 'EacArm'
-neutral = 'EacOff'
+high = "EacArm"
+neutral = "EacOff"
 
 [[two_way]]
 code = 712
-high = 'RadarAltimeterNormal'
-neutral = 'RadarAltimeterDisarm'
+high = "RadarAltimeterNormal"
+neutral = "RadarAltimeterDisarm"
 
 [[two_way]]
 code = 707
-high = 'ApuStart'
-neutral = 'ApuOff'
+high = "ApuStart"
+neutral = "ApuOff"
 
 [[two_way]]
 code = 303
-high = 'EngineLeftNormal'
-neutral = 'EngineLeftOverride'
+high = "EngineLeftNormal"
+neutral = "EngineLeftOverride"
 
 [[two_way]]
 code = 704
-high = 'EngineRightNormal'
-neutral = 'EngineRightOverride'
+high = "EngineRightNormal"
+neutral = "EngineRightOverride"
 
 [[three_way]]
-neutral = 'AltitudeHeading'
+neutral = "AltitudeHeading"
 
 [three_way.high]
 code = 714
-name = 'Path'
+name = "Path"
 
 [three_way.low]
 code = 715
-name = 'Alt'
+name = "Alt"
 
 [[three_way]]
-neutral = 'Maneuver'
+neutral = "Maneuver"
 
 [three_way.high]
 code = 709
-name = 'Up'
+name = "Up"
 
 [three_way.low]
 code = 710
-name = 'Down'
+name = "Down"
 
 [[three_way]]
-neutral = 'LeftNormal'
+neutral = "LeftNormal"
 
 [three_way.high]
 code = 718
-name = 'LeftIgnition'
+name = "LeftIgnition"
 
 [three_way.low]
 code = 705
-name = 'LeftMotor'
+name = "LeftMotor"
 
 [[three_way]]
-neutral = 'RightNormal'
+neutral = "RightNormal"
 
 [three_way.high]
 code = 719
-name = 'RightIgnition'
+name = "RightIgnition"
 
 [three_way.low]
 code = 706
-name = 'RightMotor'
+name = "RightMotor"
 
 [[three_way]]
-neutral = 'PsNeutral'
+neutral = "PsNeutral"
 
 [three_way.high]
 code = 300
-name = 'PsForward'
+name = "PsForward"
 
 [three_way.low]
 code = 301
-name = 'PsBackward'
+name = "PsBackward"
 
 [[three_way]]
-neutral = 'SpdNeutral'
+neutral = "SpdNeutral"
 
 [three_way.high]
 code = 294
-name = 'SpdForward'
+name = "SpdForward"
 
 [three_way.low]
 code = 295
-name = 'SpdBackward'
+name = "SpdBackward"
 
 [[three_way]]
-neutral = 'BsNeutral'
+neutral = "BsNeutral"
 
 [three_way.high]
 code = 296
-name = 'BsForward'
+name = "BsForward"
 
 [three_way.low]
 code = 297
-name = 'BsBackward'
+name = "BsBackward"
 
 [[three_way]]
-neutral = 'ChNeutral'
+neutral = "ChNeutral"
 
 [three_way.high]
 code = 298
-name = 'ChForward'
+name = "ChForward"
 
 [three_way.low]
 code = 299
-name = 'ChBackward'
+name = "ChBackward"
 
 [[hats]]
 name = "Hat"
