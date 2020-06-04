@@ -138,26 +138,35 @@ pub enum Event {
     /// Left throttle button
     ThrottleButtonL(bool),
 
-    /// Altitude Heading three-way switch
+    /// Engine Fuel Flow Left two-way switch
+    /// - `true` - Normal
+    /// - `false` - Override
+    EngineFuelFlowL(bool),
+    /// Engine Fuel Flow Right two-way switch
+    /// - `true` - Normal
+    /// - `false` - Override
+    EngineFuelFlowR(bool),
+
+    /// Autopilot Select three-way switch
     /// - `Some(true)` - Forward (Path)
-    /// - `None` - Neutral
+    /// - `None` - Neutral (Altitude / Heading)
     /// - `Some(false)` - Backward (Alt)
-    AltitudeHeading(Option<bool>),
-    /// Maneuver three-way switch
+    AutopilotSelect(Option<bool>),
+    /// Flaps three-way switch
     /// - `Some(true)` - Forward (Up)
-    /// - `None` - Neutral
+    /// - `None` - Neutral (Maneuver)
     /// - `Some(false)` - Backward (Down)
-    Maneuver(Option<bool>),
+    Flaps(Option<bool>),
     /// Left three-way switch
     /// - `Some(true)` - Forward (Ignition)
-    /// - `None` - Neutral
+    /// - `None` - Neutral (Normal)
     /// - `Some(false)` - Backward (Motor)
-    IgnitionL(Option<bool>),
-    /// Right three-way switch pushed forward for ignition, backward for motor.
+    EngineOperateL(Option<bool>),
+    /// Right three-way switch
     /// - `Some(true)` - Forward (Ignition)
-    /// - `None` - Neutral
+    /// - `None` - Neutral (Normal)
     /// - `Some(false)` - Backward (Motor)
-    IgnitionR(Option<bool>),
+    EngineOperateR(Option<bool>),
     /// Pinky Switch
     /// - `Some(true)` - Forward
     /// - `None` - Neutral
@@ -193,6 +202,10 @@ impl std::fmt::Display for Event {
             Some(true) => "Forward",
             None => "Neutral",
             Some(false) => "Backward",
+        };
+        let two = |two| match two {
+            true => "Forward",
+            false => "Backward",
         };
 
         match *self {
@@ -232,8 +245,10 @@ impl std::fmt::Display for Event {
             ThrottleL(v) => write!(f, "ThrottleL {}", v),
             ThrottleR(v) => write!(f, "ThrottleR {}", v),
             ThrottleButtonL(p) => write!(f, "ThrottleButtonL {}", pushed(p)),
-            AltitudeHeading(t) => write!(f, "AltitudeHeading {}", three(t)),
-            Maneuver(t) => write!(f, "Maneuver {}", three(t)),
+            EngineFuelFlowL(f) => write!(f, "EngineFuelFlowL {}", two(f)),
+            EngineFuelFlowR(f) => write!(f, "EngineFuelFlowR {}", two(f)),
+            AutopilotSelect(t) => write!(f, "AutopilotSelect {}", three(t)),
+            Flaps(t) => write!(f, "Flaps {}", three(t)),
             IgnitionL(t) => write!(f, "IgnitionL {}", three(t)),
             IgnitionR(t) => write!(f, "IgnitionR {}", three(t)),
             PinkySwitch(t) => write!(f, "PinkySwitch {}", three(t)),

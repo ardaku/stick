@@ -24,31 +24,31 @@ code = 712
 name = "APU Start Switch"
 code = 707
 
-[two_way.EngineLeft]
-name = "Left Engine Operate Switch"
+[two_way.EngineFuelFlowL]
+name = "Left Engine Fuel Flow Switch"
 code = 303
 
-[two_way.EngineRight]
-name = "Right Engine Operate Switch"
+[two_way.EngineFuelFlowR]
+name = "Right Engine Fuel Flow Switch"
 code = 704
 
-[three_way.AltitudeHeading]
-name = "Altitude Heading Switch"
+[three_way.AutopilotSelect]
+name = "Autopilot Select Switch"
 forward = 714
 backward = 715
 
-[three_way.Maneuver]
-name = "Maneuver Switch"
+[three_way.Flaps]
+name = "Flaps Switch"
 forward = 709
 backward = 710
 
-[three_way.IgnitionL]
-name = "Left Ignition Switch"
+[three_way.EngineOperateL]
+name = "Left Engine Operate Switch"
 forward = 718
 backward = 705
 
-[three_way.IgnitionR]
-name = "Right Ignition Switch"
+[three_way.EngineOperateR]
+name = "Right Engine Operate Switch"
 forward = 719
 backward = 706
 
