@@ -46,5 +46,5 @@ default-target = "x86_64-unknown-linux-gnu"
 
 [features]
 default = []
-std = []
+padfont = []
 docs-rs = []

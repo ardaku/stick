@@ -1,0 +1,35 @@
+version = "0.1.0"
+
+# Types of pads
+types = [
+    "Gamepad",
+    "Joystick",
+    "Flightstick",
+]
+
+# All names for possible controls on a device.  Names must be in this file in
+# order to use them in device specification files.  8-bit and vector artwork and
+# animations for each control should also be included in the database.
+controls = [
+    "Autopilot Engage/Disengage Button",
+    "L/G WRN Silence Button",
+    "Left Throttle Button",
+    "EAC Switch",
+    "Radar Altimeter Switch",
+    "APU Start Switch",
+    "Left Engine Operate Switch",
+    "Right Engine Operate Switch",
+    "Altitude Heading Switch",
+    "Maneuver Switch",
+    "Left Ignition Switch",
+    "Right Ignition Switch",
+    "Pinky Switch",
+    "Speedbrake Switch",
+    "Boat Switch",
+    "China Hat",
+    "POV Hat",
+    "Mic Switch",
+    "Slew Dial",
+    "Left Throttle",
+    "Right Throttle",
+]

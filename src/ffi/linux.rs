@@ -694,25 +694,25 @@ impl Pad {
                     1 | 16 => Event::Primary(is),
                     2 | 17 | 18 => Event::Secondary(is),
                     3 | 19 => Event::Item(is),
-                    4 | 24 => Event::ShoulderTriggerL(if is {
+                    4 | 24 => Event::ShoulderL(if is {
                         self.emulated |= 0b0001_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0001_0000;
                         self.lt
                     }),
-                    5 | 25 => Event::ShoulderTriggerR(if is {
+                    5 | 25 => Event::ShoulderR(if is {
                         self.emulated |= 0b0010_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0010_0000;
                         self.rt
                     }),
-                    6 | 22 => Event::ShoulderL(is), // 6 is Guess
-                    7 | 23 | 21 => Event::ShoulderR(is),
+                    6 | 22 => Event::ShoulderButtonL(is), // 6 is Guess
+                    7 | 23 | 21 => Event::ShoulderButtonR(is),
                     8 | 26 => Event::Back(is), // 8 is Guess
                     9 | 27 => Event::Forward(is),
-                    10 | 29 => Event::JoystickButton(is),
+                    10 | 29 => Event::StickButton(is),
                     11 | 30 => Event::CStickButton(is),
                     // D-PAD
                     12 | 256 => {
@@ -776,7 +776,7 @@ impl Pad {
             }
             // Relative axis movement
             0x02 => match ev.ev_code {
-                8 => Event::JoystickV({
+                8 => Event::StickVer({
                     let value = self.joyaxis_float(ev.ev_value as c_int);
                     if value == self.movy {
                         return self.poll(cx);
@@ -792,7 +792,7 @@ impl Pad {
             // Absolute axis movement (abs)
             0x03 => {
                 match self.axis_remapping(ev.ev_code) {
-                    0 => Event::JoystickH({
+                    0 => Event::StickHor({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
                         if value == self.movx {
                             return self.poll(cx);
@@ -800,7 +800,7 @@ impl Pad {
                         self.movx = value;
                         value
                     }),
-                    1 => Event::JoystickV({
+                    1 => Event::StickVer({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
                         if value == self.movy {
                             return self.poll(cx);
@@ -808,7 +808,7 @@ impl Pad {
                         self.movy = value;
                         value
                     }),
-                    21 | 2 => Event::ShoulderTriggerL({
+                    21 | 2 => Event::ShoulderL({
                         let old = self.lt;
                         self.lt = self.trigger_float(ev.ev_value as c_int);
                         if (self.emulated & 0b0001_0000 != 0 && self.tad())
@@ -818,7 +818,7 @@ impl Pad {
                         }
                         self.lt
                     }),
-                    3 => Event::CStickH({
+                    3 => Event::CStickHor({
                         let value = if HardwareId(self.hardware_id)
                             .is_thrustmaster()
                         {
@@ -832,7 +832,7 @@ impl Pad {
                         self.camx = value;
                         value
                     }),
-                    4 => Event::CStickV({
+                    4 => Event::CStickVer({
                         let value = self.joyaxis_float(ev.ev_value as c_int);
                         if value == self.camy {
                             return self.poll(cx);
@@ -840,7 +840,7 @@ impl Pad {
                         self.camy = value;
                         value
                     }),
-                    6 => Event::CStickV({
+                    6 => Event::CStickVer({
                         let value = self.trigger_float(ev.ev_value as c_int)
                             * 2.0
                             - 1.0;
@@ -850,7 +850,7 @@ impl Pad {
                         self.camy = value;
                         value
                     }),
-                    20 | 5 => Event::ShoulderTriggerR({
+                    20 | 5 => Event::ShoulderR({
                         let old = self.rt;
                         self.rt = self.trigger_float(ev.ev_value as c_int);
                         if (self.emulated & 0b0010_0000 != 0 && self.tad())
