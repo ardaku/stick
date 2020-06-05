@@ -1,8 +1,8 @@
-/// Describes some gamepad
-use std::{env, fs, path::Path};
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::path::PathBuf;
+/// Describes some gamepad
+use std::{env, fs, path::Path};
 
 use serde_derive::{Deserialize, Serialize};
 use toml::value::Table;
@@ -12,7 +12,6 @@ use toml::value::Table;
 struct DeviceDescriptor {
     name: String,
     id: String,
-
 }
 
 impl DeviceDescriptor {
@@ -127,7 +126,8 @@ fn generate_from_database() -> String {
         "fn database(pad_id: u32) -> Option<&'static PadDescriptor> {\
             None\
         }\
-        ");
+        ",
+    );
     ret
 }
 

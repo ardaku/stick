@@ -60,7 +60,7 @@ impl PadDescriptor {
     // Convert evdev event into Stick event.
     fn event_from(&self, ev: EvdevEv) -> Option<Event> {
         let event = match ev.ev_type {
-            0x00 => { /* Ignore SYN events. */ },
+            0x00 => { /* Ignore SYN events. */ }
             0x01 => {
                 // button press / release (key)
                 for (new, evcode) in self.buttons {
@@ -70,16 +70,20 @@ impl PadDescriptor {
                 }
                 for [(new_lo, evcode_lo), (new_hi, evcode_hi)] in self.buttons {
                     match ev.ev_code {
-                        evcode_lo => if ev.ev_value == 1 {
-                            return Some(new_lo(Some(false)));
-                        } else {
-                            return Some(new_lo(None));
-                        },
-                        evcode_hi => if ev.ev_value == 1 {
-                            return Some(new_hi(Some(true)));
-                        } else {
-                            return Some(new_hi(None));
-                        },
+                        evcode_lo => {
+                            if ev.ev_value == 1 {
+                                return Some(new_lo(Some(false)));
+                            } else {
+                                return Some(new_lo(None));
+                            }
+                        }
+                        evcode_hi => {
+                            if ev.ev_value == 1 {
+                                return Some(new_hi(Some(true)));
+                            } else {
+                                return Some(new_hi(None));
+                            }
+                        }
                         _ => { /* Keep looking */ }
                     }
                 }
@@ -114,7 +118,9 @@ impl PadDescriptor {
                         return Some(new(self.trigger_float(ev.ev_value)));
                     }
                 }
-                for (i, [(up, down, vercode), (left, right, horcode)]) in self.hats.iter().enumerate() {
+                for (i, [(up, down, vercode), (left, right, horcode)]) in
+                    self.hats.iter().enumerate()
+                {
                     match ev.ev_code {
                         vercode => {
                             let hat_value = state.hats.ver[i];
@@ -126,7 +132,7 @@ impl PadDescriptor {
                                         state.queued = Some(up(true));
                                         Some(down(false))
                                     }
-                                    _ => Some(up(true)), 
+                                    _ => Some(up(true)),
                                 },
                                 0 => match hat_value {
                                     -1 => Some(up(false)),
@@ -139,10 +145,10 @@ impl PadDescriptor {
                                         Some(up(false))
                                     }
                                     1 => None,
-                                    _ => Some(down(true)), 
+                                    _ => Some(down(true)),
                                 },
-                            }
-                        },
+                            };
+                        }
                         horcode => {
                             let hat_value = state.hats.hor[i];
                             state.hats.hor[i] = ev.ev_value;
@@ -153,7 +159,7 @@ impl PadDescriptor {
                                         state.queued = Some(left(true));
                                         Some(right(false))
                                     }
-                                    _ => Some(left(true)), 
+                                    _ => Some(left(true)),
                                 },
                                 0 => match hat_value {
                                     -1 => Some(left(false)),
@@ -166,10 +172,10 @@ impl PadDescriptor {
                                         Some(left(false))
                                     }
                                     1 => None,
-                                    _ => Some(right(true)), 
+                                    _ => Some(right(true)),
                                 },
-                            }
-                        },
+                            };
+                        }
                         _ => { /* Keep looking */ }
                     }
                 }
@@ -181,15 +187,20 @@ impl PadDescriptor {
             }
             0x04 => {
                 if ev.ev_code != /* scan */ 4 {
-                    eprintln!("*Evdev* Unknown Misc Code: {} value: {}, report \
-                        at https://github.com/libcala/stick/issues", ev.ev_code,
-                        ev.ev_value);
+                    eprintln!(
+                        "*Evdev* Unknown Misc Code: {} value: {}, report \
+                        at https://github.com/libcala/stick/issues",
+                        ev.ev_code, ev.ev_value
+                    );
                 }
             }
             0x15 => { /* Force Feedback echo, ignore */ }
             u => {
-                eprintln!("Unknown Event {} {} {}, report at \
-                    https://github.com/libcala/stick/issues.", u, ev.ev_code, ev.ev_value);
+                eprintln!(
+                    "*Evdev* Unknown Event: {}, Code: {} value: {}, \
+                    report at https://github.com/libcala/stick/issues.",
+                    u, ev.ev_code, ev.ev_value
+                );
             }
         };
         None
@@ -485,9 +496,7 @@ impl Hub {
                         self.connected.insert(file);
                         return Poll::Ready((
                             std::usize::MAX,
-                            Event::Connect(Box::new(crate::Pad(
-                                Pad::new(fd),
-                            ))),
+                            Event::Connect(Box::new(crate::Pad(Pad::new(fd)))),
                         ));
                     }
                 }
@@ -995,13 +1004,12 @@ impl Pad {
                         self.lt
                     }),
                     3 => Event::CStickHor({
-                        let value = if HardwareId(self.hardware_id)
-                            .is_thrustmaster()
-                        {
-                            self.trigger_float(ev.ev_value) * 2.0 - 1.0
-                        } else {
-                            self.joyaxis_float(ev.ev_value)
-                        };
+                        let value =
+                            if HardwareId(self.hardware_id).is_thrustmaster() {
+                                self.trigger_float(ev.ev_value) * 2.0 - 1.0
+                            } else {
+                                self.joyaxis_float(ev.ev_value)
+                            };
                         if value == self.camx {
                             return self.poll(cx);
                         }
@@ -1017,9 +1025,7 @@ impl Pad {
                         value
                     }),
                     6 => Event::CStickVer({
-                        let value = self.trigger_float(ev.ev_value)
-                            * 2.0
-                            - 1.0;
+                        let value = self.trigger_float(ev.ev_value) * 2.0 - 1.0;
                         if value == self.camy {
                             return self.poll(cx);
                         }

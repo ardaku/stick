@@ -33,8 +33,8 @@
 )]
 
 mod event;
-mod pad;
 mod hub;
+mod pad;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(
@@ -63,5 +63,5 @@ mod hub;
 mod ffi;
 
 pub use event::Event;
-pub use pad::Pad;
 pub use hub::Hub;
+pub use pad::Pad;

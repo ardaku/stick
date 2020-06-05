@@ -41,7 +41,7 @@ pub enum Event {
     Back(bool),
     /// Forward / Start Button (Tab)
     Forward(bool),
-    
+
     /* Main button cluster */
     /// A / 1 / Circle / Return / Left Click.  Main action button to do
     /// something.
@@ -134,7 +134,7 @@ pub enum Event {
     ThrottleL(f32),
     /// Right stationary throttle
     ThrottleR(f32),
-    
+
     /// Left throttle button
     ThrottleButtonL(bool),
 
@@ -147,47 +147,54 @@ pub enum Event {
     /// - `false` - Override
     EngineFuelFlowR(bool),
 
-    /// Autopilot Select three-way switch
-    /// - `Some(true)` - Forward (Path)
-    /// - `None` - Neutral (Altitude / Heading)
-    /// - `Some(false)` - Backward (Alt)
-    AutopilotSelect(Option<bool>),
-    /// Flaps three-way switch
-    /// - `Some(true)` - Forward (Up)
-    /// - `None` - Neutral (Maneuver)
-    /// - `Some(false)` - Backward (Down)
-    Flaps(Option<bool>),
-    /// Left three-way switch
-    /// - `Some(true)` - Forward (Ignition)
-    /// - `None` - Neutral (Normal)
-    /// - `Some(false)` - Backward (Motor)
-    EngineOperateL(Option<bool>),
-    /// Right three-way switch
-    /// - `Some(true)` - Forward (Ignition)
-    /// - `None` - Neutral (Normal)
-    /// - `Some(false)` - Backward (Motor)
-    EngineOperateR(Option<bool>),
-    /// Pinky Switch
-    /// - `Some(true)` - Forward
-    /// - `None` - Neutral
-    /// - `Some(false)` - Backward
-    PinkySwitch(Option<bool>),
-    /// Speedbrake
-    /// - `Some(true)` - Forward
-    /// - `None` - Neutral
-    /// - `Some(false)` - Backward
-    Speedbrake(Option<bool>),
-    /// Boat Switch
-    /// - `Some(true)` - Forward
-    /// - `None` - Neutral
-    /// - `Some(false)` - Backward
-    BoatSwitch(Option<bool>),
-    /// China Hat
-    /// - `Some(true)` - Forward
-    /// - `None` - Neutral
-    /// - `Some(false)` - Backward
-    ChinaHat(Option<bool>),
-
+    /// Autopilot three-way switch Forward.
+    /// - `true` - Forward (Path)
+    /// - `false` - Neutral (Altitude / Heading)
+    AutopilotPath(bool),
+    /// Autopilot three-way switch Backward.
+    /// - `true` - Backward (Alt)
+    /// - `false` - Neutral (Altitude / Heading)
+    AutopilotAlt(bool),
+    /// Flaps three-way switch Forward.
+    /// - `true` - Forward (Up)
+    /// - `false` - Neutral (Maneuver)
+    FlapsUp(bool),
+    /// Flaps three-way switch Backward.
+    /// - `true` - Backward (Down)
+    /// - `false` - Neutral (Maneuver)
+    FlapsDown(bool),
+    /// Left Engine Operate three-way switch Forward.
+    /// - `true` - Forward (Ignition)
+    /// - `false` - Neutral (Normal)
+    EngineLIgnition(bool),
+    /// Left Engine Operate three-way switch Backward.
+    /// - `true` - Backward (Motor)
+    /// - `false` - Neutral (Normal)
+    EngineLMotor(bool),
+    /// Right Engine Operate three-way switch Forward.
+    /// - `true` - Forward (Ignition)
+    /// - `false` - Neutral (Normal)
+    EngineRIgnition(bool),
+    /// Right Engine Operate three-way switch Backward.
+    /// - `true` - Backward (Motor)
+    /// - `false` - Neutral (Normal)
+    EngineRMotor(bool),
+    /// Pinky three-way switch Forward.
+    PinkyForward(bool),
+    /// Pinky three-way switch Backward.
+    PinkyBackward(bool),
+    /// Speedbrake three-way switch Forward.
+    SpeedbrakeForward(bool),
+    /// Speedbrake three-way switch Backward.
+    SpeedbrakeBackward(bool),
+    /// Boat three-way switch Forward.
+    BoatForward(bool),
+    /// Pinky three-way switch Backward.
+    BoatBackward(bool),
+    /// China hat three-way switch Forward.
+    ChinaForward(bool),
+    /// China hat three-way switch Backward.
+    ChinaBackward(bool),
     /*
      * Mice-like controllers extra buttons, scroll wheel
      */
@@ -197,18 +204,17 @@ impl std::fmt::Display for Event {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use Event::*;
 
-        let pushed = |pushed| if pushed { "Pushed" } else { "Released" };
-        let three = |three| match three {
-            Some(true) => "Forward",
-            None => "Neutral",
-            Some(false) => "Backward",
-        };
-        let two = |two| match two {
+        let pushed = |pushd: &bool| if *pushd { "Pushed" } else { "Released" };
+        let two = |two: &bool| match two {
             true => "Forward",
             false => "Backward",
         };
+        let sw = |three: &bool| match three {
+            true => "Enter",
+            false => "Leave",
+        };
 
-        match *self {
+        match self {
             Connect(_) => write!(f, "Controller Connected"),
             Disconnect => write!(f, "Controller Disconnected"),
             Primary(p) => write!(f, "Primary {}", pushed(p)),
@@ -236,7 +242,9 @@ impl std::fmt::Display for Event {
             Cmd => write!(f, "Cmd"),
             Generic(l, p) => write!(f, "Generic{} {}", l, pushed(p)),
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),
-            LandingGearSilence(p) => write!(f, "LandingGearSilence {}", pushed(p)),
+            LandingGearSilence(p) => {
+                write!(f, "LandingGearSilence {}", pushed(p))
+            }
             MicUp(p) => write!(f, "MicUp {}", pushed(p)),
             MicDown(p) => write!(f, "MicDown {}", pushed(p)),
             MicLeft(p) => write!(f, "MicLeft {}", pushed(p)),
@@ -247,14 +255,22 @@ impl std::fmt::Display for Event {
             ThrottleButtonL(p) => write!(f, "ThrottleButtonL {}", pushed(p)),
             EngineFuelFlowL(t) => write!(f, "EngineFuelFlowL {}", two(t)),
             EngineFuelFlowR(t) => write!(f, "EngineFuelFlowR {}", two(t)),
-            AutopilotSelect(t) => write!(f, "AutopilotSelect {}", three(t)),
-            Flaps(t) => write!(f, "Flaps {}", three(t)),
-            EngineOperateL(t) => write!(f, "IgnitionL {}", three(t)),
-            EngineOperateR(t) => write!(f, "IgnitionR {}", three(t)),
-            PinkySwitch(t) => write!(f, "PinkySwitch {}", three(t)),
-            Speedbrake(t) => write!(f, "Speedbrake {}", three(t)),
-            BoatSwitch(t) => write!(f, "BoatSwitch {}", three(t)),
-            ChinaHat(t) => write!(f, "ChinaHat {}", three(t)),
+            AutopilotPath(p) => write!(f, "AutopilotPath {}", sw(p)),
+            AutopilotAlt(p) => write!(f, "AutopilotAlt {}", sw(p)),
+            FlapsUp(p) => write!(f, "FlapsUp {}", sw(p)),
+            FlapsDown(p) => write!(f, "FlapsDown {}", sw(p)),
+            EngineLIgnition(p) => write!(f, "EngineLIgnition {}", sw(p)),
+            EngineLMotor(p) => write!(f, "EngineLMotor {}", sw(p)),
+            EngineRIgnition(p) => write!(f, "EngineRIgnition {}", sw(p)),
+            EngineRMotor(p) => write!(f, "EngineRMotor {}", sw(p)),
+            PinkyForward(p) => write!(f, "PinkyForward {}", sw(p)),
+            PinkyBackward(p) => write!(f, "PinkyBackward {}", sw(p)),
+            SpeedbrakeForward(p) => write!(f, "SpeedbrakeForward {}", sw(p)),
+            SpeedbrakeBackward(p) => write!(f, "SpeedbrakeBackward {}", sw(p)),
+            BoatForward(p) => write!(f, "BoatForward {}", sw(p)),
+            BoatBackward(p) => write!(f, "BoatBackward {}", sw(p)),
+            ChinaForward(p) => write!(f, "ChinaForward {}", sw(p)),
+            ChinaBackward(p) => write!(f, "ChinaBackward {}", sw(p)),
         }
     }
 }

@@ -1,7 +1,7 @@
 // Example from the README.
 
 use pasts::{prelude::*, CvarExec};
-use stick::{Event, Pad, Hub};
+use stick::{Event, Hub, Pad};
 
 async fn event_loop() {
     let mut hub = Hub::new();
