@@ -4,6 +4,8 @@ version = "0.1.0"
 types = [
     "Gamepad",
     "Joystick",
+    "Dancepad",
+    "Remote",
 ]
 
 # All names for possible controls on a device.  Names must be in this file in

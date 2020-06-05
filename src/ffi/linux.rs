@@ -16,13 +16,187 @@ use std::{
     io::ErrorKind,
     mem::MaybeUninit,
     os::{
-        raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void},
+        raw::{c_char, c_int, c_long, c_ulong, c_ushort, c_void},
         unix::io::{IntoRawFd, RawFd},
     },
     task::{Context, Poll},
 };
 
 use crate::Event;
+
+/// Evdev hat data.
+struct PadStateHat {
+    hor: c_int,
+    ver: c_int,
+}
+
+/// Data associated with the state of the pad.  Used to produce the correct
+/// platform-agnostic events.
+struct PadState {
+    hats: Vec<PadStateHat>,
+}
+
+/// Describes some hardware joystick mapping
+struct PadDescriptor {
+    // spliced VENDOR_BE, PRODUCT_BE
+    id: u32,
+    // Pad name
+    name: &'static str,
+    // (Axis) value = Full range min to max axis
+    axes: &'static [(fn(f32) -> Event, c_ushort)],
+    // (Button) value = Boolean 1 or 0
+    buttons: &'static [(fn(bool) -> Event, c_ushort)],
+    // (Button) value[0] = Boolean 1, value[1] = Boolean 1, or both 0
+    three: &'static [[(fn(Option<bool>) -> Event, c_ushort); 2]],
+    // (Axis) value = 0 thru 255
+    triggers: &'static [(fn(f32) -> Event, c_ushort)],
+    // (Axis) value[0] = -1, 0, or 1; value[1] = -1, 0, or 1
+    hats: &'static [[(fn(bool) -> Event, fn(bool) -> Event, c_ushort); 2]],
+    // (RelativeAxis) value = Full range min to max axis
+    wheel: &'static [(fn(f32) -> Event, c_ushort)],
+}
+
+impl PadDescriptor {
+    // Convert evdev event into Stick event.
+    fn event_from(&self, ev: EvdevEv) -> Option<Event> {
+        let event = match ev.ev_type {
+            0x00 => { /* Ignore SYN events. */ },
+            0x01 => {
+                // button press / release (key)
+                for (new, evcode) in self.buttons {
+                    if ev.ev_code == *evcode {
+                        return Some(new(ev.ev_value == 1));
+                    }
+                }
+                for [(new_lo, evcode_lo), (new_hi, evcode_hi)] in self.buttons {
+                    match ev.ev_code {
+                        evcode_lo => if ev.ev_value == 1 {
+                            return Some(new_lo(Some(false)));
+                        } else {
+                            return Some(new_lo(None));
+                        },
+                        evcode_hi => if ev.ev_value == 1 {
+                            return Some(new_hi(Some(true)));
+                        } else {
+                            return Some(new_hi(None));
+                        },
+                        _ => { /* Keep looking */ }
+                    }
+                }
+                eprintln!(
+                    "*Evdev* Unknown Button Code: {}, report at \
+                    https://github.com/libcala/stick/issues",
+                    ev.ev_code
+                );
+            }
+            0x02 => {
+                // Relative axis movement
+                for (new, evcode) in self.wheel {
+                    if ev.ev_code == *evcode {
+                        return Some(new(self.joyaxis_float(ev.ev_value)));
+                    }
+                }
+                eprintln!(
+                    "*Evdev* Unknown Relative Axis Code: {}, report at \
+                    https://github.com/libcala/stick/issues",
+                    ev.ev_code
+                );
+            }
+            0x03 => {
+                // Absolute axis movement
+                for (new, evcode) in self.wheel {
+                    if ev.ev_code == *evcode {
+                        return Some(new(self.joyaxis_float(ev.ev_value)));
+                    }
+                }
+                for (new, evcode) in self.triggers {
+                    if ev.ev_code == *evcode {
+                        return Some(new(self.trigger_float(ev.ev_value)));
+                    }
+                }
+                for (i, [(up, down, vercode), (left, right, horcode)]) in self.hats.iter().enumerate() {
+                    match ev.ev_code {
+                        vercode => {
+                            let hat_value = state.hats.ver[i];
+                            state.hats.ver[i] = ev.ev_value;
+                            return match ev.ev_value {
+                                -1 => match hat_value {
+                                    -1 => None,
+                                    1 => {
+                                        state.queued = Some(up(true));
+                                        Some(down(false))
+                                    }
+                                    _ => Some(up(true)), 
+                                },
+                                0 => match hat_value {
+                                    -1 => Some(up(false)),
+                                    1 => Some(down(false)),
+                                    _ => None,
+                                },
+                                1 => match hat_value {
+                                    -1 => {
+                                        state.queued = Some(down(true));
+                                        Some(up(false))
+                                    }
+                                    1 => None,
+                                    _ => Some(down(true)), 
+                                },
+                            }
+                        },
+                        horcode => {
+                            let hat_value = state.hats.hor[i];
+                            state.hats.hor[i] = ev.ev_value;
+                            return match ev.ev_value {
+                                -1 => match hat_value {
+                                    -1 => None,
+                                    1 => {
+                                        state.queued = Some(left(true));
+                                        Some(right(false))
+                                    }
+                                    _ => Some(left(true)), 
+                                },
+                                0 => match hat_value {
+                                    -1 => Some(left(false)),
+                                    1 => Some(right(false)),
+                                    _ => None,
+                                },
+                                1 => match hat_value {
+                                    -1 => {
+                                        state.queued = Some(right(true));
+                                        Some(left(false))
+                                    }
+                                    1 => None,
+                                    _ => Some(right(true)), 
+                                },
+                            }
+                        },
+                        _ => { /* Keep looking */ }
+                    }
+                }
+                eprintln!(
+                    "*Evdev* Unknown Absolute Axis Code: {}, report at \
+                    https://github.com/libcala/stick/issues",
+                    ev.ev_code
+                );
+            }
+            0x04 => {
+                if ev.ev_code != /* scan */ 4 {
+                    eprintln!("*Evdev* Unknown Misc Code: {} value: {}, report \
+                        at https://github.com/libcala/stick/issues", ev.ev_code,
+                        ev.ev_value);
+                }
+            }
+            0x15 => { /* Force Feedback echo, ignore */ }
+            u => {
+                eprintln!("Unknown Event {} {} {}, report at \
+                    https://github.com/libcala/stick/issues.", u, ev.ev_code, ev.ev_value);
+            }
+        };
+        None
+    }
+}
+
+include!(concat!(env!("OUT_DIR"), "/database.rs"));
 
 const HARDWARE_ID_MAYFLASH_ARCADE_FIGHTSTICK_PS3_COMPAT: u32 = 0x_0079_1830;
 const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
@@ -121,7 +295,9 @@ struct EvdevEv {
     ev_time: TimeVal,
     ev_type: c_ushort,
     ev_code: c_ushort,
-    ev_value: c_uint,
+    // Though in the C header it's defined as uint, define as int because that's
+    // how it's meant to be interpreted.
+    ev_value: c_int,
 }
 
 #[repr(C)]
@@ -777,7 +953,7 @@ impl Pad {
             // Relative axis movement
             0x02 => match ev.ev_code {
                 8 => Event::StickVer({
-                    let value = self.joyaxis_float(ev.ev_value as c_int);
+                    let value = self.joyaxis_float(ev.ev_value);
                     if value == self.movy {
                         return self.poll(cx);
                     }
@@ -793,7 +969,7 @@ impl Pad {
             0x03 => {
                 match self.axis_remapping(ev.ev_code) {
                     0 => Event::StickHor({
-                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        let value = self.joyaxis_float(ev.ev_value);
                         if value == self.movx {
                             return self.poll(cx);
                         }
@@ -801,7 +977,7 @@ impl Pad {
                         value
                     }),
                     1 => Event::StickVer({
-                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        let value = self.joyaxis_float(ev.ev_value);
                         if value == self.movy {
                             return self.poll(cx);
                         }
@@ -810,7 +986,7 @@ impl Pad {
                     }),
                     21 | 2 => Event::ShoulderL({
                         let old = self.lt;
-                        self.lt = self.trigger_float(ev.ev_value as c_int);
+                        self.lt = self.trigger_float(ev.ev_value);
                         if (self.emulated & 0b0001_0000 != 0 && self.tad())
                             || old == self.lt
                         {
@@ -822,9 +998,9 @@ impl Pad {
                         let value = if HardwareId(self.hardware_id)
                             .is_thrustmaster()
                         {
-                            self.trigger_float(ev.ev_value as c_int) * 2.0 - 1.0
+                            self.trigger_float(ev.ev_value) * 2.0 - 1.0
                         } else {
-                            self.joyaxis_float(ev.ev_value as c_int)
+                            self.joyaxis_float(ev.ev_value)
                         };
                         if value == self.camx {
                             return self.poll(cx);
@@ -833,7 +1009,7 @@ impl Pad {
                         value
                     }),
                     4 => Event::CStickVer({
-                        let value = self.joyaxis_float(ev.ev_value as c_int);
+                        let value = self.joyaxis_float(ev.ev_value);
                         if value == self.camy {
                             return self.poll(cx);
                         }
@@ -841,7 +1017,7 @@ impl Pad {
                         value
                     }),
                     6 => Event::CStickVer({
-                        let value = self.trigger_float(ev.ev_value as c_int)
+                        let value = self.trigger_float(ev.ev_value)
                             * 2.0
                             - 1.0;
                         if value == self.camy {
@@ -852,7 +1028,7 @@ impl Pad {
                     }),
                     20 | 5 => Event::ShoulderR({
                         let old = self.rt;
-                        self.rt = self.trigger_float(ev.ev_value as c_int);
+                        self.rt = self.trigger_float(ev.ev_value);
                         if (self.emulated & 0b0010_0000 != 0 && self.tad())
                             || old == self.rt
                         {
@@ -861,14 +1037,14 @@ impl Pad {
                         self.rt
                     }),
                     16 => {
-                        if let Some(event) = self.dpad_h(ev.ev_value as c_int) {
+                        if let Some(event) = self.dpad_h(ev.ev_value) {
                             event
                         } else {
                             return self.poll(cx);
                         }
                     }
                     17 => {
-                        if let Some(event) = self.dpad_v(ev.ev_value as c_int) {
+                        if let Some(event) = self.dpad_v(ev.ev_value) {
                             event
                         } else {
                             return self.poll(cx);

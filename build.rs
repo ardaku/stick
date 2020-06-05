@@ -1,4 +1,5 @@
 /// Describes some gamepad
+use std::{env, fs, path::Path};
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::path::PathBuf;
@@ -11,12 +12,7 @@ use toml::value::Table;
 struct DeviceDescriptor {
     name: String,
     id: String,
-    axes: Vec<AxisEvent>,
-    buttons: Vec<ButtonEvent>,
-    two_way: Vec<TwoWaySwitchEvent>,
-    three_way: Vec<ThreeWaySwitchEvent>,
-    triggers: Option<Vec<AxisEvent>>,
-    hats: Option<Vec<HatEvent>>,
+
 }
 
 impl DeviceDescriptor {
@@ -125,11 +121,38 @@ const GAMEPAD_DB: &str = "./pad_db/redox/";
 const GAMEPAD_DB: &str = "./pad_db/none/";
 
 #[cfg(target_os = "dummy")]
-fn generate_from_database() {}
+fn generate_from_database() -> String {
+    let mut ret = String::new();
+    ret.push_str(
+        "fn database(pad_id: u32) -> Option<&'static PadDescriptor> {\
+            None\
+        }\
+        ");
+    ret
+}
 
 #[cfg(not(target_os = "dummy"))]
-fn generate_from_database() {}
+fn generate_from_database() -> String {
+    let mut ret = String::new();
+    ret
+}
+
+fn stop_needless_reruns(path: &str) {
+    for dir_entry in fs::read_dir(path).unwrap() {
+        let dir_entry = dir_entry.unwrap().path();
+        let filename = dir_entry.to_str().unwrap();
+        println!("cargo:rerun-if-changed={}", filename);
+        if dir_entry.is_dir() {
+            stop_needless_reruns(filename);
+        }
+    }
+}
 
 fn main() {
-    generate_from_database();
+    stop_needless_reruns("./pad_db/");
+    let output = generate_from_database();
+
+    let out_dir = env::var_os("OUT_DIR").unwrap();
+    let dest_path = Path::new(&out_dir).join("database.rs");
+    fs::write(&dest_path, output).unwrap();
 }
