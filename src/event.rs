@@ -37,66 +37,63 @@ pub enum Event {
     /* Center buttons */
     /// Command button (Exit gameplay, usually into a menu)
     Cmd,
-    /// Back / Select Button (Escape)
-    Back(bool),
-    /// Forward / Start Button (Tab)
-    Forward(bool),
+    /// Back / Select / Minus / Stop Button (Escape)
+    Prev(bool),
+    /// Forward / Start / Plus / Play Button (Tab)
+    Next(bool),
 
-    /* Main button cluster */
-    /// A / 1 / Circle / Return / Left Click.  Main action button to do
-    /// something.
-    Primary(bool),
-    /// B / 2 / Cross / Shift.  Button to exit out of a menu, speed up, or
-    /// lower.
-    Secondary(bool),
-    /// Y / X / Square / Right Click.  Use item.
-    Item(bool),
-    /// X / Y / Triangle / Space.  Jumping / special move.  Always the topmost
-    /// button in the cluster.
-    Action(bool),
+    /* Action pad - action button cluster */
+    /// A / 1 / 4 / Circle / Return / Left Click.  Action A (Main action).
+    ActA(bool),
+    /// B / 2 / 3 / Cross / Shift.  Action B (Secondary action).
+    ActB(bool),
+    /// Y / X / Square / Right Click / H.  Horizontal action.
+    ActH(bool),
+    /// X / Y / Triangle / Space / V.  Vertical action (Topmost button).
+    ActV(bool),
 
     /* D-PAD / POV Hat (8-way) */
     /// D-pad / POV Hat Up
-    Up(bool),
+    DirUp(bool),
     /// D-pad / POV Hat Down
-    Down(bool),
+    DirDown(bool),
     /// D-pad / POV Hat Left
-    Left(bool),
+    DirLeft(bool),
     /// D-pad / POV Hat Right
-    Right(bool),
+    DirRight(bool),
 
     /* Shoulder Triggers (LZ, RZ - 2)  */
     /// Left Shoulder Trigger (far button if no trigger) - "Sneak" (Ctrl)
-    ShoulderL(f32),
+    TriggerL(f64),
     /// Right Shoulder Trigger (far button if no trigger) - "Precision Action"
     /// (Alt)
-    ShoulderR(f32),
+    TriggerR(f64),
 
     /* Shoulder Buttons (L, R, Z - 1) */
     /// Left shoulder button (near button if no trigger) - "Inventory" (E)
-    ShoulderButtonL(bool),
+    ShoulderL(bool),
     /// Right shoulder button (near button if no trigger) - "Use" (R)
-    ShoulderButtonR(bool),
+    ShoulderR(bool),
 
     /* Joystick */
     /// Main joystick horizontal axis (A / D)
-    StickHor(f32),
+    StickHor(f64),
     /// Main joystick vertical axis (W / S)
-    StickVer(f32),
+    StickVer(f64),
     /// Main joystick yaw axis
-    StickYaw(f32),
+    StickYaw(f64),
     /// Secondary Joystick X axis (Mouse X Position)
-    CStickHor(f32),
+    CStickHor(f64),
     /// Secondary Joystick Y axis (Mouse Y Position)
-    CStickVer(f32),
+    CStickVer(f64),
     /// Secondary Joystick Z axis
-    CStickYaw(f32),
+    CStickYaw(f64),
 
     /* Joystick Buttons */
     /// Left Joystick Button (Middle Click)
-    StickButton(bool),
+    Stick(bool),
     /// Right Joystick Button (F)
-    CStickButton(bool),
+    CStick(bool),
 
     /*
      * Generic Extra Buttons
@@ -129,11 +126,11 @@ pub enum Event {
     MicRight(bool),
 
     /// Slew Control
-    Slew(f32),
+    Slew(f64),
     /// Left stationary throttle
-    ThrottleL(f32),
+    ThrottleL(f64),
     /// Right stationary throttle
-    ThrottleR(f32),
+    ThrottleR(f64),
 
     /// Left throttle button
     ThrottleButtonL(bool),
@@ -217,28 +214,28 @@ impl std::fmt::Display for Event {
         match self {
             Connect(_) => write!(f, "Controller Connected"),
             Disconnect => write!(f, "Controller Disconnected"),
-            Primary(p) => write!(f, "Primary {}", pushed(p)),
-            Secondary(p) => write!(f, "Secondary {}", pushed(p)),
-            Item(p) => write!(f, "Item {}", pushed(p)),
-            Action(p) => write!(f, "Action {}", pushed(p)),
-            Up(p) => write!(f, "Up {}", pushed(p)),
-            Down(p) => write!(f, "Down {}", pushed(p)),
-            Left(p) => write!(f, "Left {}", pushed(p)),
-            Right(p) => write!(f, "Right {}", pushed(p)),
-            Back(p) => write!(f, "Back {}", pushed(p)),
-            Forward(p) => write!(f, "Forward {}", pushed(p)),
-            ShoulderButtonL(p) => write!(f, "ShoulderButtonL {}", pushed(p)),
-            ShoulderButtonR(p) => write!(f, "ShoulderButtonR {}", pushed(p)),
-            ShoulderL(v) => write!(f, "ShoulderL {}", v),
-            ShoulderR(v) => write!(f, "ShoulderR {}", v),
+            ActA(p) => write!(f, "ActA {}", pushed(p)),
+            ActB(p) => write!(f, "ActB {}", pushed(p)),
+            ActH(p) => write!(f, "ActH {}", pushed(p)),
+            ActV(p) => write!(f, "ActV {}", pushed(p)),
+            DirUp(p) => write!(f, "DirUp {}", pushed(p)),
+            DirDown(p) => write!(f, "DirDown {}", pushed(p)),
+            DirLeft(p) => write!(f, "DirLeft {}", pushed(p)),
+            DirRight(p) => write!(f, "DirRight {}", pushed(p)),
+            Prev(p) => write!(f, "Prev {}", pushed(p)),
+            Next(p) => write!(f, "Next {}", pushed(p)),
+            ShoulderL(p) => write!(f, "ShoulderL {}", pushed(p)),
+            ShoulderR(p) => write!(f, "ShoulderR {}", pushed(p)),
+            TriggerL(v) => write!(f, "TriggerL {}", v),
+            TriggerR(v) => write!(f, "TriggerR {}", v),
             StickHor(v) => write!(f, "StickHor {}", v),
             StickVer(v) => write!(f, "StickVer {}", v),
             StickYaw(v) => write!(f, "StickYaw {}", v),
             CStickHor(v) => write!(f, "CStickHor {}", v),
             CStickVer(v) => write!(f, "CStickVer {}", v),
             CStickYaw(v) => write!(f, "CStickYaw {}", v),
-            StickButton(p) => write!(f, "StickButton {}", pushed(p)),
-            CStickButton(p) => write!(f, "CStickButton {}", pushed(p)),
+            Stick(p) => write!(f, "Stick {}", pushed(p)),
+            CStick(p) => write!(f, "CStick {}", pushed(p)),
             Cmd => write!(f, "Cmd"),
             Generic(l, p) => write!(f, "Generic{} {}", l, pushed(p)),
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),

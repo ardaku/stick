@@ -72,15 +72,15 @@ neutral = "China Hat"
 forward = 298
 backward = 299
 
-[dir.dpad_hat]
+[hat.dpad]
 name = "POV Hat"
-[dir.dpad_hat.axes]
-x = 0
-y = 1
+[hat.dpad.axes]
+hor = 0
+ver = 1
 
-[dir.mic_hat]
+[hat.mic]
 name = "Mic Switch"
-[dir.mic_hat.buttons]
+[hat.mic.buttons]
 up = 544
 down = 545
 left = 546

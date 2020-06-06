@@ -33,6 +33,11 @@ struct PadStateHat {
 /// Data associated with the state of the pad.  Used to produce the correct
 /// platform-agnostic events.
 struct PadState {
+    // Minimum axis value
+    min: f64,
+    // Maximum axis value - Minimum axis value
+    range: f64,
+    queued: Option<Event>,
     hats: Vec<PadStateHat>,
 }
 
@@ -49,17 +54,20 @@ struct PadDescriptor {
     // (Button) value[0] = Boolean 1, value[1] = Boolean 1, or both 0
     three: &'static [[(fn(Option<bool>) -> Event, c_ushort); 2]],
     // (Axis) value = 0 thru 255
-    triggers: &'static [(fn(f32) -> Event, c_ushort)],
+    triggers: &'static [(fn(f64) -> Event, c_ushort)],
     // (Axis) value[0] = -1, 0, or 1; value[1] = -1, 0, or 1
     hats: &'static [[(fn(bool) -> Event, fn(bool) -> Event, c_ushort); 2]],
     // (RelativeAxis) value = Full range min to max axis
-    wheel: &'static [(fn(f32) -> Event, c_ushort)],
+    wheel: &'static [(fn(f64) -> Event, c_ushort)],
 }
 
 impl PadDescriptor {
     // Convert evdev event into Stick event.
-    fn event_from(&self, ev: EvdevEv) -> Option<Event> {
-        let event = match ev.ev_type {
+    fn event_from(&self, ev: EvdevEv, state: &mut PadState) -> Option<Event> {
+        let joyaxis_float = |x| (x as f64 - state.min) / state.range;
+        let trigger_float = |x| x as f64 / 255.0;
+
+        match ev.ev_type {
             0x00 => { /* Ignore SYN events. */ }
             0x01 => {
                 // button press / release (key)
@@ -68,16 +76,16 @@ impl PadDescriptor {
                         return Some(new(ev.ev_value == 1));
                     }
                 }
-                for [(new_lo, evcode_lo), (new_hi, evcode_hi)] in self.buttons {
+                for [(new_lo, evcode_lo), (new_hi, evcode_hi)] in self.three {
                     match ev.ev_code {
-                        evcode_lo => {
+                        _x if _x == *evcode_lo => {
                             if ev.ev_value == 1 {
                                 return Some(new_lo(Some(false)));
                             } else {
                                 return Some(new_lo(None));
                             }
                         }
-                        evcode_hi => {
+                        _x if _x == *evcode_hi => {
                             if ev.ev_value == 1 {
                                 return Some(new_hi(Some(true)));
                             } else {
@@ -97,7 +105,7 @@ impl PadDescriptor {
                 // Relative axis movement
                 for (new, evcode) in self.wheel {
                     if ev.ev_code == *evcode {
-                        return Some(new(self.joyaxis_float(ev.ev_value)));
+                        return Some(new(joyaxis_float(ev.ev_value)));
                     }
                 }
                 eprintln!(
@@ -110,21 +118,21 @@ impl PadDescriptor {
                 // Absolute axis movement
                 for (new, evcode) in self.wheel {
                     if ev.ev_code == *evcode {
-                        return Some(new(self.joyaxis_float(ev.ev_value)));
+                        return Some(new(joyaxis_float(ev.ev_value)));
                     }
                 }
                 for (new, evcode) in self.triggers {
                     if ev.ev_code == *evcode {
-                        return Some(new(self.trigger_float(ev.ev_value)));
+                        return Some(new(trigger_float(ev.ev_value)));
                     }
                 }
                 for (i, [(up, down, vercode), (left, right, horcode)]) in
                     self.hats.iter().enumerate()
                 {
                     match ev.ev_code {
-                        vercode => {
-                            let hat_value = state.hats.ver[i];
-                            state.hats.ver[i] = ev.ev_value;
+                        _x if _x == *vercode => {
+                            let hat_value = state.hats[i].ver;
+                            state.hats[i].ver = ev.ev_value;
                             return match ev.ev_value {
                                 -1 => match hat_value {
                                     -1 => None,
@@ -132,12 +140,14 @@ impl PadDescriptor {
                                         state.queued = Some(up(true));
                                         Some(down(false))
                                     }
-                                    _ => Some(up(true)),
+                                    0 => Some(up(true)),
+                                    _ => unreachable!(),
                                 },
                                 0 => match hat_value {
                                     -1 => Some(up(false)),
                                     1 => Some(down(false)),
-                                    _ => None,
+                                    0 => None,
+                                    _ => unreachable!(),
                                 },
                                 1 => match hat_value {
                                     -1 => {
@@ -145,13 +155,15 @@ impl PadDescriptor {
                                         Some(up(false))
                                     }
                                     1 => None,
-                                    _ => Some(down(true)),
+                                    0 => Some(down(true)),
+                                    _ => unreachable!(),
                                 },
+                                _ => unreachable!(),
                             };
                         }
-                        horcode => {
-                            let hat_value = state.hats.hor[i];
-                            state.hats.hor[i] = ev.ev_value;
+                        _x if _x == *horcode => {
+                            let hat_value = state.hats[i].hor;
+                            state.hats[i].hor = ev.ev_value;
                             return match ev.ev_value {
                                 -1 => match hat_value {
                                     -1 => None,
@@ -159,12 +171,14 @@ impl PadDescriptor {
                                         state.queued = Some(left(true));
                                         Some(right(false))
                                     }
-                                    _ => Some(left(true)),
+                                    0 => Some(left(true)),
+                                    _ => unreachable!(),
                                 },
                                 0 => match hat_value {
                                     -1 => Some(left(false)),
                                     1 => Some(right(false)),
-                                    _ => None,
+                                    0 => None,
+                                    _ => unreachable!(),
                                 },
                                 1 => match hat_value {
                                     -1 => {
@@ -172,8 +186,10 @@ impl PadDescriptor {
                                         Some(left(false))
                                     }
                                     1 => None,
+                                    0 => unreachable!(),
                                     _ => Some(right(true)),
                                 },
+                                _ => unreachable!(),
                             };
                         }
                         _ => { /* Keep looking */ }
@@ -209,24 +225,24 @@ impl PadDescriptor {
 
 include!(concat!(env!("OUT_DIR"), "/database.rs"));
 
-const HARDWARE_ID_MAYFLASH_ARCADE_FIGHTSTICK_PS3_COMPAT: u32 = 0x_0079_1830;
-const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_0079_1844;
+const HARDWARE_ID_MAYFLASH_ARCADE_FIGHTSTICK_PS3_COMPAT: u32 = 0x_7900_3018;
+const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_7900_4418;
 
-const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_044F_B10A;
+const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_4F04_0AB1;
 
-const HARDWARE_ID_PLAYSTATION_LOGITECH: u32 = 0x_046D_C216;
+const HARDWARE_ID_PLAYSTATION_LOGITECH: u32 = 0x_6D04_16C2;
 
-const HARDWARE_ID_SIXAXIS_PS3: u32 = 0x_054C_0268;
-const HARDWARE_ID_DUALSHOCK_PS4: u32 = 0x_054C_05C4;
+const HARDWARE_ID_SIXAXIS_PS3: u32 = 0x_4C05_6802;
+const HARDWARE_ID_DUALSHOCK_PS4: u32 = 0x_4C05_C405;
 
-const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_0738_1718;
+const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_3807_1817;
 
-const HARDWARE_ID_THRUSTMASTER1: u32 = 0x_07B5_0316;
+const HARDWARE_ID_THRUSTMASTER1: u32 = 0x_B507_1603;
 
-const HARDWARE_ID_XBOX_PDP: u32 = 0x_0E6F_02A8;
+const HARDWARE_ID_XBOX_PDP: u32 = 0x_6F0E_A802;
 
-const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_0E8F_3075;
-const HARDWARE_ID_AFTERGLOW_PS3_COMPAT: u32 = 0x_0E6F_6302;
+const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_8F0E_7530;
+const HARDWARE_ID_AFTERGLOW_PS3_COMPAT: u32 = 0x_6F0E_0263;
 
 struct HardwareId(u32);
 
@@ -551,12 +567,12 @@ pub(crate) struct Pad {
     queued: Option<Event>,
     emulated: u8, // lower 4 bits are for D-pad.
     rumble: i16,
-    movx: f32,
-    movy: f32,
-    camx: f32,
-    camy: f32,
-    lt: f32,
-    rt: f32,
+    movx: f64,
+    movy: f64,
+    camx: f64,
+    camy: f64,
+    lt: f64,
+    rt: f64,
 }
 
 impl Pad {
@@ -572,7 +588,7 @@ impl Pad {
         );
         let a = unsafe { a.assume_init() };
         let hardware_id =
-            ((u32::from(a.vendor)) << 16) | (u32::from(a.product));
+            ((u32::from(a.vendor.to_be())) << 16) | (u32::from(a.product.to_be()));
         // Get the min and max absolute values for axis.
         let mut a = MaybeUninit::<AbsInfo>::uninit();
         assert_ne!(
@@ -603,7 +619,7 @@ impl Pad {
     }
 
     // Convert value as though it were a trigger axis (returns 0 to 1).
-    fn trigger_float(&self, x: c_int) -> f32 {
+    fn trigger_float(&self, x: c_int) -> f64 {
         // Deadzone multiply
         let dm = match self.hardware_id {
             HARDWARE_ID_MAYFLASH_GAMECUBE => 2.0,
@@ -615,7 +631,7 @@ impl Pad {
             _ => 1.0,
         };
 
-        let x = (x as f32 * scale / 255.0).min(1.0).max(0.0);
+        let x = (x as f64 * scale / 255.0).min(1.0).max(0.0);
         if x < dm * 0.075 {
             0.0
         } else {
@@ -624,9 +640,9 @@ impl Pad {
     }
 
     // Convert value as though it were a joystick axis (returns -1 to 1).
-    fn joyaxis_float(&self, x: c_int) -> f32 {
+    fn joyaxis_float(&self, x: c_int) -> f64 {
         // Deadzone multiply
-        let dm = if self.hardware_id == 0x_07B5_0316 {
+        let dm = if self.hardware_id == HARDWARE_ID_THRUSTMASTER1 {
             2.0
         } else {
             1.0
@@ -638,7 +654,7 @@ impl Pad {
             1.0
         };
 
-        let x = (x - self.abs_min) as f32 / self.abs_range as f32;
+        let x = (x - self.abs_min) as f64 / self.abs_range as f64;
         // Deadzone
         if (x - 0.5).abs() < dm * 0.0625 {
             0.0
@@ -663,10 +679,10 @@ impl Pad {
             self.emulated |= left;
             if emulated & right != 0 {
                 self.emulated &= !right;
-                self.queued = Some(Event::Left(true));
-                Event::Right(false)
+                self.queued = Some(Event::DirLeft(true));
+                Event::DirRight(false)
             } else {
-                Event::Left(true)
+                Event::DirLeft(true)
             }
         } else if value > 0 {
             // Right
@@ -676,17 +692,17 @@ impl Pad {
             self.emulated |= right;
             if emulated & left != 0 {
                 self.emulated &= !left;
-                self.queued = Some(Event::Right(true));
-                Event::Left(false)
+                self.queued = Some(Event::DirRight(true));
+                Event::DirLeft(false)
             } else {
-                Event::Right(true)
+                Event::DirRight(true)
             }
         } else {
             self.emulated &= !(left | right);
             if emulated & left != 0 {
-                Event::Left(false)
+                Event::DirLeft(false)
             } else if emulated & right != 0 {
-                Event::Right(false)
+                Event::DirRight(false)
             } else {
                 return None;
             }
@@ -705,10 +721,10 @@ impl Pad {
             self.emulated |= up;
             if emulated & down != 0 {
                 self.emulated &= !down;
-                self.queued = Some(Event::Up(true));
-                Event::Down(false)
+                self.queued = Some(Event::DirUp(true));
+                Event::DirDown(false)
             } else {
-                Event::Up(true)
+                Event::DirUp(true)
             }
         } else if value > 0 {
             // Down
@@ -718,17 +734,17 @@ impl Pad {
             self.emulated |= down;
             if emulated & up != 0 {
                 self.emulated &= !up;
-                self.queued = Some(Event::Down(true));
-                Event::Up(false)
+                self.queued = Some(Event::DirDown(true));
+                Event::DirUp(false)
             } else {
-                Event::Down(true)
+                Event::DirDown(true)
             }
         } else {
             self.emulated &= !(up | down);
             if emulated & up != 0 {
-                Event::Up(false)
+                Event::DirUp(false)
             } else if emulated & down != 0 {
-                Event::Down(false)
+                Event::DirDown(false)
             } else {
                 return None;
             }
@@ -875,30 +891,30 @@ impl Pad {
 
                 match self.remapping(ev.ev_code - 0x120) {
                     // Fallback Event IDs
-                    0 | 20 => Event::Action(is),
-                    1 | 16 => Event::Primary(is),
-                    2 | 17 | 18 => Event::Secondary(is),
-                    3 | 19 => Event::Item(is),
-                    4 | 24 => Event::ShoulderL(if is {
+                    0 | 20 => Event::ActV(is),
+                    1 | 16 => Event::ActA(is),
+                    2 | 17 | 18 => Event::ActB(is),
+                    3 | 19 => Event::ActH(is),
+                    4 | 24 => Event::TriggerL(if is {
                         self.emulated |= 0b0001_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0001_0000;
                         self.lt
                     }),
-                    5 | 25 => Event::ShoulderR(if is {
+                    5 | 25 => Event::TriggerR(if is {
                         self.emulated |= 0b0010_0000;
                         1.0
                     } else {
                         self.emulated &= !0b0010_0000;
                         self.rt
                     }),
-                    6 | 22 => Event::ShoulderButtonL(is), // 6 is Guess
-                    7 | 23 | 21 => Event::ShoulderButtonR(is),
-                    8 | 26 => Event::Back(is), // 8 is Guess
-                    9 | 27 => Event::Forward(is),
-                    10 | 29 => Event::StickButton(is),
-                    11 | 30 => Event::CStickButton(is),
+                    6 | 22 => Event::ShoulderL(is), // 6 is Guess
+                    7 | 23 | 21 => Event::ShoulderR(is),
+                    8 | 26 => Event::Prev(is), // 8 is Guess
+                    9 | 27 => Event::Next(is),
+                    10 | 29 => Event::Stick(is),
+                    11 | 30 => Event::CStick(is),
                     // D-PAD
                     12 | 256 => {
                         if let Some(ev) = self.dpad_v(if is { -1 } else { 0 }) {
@@ -993,7 +1009,7 @@ impl Pad {
                         self.movy = value;
                         value
                     }),
-                    21 | 2 => Event::ShoulderL({
+                    21 | 2 => Event::TriggerL({
                         let old = self.lt;
                         self.lt = self.trigger_float(ev.ev_value);
                         if (self.emulated & 0b0001_0000 != 0 && self.tad())
@@ -1032,7 +1048,7 @@ impl Pad {
                         self.camy = value;
                         value
                     }),
-                    20 | 5 => Event::ShoulderR({
+                    20 | 5 => Event::TriggerR({
                         let old = self.rt;
                         self.rt = self.trigger_float(ev.ev_value);
                         if (self.emulated & 0b0010_0000 != 0 && self.tad())
