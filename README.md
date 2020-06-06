@@ -1,12 +1,29 @@
 # Stick
 
-#### Platform-agnostic asynchronous gamepad library for Rust
+#### Platform-agnostic asynchronous gamepad/joystick library for Rust
 
 [![Build Status](https://api.travis-ci.org/libcala/stick.svg?branch=master)](https://travis-ci.org/libcala/stick)
 [![Docs](https://docs.rs/stick/badge.svg)](https://docs.rs/stick)
 [![crates.io](https://img.shields.io/crates/v/stick.svg)](https://crates.io/crates/stick)
 
-Stick supports getting controller input, as well as using rumble haptic effects.
+Stick supports getting controller input from a large variety of gamepads,
+joysticks, and other controllers, as well as rumble haptic effects.
+
+### Why Does `stick` Exist?
+The main reason is that I hadn't heard of gilrs when I started stick back in
+2017 when gilrs was only a year old and had less than 500 all-time downloads.
+Now, I think there are many other reasons for stick to exist despite gilrs:
+
+ - Executor-agnostic `async/.await` for gamepads, joysticks, etc (I recommend
+   using the `pasts` crate for a simple single-threaded executor).
+ - Low-level hotplugging support (you assign the gamepad ID's)
+ - Meaningful Event Names (`ActA` and `ActB` instead of `South` and `East`)
+ - Minimal dependencies
+ - Dual licensed with the Zlib license (permission to use without attribution in
+   the binary's UI) - making it great for game development.
+ - Not game-specific, doesn't depend on a "standard gamepad" model (which
+   doesn't work due to the variety of controllers in existence) - therefore can
+   also be used in robotics, control centers, advanced flight simulations, etc.
 
 ### Platform Support
 - Linux
