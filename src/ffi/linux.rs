@@ -977,7 +977,7 @@ impl Pad {
             }
             // Relative axis movement
             0x02 => match ev.ev_code {
-                8 => Event::StickVer({
+                8 => Event::StickY({
                     let value = self.joyaxis_float(ev.ev_value);
                     if value == self.movy {
                         return self.poll(cx);
@@ -993,7 +993,7 @@ impl Pad {
             // Absolute axis movement (abs)
             0x03 => {
                 match self.axis_remapping(ev.ev_code) {
-                    0 => Event::StickHor({
+                    0 => Event::StickX({
                         let value = self.joyaxis_float(ev.ev_value);
                         if value == self.movx {
                             return self.poll(cx);
@@ -1001,7 +1001,7 @@ impl Pad {
                         self.movx = value;
                         value
                     }),
-                    1 => Event::StickVer({
+                    1 => Event::StickY({
                         let value = self.joyaxis_float(ev.ev_value);
                         if value == self.movy {
                             return self.poll(cx);
@@ -1019,7 +1019,7 @@ impl Pad {
                         }
                         self.lt
                     }),
-                    3 => Event::CStickHor({
+                    3 => Event::CStickX({
                         let value =
                             if HardwareId(self.hardware_id).is_thrustmaster() {
                                 self.trigger_float(ev.ev_value) * 2.0 - 1.0
@@ -1032,7 +1032,7 @@ impl Pad {
                         self.camx = value;
                         value
                     }),
-                    4 => Event::CStickVer({
+                    4 => Event::CStickY({
                         let value = self.joyaxis_float(ev.ev_value);
                         if value == self.camy {
                             return self.poll(cx);
@@ -1040,7 +1040,7 @@ impl Pad {
                         self.camy = value;
                         value
                     }),
-                    6 => Event::CStickVer({
+                    6 => Event::CStickY({
                         let value = self.trigger_float(ev.ev_value) * 2.0 - 1.0;
                         if value == self.camy {
                             return self.poll(cx);

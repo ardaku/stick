@@ -91,10 +91,10 @@ async fn event_loop() {
             (id, event) => {
                 println!("p{}: {}", id + 1, event);
                 match event {
-                    Event::Primary(pressed) => {
+                    Event::ActA(pressed) => {
                         pads[id].rumble(if pressed { 1.0 } else { 0.0 });
                     }
-                    Event::Secondary(pressed) => {
+                    Event::ActB(pressed) => {
                         pads[id].rumble(if pressed { 0.25 } else { 0.0 });
                     }
                     _ => {}

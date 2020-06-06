@@ -47,6 +47,8 @@ pub enum Event {
     ActA(bool),
     /// B / 2 / 3 / Cross / Shift.  Action B (Secondary action).
     ActB(bool),
+    /// C
+    ActC(bool),
     /// Y / X / Square / Right Click / H.  Horizontal action.
     ActH(bool),
     /// X / Y / Triangle / Space / V.  Vertical action (Topmost button).
@@ -76,18 +78,18 @@ pub enum Event {
     ShoulderR(bool),
 
     /* Joystick */
-    /// Main joystick horizontal axis (A / D)
-    StickHor(f64),
-    /// Main joystick vertical axis (W / S)
-    StickVer(f64),
-    /// Main joystick yaw axis
-    StickYaw(f64),
-    /// Secondary Joystick X axis (Mouse X Position)
-    CStickHor(f64),
-    /// Secondary Joystick Y axis (Mouse Y Position)
-    CStickVer(f64),
-    /// Secondary Joystick Z axis
-    CStickYaw(f64),
+    /// Main stick horizontal axis (A / D)
+    StickX(f64),
+    /// Main stick vertical / depth axis (W / S)
+    StickY(f64),
+    /// Main stick rotation / yaw axis
+    StickZ(f64),
+    /// Secondary stick X axis (Mouse X Position)
+    CStickX(f64),
+    /// Secondary stick Y axis (Mouse Y Position)
+    CStickY(f64),
+    /// Secondary stick Z axis
+    CStickZ(f64),
 
     /* Joystick Buttons */
     /// Left Joystick Button (Middle Click)
@@ -216,6 +218,7 @@ impl std::fmt::Display for Event {
             Disconnect => write!(f, "Controller Disconnected"),
             ActA(p) => write!(f, "ActA {}", pushed(p)),
             ActB(p) => write!(f, "ActB {}", pushed(p)),
+            ActC(p) => write!(f, "ActC {}", pushed(p)),
             ActH(p) => write!(f, "ActH {}", pushed(p)),
             ActV(p) => write!(f, "ActV {}", pushed(p)),
             DirUp(p) => write!(f, "DirUp {}", pushed(p)),
@@ -228,12 +231,12 @@ impl std::fmt::Display for Event {
             ShoulderR(p) => write!(f, "ShoulderR {}", pushed(p)),
             TriggerL(v) => write!(f, "TriggerL {}", v),
             TriggerR(v) => write!(f, "TriggerR {}", v),
-            StickHor(v) => write!(f, "StickHor {}", v),
-            StickVer(v) => write!(f, "StickVer {}", v),
-            StickYaw(v) => write!(f, "StickYaw {}", v),
-            CStickHor(v) => write!(f, "CStickHor {}", v),
-            CStickVer(v) => write!(f, "CStickVer {}", v),
-            CStickYaw(v) => write!(f, "CStickYaw {}", v),
+            StickX(v) => write!(f, "StickX {}", v),
+            StickY(v) => write!(f, "StickY {}", v),
+            StickZ(v) => write!(f, "StickZ {}", v),
+            CStickX(v) => write!(f, "CStickX {}", v),
+            CStickY(v) => write!(f, "CStickY {}", v),
+            CStickZ(v) => write!(f, "CStickZ {}", v),
             Stick(p) => write!(f, "Stick {}", pushed(p)),
             CStick(p) => write!(f, "CStick {}", pushed(p)),
             Cmd => write!(f, "Cmd"),
