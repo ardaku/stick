@@ -1,5 +1,5 @@
 name = "Thrustmaster Warthog Throttle"
-type = "HOTAS"
+type = "Flight"
 
 [[button]]
 code = 425
