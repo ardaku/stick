@@ -30,19 +30,36 @@ use crate::Event;
 // number shouldn't occur.
 const LINUX_SPECIFIC_BTN_OFFSET: c_ushort = 0x120;
 
+/// State of a hat or dpad in order to remove duplicated events, because
+/// sometimes evdev produces both an axis and button event for hats and dpads.
+#[derive(Default)]
+struct PadStateHat {
+    up: bool,
+    down: bool,
+    left: bool,
+    right: bool,
+}
+
 /// Data associated with the state of the pad.  Used to produce the correct
 /// platform-agnostic events.
 struct PadState {
     // Trigger state
-    trigger_l: f32,
+    trigger_l: f64,
+    trigger_l_held: bool,
     // Trigger state
-    trigger_r: f32,
+    trigger_r: f64,
+    trigger_r_held: bool,
     // If last three-way state was negative (1 for each three-way).
     neg: Vec<Option<bool>>,
     // If last three-way axis state was negative (1 for each three-way).
     neg_axis: Vec<Option<bool>>,
     // If axis is zero (1 for each axis).
     dead: Vec<bool>,
+    dead_trig: Vec<bool>,
+    // 
+    dpad: PadStateHat,
+    mic: PadStateHat,
+    pov: PadStateHat,
     // Zero point
     zero: f64,
     // Normalization (-1.0, 1.0)
@@ -60,14 +77,14 @@ struct PadDescriptor {
     deadzone: Option<f64>,
 
     // (Axis) value = Full range min to max axis
-    axes: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
+    axes: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>)],
     // (Button) value = Boolean 1 or 0
     buttons: &'static [(&'static dyn Fn(bool) -> Event, c_ushort)],
     // (Button) value = 0.0f64 or 1.0f64
     trigbtns: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
     // (Axis) value = 0 thru 255
     triggers:
-        &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
+        &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>, Option<f64>)],
     // (Axis) value = -1, 0, or 1
     three_ways: &'static [(&'static dyn Fn(bool, bool) -> Event, c_ushort)],
     // (Axis) value = -1.0f64, 0, or 1.0f64
@@ -79,20 +96,32 @@ struct PadDescriptor {
 impl PadDescriptor {
     // Convert evdev event into JoyPush event.
     fn event_from(&self, ev: EvdevEv, state: &mut PadState) -> Option<Event> {
-        let joyaxis_float = |x| {
-            let v = (x as f64 - state.zero) * state.norm;
+        let joyaxis_float = |x, max, state: &mut PadState| {
+            let v: f64 = (x as f64 - state.zero) * state.norm / max;
             if v.abs() <= state.flat {
                 0.0
             } else {
-                v
+                v.min(1.0).max(-1.0)
             }
         };
-        let trigger_float = |x| x as f64 / 255.0;
+        let trigger_float = |x, flat| {
+            let v = x as f64 / 255.0;
+            if v.abs() <= flat {
+                0.0
+            } else {
+                v.min(1.0).max(0.0)
+            }
+        };
 
-        match ev.ev_type {
-            0x00 => { /* Ignore SYN events. */ }
+        let event = match ev.ev_type {
+            0x00 => {
+                // Ignore SYN events.
+                None
+            }
             0x01 => {
                 // button press / release (key)
+                let mut event = None;
+                let mut unknown = true;
                 let ev_code = ev
                     .ev_code
                     .checked_sub(LINUX_SPECIFIC_BTN_OFFSET)
@@ -103,65 +132,114 @@ impl PadDescriptor {
                     ));
                 for (new, evcode) in self.buttons {
                     if ev_code == *evcode {
-                        return Some(new(ev.ev_value > 0));
+                        unknown = false;
+                        event = Some(new(ev.ev_value > 0));
                     }
                 }
                 for (new, evcode) in self.trigbtns {
                     if ev_code == *evcode {
-                        return Some(new(if ev.ev_value > 0 {
+                        unknown = false;
+                        let mut held = false;
+                        event = Some(match new(if ev.ev_value > 0 {
+                            held = true;
                             1.0
                         } else if ev.ev_value < 0 {
                             -1.0
                         } else {
                             0.0
-                        }));
+                        }) {
+                            Event::TriggerL(v) => {
+                                state.trigger_l_held = held;
+                                Event::TriggerL(if v.classify() == FpCategory::Zero {
+                                    state.trigger_l
+                                } else {
+                                    v
+                                })
+                            }
+                            Event::TriggerR(v) => {
+                                state.trigger_r_held = held;
+                                Event::TriggerR(if v.classify() == FpCategory::Zero {
+                                    state.trigger_r
+                                } else {
+                                    v
+                                })
+                            }
+                            event => event,
+                        });
                     }
                 }
-                eprintln!(
-                    "*Evdev* Unknown Button Code: {}, report at \
-                    https://github.com/libcala/stick/issues",
-                    ev_code
-                );
+                if unknown {
+                    eprintln!(
+                        "*Evdev* Unknown Button Code: {}, report at \
+                        https://github.com/libcala/stick/issues",
+                        ev_code
+                    );
+                }
+                event
             }
             0x02 => {
                 // Relative axis movement
+                let mut event = None;
+                let mut unknown = true;
                 for (new, evcode) in self.wheels {
                     if ev.ev_code == *evcode {
-                        return Some(new(joyaxis_float(ev.ev_value)));
+                        unknown = false;
+                        event = Some(new(joyaxis_float(ev.ev_value, 1.0, state)));
                     }
                 }
-                eprintln!(
-                    "*Evdev* Unknown Relative Axis Code: {}, report at \
-                    https://github.com/libcala/stick/issues",
-                    ev.ev_code
-                );
+                if unknown {
+                    eprintln!(
+                        "*Evdev* Unknown Relative Axis Code: {}, report at \
+                        https://github.com/libcala/stick/issues",
+                        ev.ev_code
+                    );
+                }
+                event
             }
             0x03 => {
+                let mut event = None;
+                let mut unknown = true;
                 // Absolute axis movement
                 for (i, (new, evcode, max)) in self.axes.iter().enumerate() {
                     if ev.ev_code == *evcode {
-                        let v = joyaxis_float(ev.ev_value);
+                        unknown = false;
+                        let v = joyaxis_float(ev.ev_value, max.unwrap_or(1.0), state);
                         let is_zero = v.classify() == FpCategory::Zero;
-                        if is_zero && state.dead[i] {
-                            return None;
-                        } else {
-                            if is_zero {
-                                state.dead[i] = true;
-                            } else {
-                                state.dead[i] = false;
-                            }
-                            return Some(new(v));
+                        if !(is_zero && state.dead[i]) {
+                            state.dead[i] = is_zero;
+                            event = Some(new(v));
                         }
                     }
                 }
-                for (new, evcode, max) in self.triggers {
+                for (i, (new, evcode, max, dead)) in self.triggers.iter().enumerate() {
                     if ev.ev_code == *evcode {
-                        return Some(new(trigger_float(ev.ev_value)));
+                        unknown = false;
+                        let v = trigger_float(ev.ev_value, dead.unwrap_or(0.0));
+                        let is_zero = v.classify() == FpCategory::Zero;
+                        if !(is_zero && state.dead_trig[i]) {
+                            state.dead_trig[i] = is_zero;
+                            match new(v) {
+                                Event::TriggerL(v) => {
+                                    state.trigger_l = v;
+                                    if !state.trigger_l_held {
+                                        event = Some(Event::TriggerL(v));
+                                    }
+                                }
+                                Event::TriggerR(v) => {
+                                    state.trigger_r = v;
+                                    if !state.trigger_r_held {
+                                        event = Some(Event::TriggerR(v));
+                                    }
+                                }
+                                ev => event = Some(ev),
+                            }
+                        }
                     }
                 }
                 for (i, (new, evcode)) in self.three_ways.iter().enumerate() {
                     if ev.ev_code == *evcode {
-                        return match ev.ev_value {
+                        unknown = false;
+                        event = match ev.ev_value {
                             0 => {
                                 if let Some(old) = state.neg[i].take() {
                                     Some(new(old, false))
@@ -182,7 +260,7 @@ impl PadDescriptor {
                             _ => {
                                 let old = state.neg[i];
                                 state.neg[i] = Some(true);
-                                state.queued = Some(new(true, false));
+                                state.queued = Some(new(true, true));
                                 if old == Some(false) {
                                     Some(new(false, false))
                                 } else {
@@ -192,11 +270,14 @@ impl PadDescriptor {
                         };
                     }
                 }
-                eprintln!(
-                    "*Evdev* Unknown Absolute Axis Code: {}, report at \
-                    https://github.com/libcala/stick/issues",
-                    ev.ev_code
-                );
+                if unknown {
+                    eprintln!(
+                        "*Evdev* Unknown Absolute Axis Code: {}, report at \
+                        https://github.com/libcala/stick/issues",
+                        ev.ev_code
+                    );
+                }
+                event
             }
             0x04 => {
                 if ev.ev_code != /* scan */ 4 {
@@ -206,17 +287,100 @@ impl PadDescriptor {
                         ev.ev_code, ev.ev_value
                     );
                 }
+                None
             }
-            0x15 => { /* Force Feedback echo, ignore */ }
+            0x15 => {
+                // Force Feedback echo, ignore
+                None
+            }
             u => {
                 eprintln!(
                     "*Evdev* Unknown Event: {}, Code: {} value: {}, \
                     report at https://github.com/libcala/stick/issues.",
                     u, ev.ev_code, ev.ev_value
                 );
+                None
             }
         };
-        None
+        
+        // Remove duplicated events
+        let event = match event {
+            Some(Event::DpadUp(p)) => if p == state.dpad.up {
+                None
+            } else {
+                state.dpad.up = p;
+                event
+            },
+            Some(Event::DpadDown(p)) => if p == state.dpad.down {
+                None
+            } else {
+                state.dpad.down = p;
+                event
+            },
+            Some(Event::DpadRight(p)) => if p == state.dpad.right {
+                None
+            } else {
+                state.dpad.right = p;
+                event
+            },
+            Some(Event::DpadLeft(p)) => if p == state.dpad.left {
+                None
+            } else {
+                state.dpad.left = p;
+                event
+            },
+            Some(Event::PovUp(p)) => if p == state.pov.up {
+                None
+            } else {
+                state.pov.up = p;
+                event
+            },
+            Some(Event::PovDown(p)) => if p == state.pov.down {
+                None
+            } else {
+                state.pov.down = p;
+                event
+            },
+            Some(Event::PovRight(p)) => if p == state.pov.right {
+                None
+            } else {
+                state.pov.right = p;
+                event
+            },
+            Some(Event::PovLeft(p)) => if p == state.pov.left {
+                None
+            } else {
+                state.pov.left = p;
+                event
+            },
+            Some(Event::MicUp(p)) => if p == state.mic.up {
+                None
+            } else {
+                state.mic.up = p;
+                event
+            },
+            Some(Event::MicDown(p)) => if p == state.mic.down {
+                None
+            } else {
+                state.mic.down = p;
+                event
+            },
+            Some(Event::MicRight(p)) => if p == state.mic.right {
+                None
+            } else {
+                state.mic.right = p;
+                event
+            },
+            Some(Event::MicLeft(p)) => if p == state.mic.left {
+                None
+            } else {
+                state.mic.left = p;
+                event
+            },
+            event => event,
+        };
+        
+        event
     }
 }
 
@@ -612,14 +776,13 @@ impl Pad {
         };
         // Invert so multiplication can be used instead of division
         let norm = norm.recip();
-        dbg!(flat);
-
-        dbg!((a.fuzz, a.flat, a.resolution));
 
         // Initialize driver state
         let state = PadState {
             trigger_l: 0.0,
             trigger_r: 0.0,
+            trigger_l_held: false,
+            trigger_r_held: false,
             neg: {
                 let mut neg = vec![];
                 for _ in desc.three_ways {
@@ -641,10 +804,20 @@ impl Pad {
                 }
                 dead
             },
+            dead_trig: {
+                let mut dead = vec![];
+                for _ in desc.triggers {
+                    dead.push(true);
+                }
+                dead
+            },
             norm,
             zero,
             flat,
             queued: None,
+            dpad: PadStateHat::default(),
+            mic: PadStateHat::default(),
+            pov: PadStateHat::default(),
         };
 
         // Query the controller for haptic support.

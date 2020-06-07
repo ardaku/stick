@@ -115,7 +115,7 @@ fn generate_from_database() -> String {
         ret.push_str("            ],\n");
         ret.push_str("            triggers: &[\n");
         if let Some(triggers) = map.trigger {
-            for format::Trigger { code, event, max } in triggers {
+            for format::Trigger { code, event, max, deadzone } in triggers {
                 ret.push_str("                (&Event::");
                 ret.push_str(&event);
                 ret.push_str(", ");
@@ -128,6 +128,8 @@ fn generate_from_database() -> String {
                 } else {
                     ret.push_str("None");
                 }
+                ret.push_str(", ");
+                ret.push_str(&format!("{:?}", deadzone));
                 ret.push_str("),\n");
             }
         }

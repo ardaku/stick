@@ -8,7 +8,7 @@ pub(super) struct Button {
 pub(super) struct Axis {
     pub(super) code: u8,
     pub(super) event: String,
-    pub(super) max: Option<u32>,
+    pub(super) max: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,6 +16,7 @@ pub(super) struct Trigger {
     pub(super) code: u8,
     pub(super) event: String,
     pub(super) max: Option<u32>,
+    pub(super) deadzone: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
