@@ -1,0 +1,142 @@
+name = "Thrustmaster Warthog Throttle"
+type = "HOTAS"
+
+# Buttons
+[[button]]
+code = 713
+event = "AutopilotToggle"
+
+[[button]]
+code = 708
+event = "LandingGearSilence"
+
+[[button]]
+code = 302
+event = "ThrottleButtonL"
+
+[[button]]
+code = 711
+event = "Eac"
+
+[[button]]
+code = 712
+event = "RadarAltimeter"
+
+# Two way switches (buttons in evdev)
+[[button]]
+code = 707
+event = "Apu"
+
+[[button]]
+code = 303
+event = "EngineFuelFlowL"
+
+[[button]]
+code = 704
+event = "EngineFuelFlowR"
+
+# Three way switches (buttons in evdev)
+[[button]]
+code = 714
+event = "AutopilotSelectPath"
+
+[[button]]
+code = 715
+event = "AutopilotSelectAlt"
+
+[[button]]
+code = 709
+event = "FlapsUp"
+
+[[button]]
+code = 710
+event = "FlapsDown"
+
+[[button]]
+code = 718
+event = "EngineOperateLIgnition"
+
+[[button]]
+code = 705
+event = "EngineOperateLMotor"
+
+[[button]]
+code = 719
+event = "EngineOperateRIgnition"
+
+[[button]]
+code = 706
+event = "EngineOperateRMotor"
+
+[[button]]
+code = 300
+event = "PinkyForward"
+
+[[button]]
+code = 301
+event = "PinkyBackward"
+
+[[button]]
+code = 294
+event = "SpeedbrakeForward"
+
+[[button]]
+code = 295
+event = "SpeedbrakeBackward"
+
+[[button]]
+code = 296
+event = "BoatForward"
+
+[[button]]
+code = 297
+event = "BoatBackward"
+
+[[button]]
+code = 298
+event = "ChinaForward"
+
+[[button]]
+code = 299
+event = "ChinaBackward"
+
+# Hats (buttons in evdev)
+[[button]]
+code = 544
+event = "MicUp"
+
+[[button]]
+code = 545
+event = "MicDown"
+
+[[button]]
+code = 546
+event = "MicLeft"
+
+[[button]]
+code = 547
+event = "MicRight"
+
+# Axes
+[[axis]]
+code = 6
+name = "Slew"
+
+[[axis]]
+code = 5
+event = "ThrottleL"
+
+[[axis]]
+code = 2
+event = "ThrottleR"
+
+# Hats (unit axes in evdev)
+[[three_way]]
+code = 0
+neg = "PovLeft"
+pos = "PovRight"
+
+[[three_way]]
+code = 1
+neg = "PovUp"
+pos = "PovDown"
