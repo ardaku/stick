@@ -25,7 +25,7 @@ impl Debug for Pad {
 
 impl Pad {
     /// Get a unique identifier for the specific model of gamepad.
-    pub fn id(&self) -> u32 {
+    pub fn id(&self) -> [u16; 4] {
         self.0.id()
     }
 

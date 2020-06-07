@@ -58,7 +58,8 @@ fn generate_from_database() -> String {
             ret.push_str(ver);
         }
         ret.push_str(") => &PadDescriptor {\n");
-        let map: format::PadMapping = toml::from_slice(&fs::read(entry).unwrap()).unwrap();
+        let map: format::PadMapping =
+            toml::from_slice(&fs::read(entry).unwrap()).unwrap();
         ret.push_str("            name: \"");
         ret.push_str(&map.name);
         ret.push_str("\",\n");
@@ -66,7 +67,12 @@ fn generate_from_database() -> String {
         let mut tb = String::new();
         if let Some(buttons) = map.button {
             for format::Button { code, event } in buttons {
-                if event.starts_with("Trigger") || event == "JoyX" || event == "JoyY" || event == "PovX" || event == "PovY" {
+                if event.starts_with("Trigger")
+                    || event == "JoyX"
+                    || event == "JoyY"
+                    || event == "PovX"
+                    || event == "PovY"
+                {
                     tb.push_str("                (&Event::");
                     tb.push_str(&event);
                     tb.push_str(", ");
@@ -129,7 +135,9 @@ fn generate_from_database() -> String {
             for format::ThreeWay { code, neg, pos } in three_ways {
                 if neg.starts_with("Trigger") {
                     assert!(pos.starts_with("Trigger"));
-                    ta.push_str("                (&|neg, state| if neg { Event::");
+                    ta.push_str(
+                        "                (&|neg, state| if neg { Event::",
+                    );
                     ta.push_str(&neg);
                     ta.push_str("(state) } else { Event::");
                     ta.push_str(&pos);
@@ -137,7 +145,9 @@ fn generate_from_database() -> String {
                     ta.push_str(&code.to_string());
                     ta.push_str("),\n");
                 } else {
-                    ret.push_str("                (&|neg, state| if neg { Event::");
+                    ret.push_str(
+                        "                (&|neg, state| if neg { Event::",
+                    );
                     ret.push_str(&neg);
                     ret.push_str("(state) } else { Event::");
                     ret.push_str(&pos);

@@ -29,37 +29,30 @@ use crate::Event;
 // number shouldn't occur.
 const LINUX_SPECIFIC_BTN_OFFSET: c_ushort = 0x120;
 
-/// Evdev hat data.
-struct PadStateHat {
-    hor: c_int,
-    ver: c_int,
-}
-
 /// Data associated with the state of the pad.  Used to produce the correct
 /// platform-agnostic events.
 struct PadState {
     // Trigger state
-    trigger_l: Option<f32>,
+    trigger_l: f32,
     // Trigger state
-    trigger_r: Option<f32>,
+    trigger_r: f32,
     // If last three-way state was negative (1 for each three-way).
     neg: Vec<Option<bool>>,
     // If last three-way axis state was negative (1 for each three-way).
     neg_axis: Vec<Option<bool>>,
-    
+
     // Minimum axis value
     min: f64,
     // Maximum axis value - Minimum axis value
     range: f64,
     queued: Option<Event>,
-    hats: Vec<PadStateHat>,
 }
 
 /// Describes some hardware joystick mapping
 struct PadDescriptor {
     // Pad name
     name: &'static str,
-    
+
     // (Axis) value = Full range min to max axis
     axes: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
     // (Button) value = Boolean 1 or 0
@@ -67,7 +60,8 @@ struct PadDescriptor {
     // (Button) value = 0.0f64 or 1.0f64
     trigbtns: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
     // (Axis) value = 0 thru 255
-    triggers: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
+    triggers:
+        &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
     // (Axis) value = -1, 0, or 1
     three_ways: &'static [(&'static dyn Fn(bool, bool) -> Event, c_ushort)],
     // (Axis) value = -1.0f64, 0, or 1.0f64
@@ -86,9 +80,14 @@ impl PadDescriptor {
             0x00 => { /* Ignore SYN events. */ }
             0x01 => {
                 // button press / release (key)
-                let ev_code = ev.ev_code.checked_sub(LINUX_SPECIFIC_BTN_OFFSET)
-                    .expect(&format!("Out of range ev_code: {}, report at \
-                        https://github.com/libcala/stick/issues", ev.ev_code));
+                let ev_code = ev
+                    .ev_code
+                    .checked_sub(LINUX_SPECIFIC_BTN_OFFSET)
+                    .expect(&format!(
+                        "Out of range ev_code: {}, report at \
+                        https://github.com/libcala/stick/issues",
+                        ev.ev_code
+                    ));
                 for (new, evcode) in self.buttons {
                     if ev_code == *evcode {
                         return Some(new(ev.ev_value > 0));
@@ -96,7 +95,13 @@ impl PadDescriptor {
                 }
                 for (new, evcode) in self.trigbtns {
                     if ev_code == *evcode {
-                        return Some(new(if ev.ev_value > 0 { 1.0 } else if ev.ev_value < 0 { -1.0 } else { 0.0 }));
+                        return Some(new(if ev.ev_value > 0 {
+                            1.0
+                        } else if ev.ev_value < 0 {
+                            -1.0
+                        } else {
+                            0.0
+                        }));
                     }
                 }
                 eprintln!(
@@ -141,14 +146,26 @@ impl PadDescriptor {
                                 }
                             }
                             v if v > 0 => {
+                                let old = state.neg[i];
                                 state.neg[i] = Some(false);
-                                Some(new(false, true))
+                                state.queued = Some(new(false, true));
+                                if old == Some(true) {
+                                    Some(new(true, false))
+                                } else {
+                                    state.queued.take()
+                                }
                             }
                             _ => {
+                                let old = state.neg[i];
                                 state.neg[i] = Some(true);
-                                Some(new(true, false))
+                                state.queued = Some(new(true, false));
+                                if old == Some(false) {
+                                    Some(new(false, false))
+                                } else {
+                                    state.queued.take()
+                                }
                             }
-                        }
+                        };
                     }
                 }
                 eprintln!(
@@ -516,35 +533,23 @@ impl Drop for Hub {
 
 /// Gamepad / Other HID
 pub(crate) struct Pad {
+    // Async device handle
     device: AsyncDevice,
-    hardware_id: u32, // Which type of controller?
-    abs_min: c_int,
-    abs_range: c_int,
-    queued: Option<Event>,
-    emulated: u8, // lower 4 bits are for D-pad.
+    // Hexadecimal controller type ID
+    hardware_id: [u16; 4],
+    // Userspace driver data
+    state: PadState,
     rumble: i16,
-    movx: f64,
-    movy: f64,
-    camx: f64,
-    camy: f64,
-    lt: f64,
-    rt: f64,
+    desc: &'static PadDescriptor,
 }
 
 impl Pad {
     fn new(file: File) -> Self {
         let fd = file.into_raw_fd();
+
         // Enable evdev async.
         assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
-        // Get the hardware id of this controller.
-        let mut a = MaybeUninit::<InputId>::uninit();
-        assert_ne!(
-            unsafe { ioctl(fd, 0x_8008_4502, a.as_mut_ptr().cast()) },
-            -1
-        );
-        let a = unsafe { a.assume_init() };
-        let hardware_id =
-            ((u32::from(a.vendor.to_be())) << 16) | (u32::from(a.product.to_be()));
+
         // Get the min and max absolute values for axis.
         let mut a = MaybeUninit::<AbsInfo>::uninit();
         assert_ne!(
@@ -552,77 +557,110 @@ impl Pad {
             -1
         );
         let a = unsafe { a.assume_init() };
-        let abs_min = a.minimum as c_int;
-        let abs_range = a.maximum as c_int - a.minimum as c_int;
+        let min = a.minimum as f64;
+        let range = a.maximum as f64 - a.minimum as f64;
+
+        // Get the hardware id of this controller.
+        let mut a = MaybeUninit::<InputId>::uninit();
+        assert_ne!(
+            unsafe { ioctl(fd, 0x_8008_4502, a.as_mut_ptr().cast()) },
+            -1
+        );
+        let a = unsafe { a.assume_init() };
+        // Convert raw integers from the linux kernel to endian-independant ids
+        let bustype = a.bustype.to_be();
+        let vendor = a.vendor.to_be();
+        let product = a.product.to_be();
+        let version = a.version.to_be();
+        let hardware_id = [bustype, vendor, product, version];
+
+        // Get the pad's descriptor
+        let desc = pad_desc(bustype, vendor, product, version);
+
+        // Initialize driver state
+        let state = PadState {
+            trigger_l: 0.0,
+            trigger_r: 0.0,
+            neg: {
+                let mut neg = vec![];
+                for _ in desc.three_ways {
+                    neg.push(None);
+                }
+                neg
+            },
+            neg_axis: {
+                let mut neg = vec![];
+                for _ in desc.three_axis {
+                    neg.push(None);
+                }
+                neg
+            },
+            min,
+            range,
+            queued: None,
+        };
+
         // Query the controller for haptic support.
         let rumble = joystick_haptic(fd, -1, 0.0);
         // Construct device from fd, looking for input events.
         Pad {
             hardware_id,
-            abs_min,
-            abs_range,
-            queued: None,
             device: AsyncDevice::new(fd, Watcher::new().input()),
-            emulated: 0,
             rumble,
-            movx: 0.0,
-            movy: 0.0,
-            camx: 0.0,
-            camy: 0.0,
-            lt: 0.0,
-            rt: 0.0,
+            state,
+            desc,
         }
     }
+    /*
+        // Convert value as though it were a trigger axis (returns 0 to 1).
+        fn trigger_float(&self, x: c_int) -> f64 {
+            // Deadzone multiply
+            let dm = match self.hardware_id {
+                HARDWARE_ID_MAYFLASH_GAMECUBE => 2.0,
+                _ => 1.0,
+            };
 
-    // Convert value as though it were a trigger axis (returns 0 to 1).
-    fn trigger_float(&self, x: c_int) -> f64 {
-        // Deadzone multiply
-        let dm = match self.hardware_id {
-            HARDWARE_ID_MAYFLASH_GAMECUBE => 2.0,
-            _ => 1.0,
-        };
+            let scale = match self.hardware_id {
+                HARDWARE_ID_XBOX_PDP => 0.25,
+                _ => 1.0,
+            };
 
-        let scale = match self.hardware_id {
-            HARDWARE_ID_XBOX_PDP => 0.25,
-            _ => 1.0,
-        };
-
-        let x = (x as f64 * scale / 255.0).min(1.0).max(0.0);
-        if x < dm * 0.075 {
-            0.0
-        } else {
-            x
+            let x = (x as f64 * scale / 255.0).min(1.0).max(0.0);
+            if x < dm * 0.075 {
+                0.0
+            } else {
+                x
+            }
         }
-    }
 
-    // Convert value as though it were a joystick axis (returns -1 to 1).
-    fn joyaxis_float(&self, x: c_int) -> f64 {
-        // Deadzone multiply
-        let dm = if self.hardware_id == HARDWARE_ID_THRUSTMASTER1 {
-            2.0
-        } else {
-            1.0
-        };
+        // Convert value as though it were a joystick axis (returns -1 to 1).
+        fn joyaxis_float(&self, x: c_int) -> f64 {
+            // Deadzone multiply
+            let dm = if self.hardware_id == HARDWARE_ID_THRUSTMASTER1 {
+                2.0
+            } else {
+                1.0
+            };
 
-        let scale = if self.hardware_id == HARDWARE_ID_MAYFLASH_GAMECUBE {
-            1.5
-        } else {
-            1.0
-        };
+            let scale = if self.hardware_id == HARDWARE_ID_MAYFLASH_GAMECUBE {
+                1.5
+            } else {
+                1.0
+            };
 
-        let x = (x - self.abs_min) as f64 / self.abs_range as f64;
-        // Deadzone
-        if (x - 0.5).abs() < dm * 0.0625 {
-            0.0
-        } else {
-            (x * 2.0 * scale - scale).min(1.0).max(-1.0)
+            let x = (x - self.abs_min) as f64 / self.abs_range as f64;
+            // Deadzone
+            if (x - 0.5).abs() < dm * 0.0625 {
+                0.0
+            } else {
+                (x * 2.0 * scale - scale).min(1.0).max(-1.0)
+            }
         }
-    }
-
-    pub(super) fn id(&self) -> u32 {
+    */
+    pub(super) fn id(&self) -> [u16; 4] {
         self.hardware_id
     }
-
+    /*
     fn dpad_h(&mut self, value: c_int) -> Option<Event> {
         let emulated = self.emulated;
         let left = 0b0000_0001;
@@ -806,10 +844,10 @@ impl Pad {
         }
 
         id
-    }
+    }*/
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
-        if let Some(event) = self.queued.take() {
+        if let Some(event) = self.state.queued.take() {
             return Poll::Ready(event);
         }
 
@@ -839,7 +877,13 @@ impl Pad {
         };
 
         // Convert the event.
-        let event = match ev.ev_type {
+        if let Some(event) = self.desc.event_from(ev, &mut self.state) {
+            Poll::Ready(event)
+        } else {
+            self.poll(cx)
+        }
+
+        /*let event = match ev.ev_type {
             0x00 => return self.poll(cx), // Ignore SYN events.
             // button press / release (key)
             0x01 => {
@@ -1056,9 +1100,7 @@ impl Pad {
                 eprintln!("Unknown {} {} {}.", u, ev.ev_code, ev.ev_value);
                 return self.poll(cx);
             }
-        };
-
-        Poll::Ready(event)
+        };*/
     }
 
     pub(super) fn name(&self) -> String {

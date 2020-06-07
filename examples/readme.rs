@@ -10,9 +10,12 @@ async fn event_loop() {
         match [hub.fut(), pads.select().fut()].select().await.1 {
             (_, Event::Connect(pad)) => {
                 println!(
-                    "Connected p{}, id: {:X}, name: {}",
+                    "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
                     pads.len() + 1,
-                    pad.id(),
+                    pad.id()[0],
+                    pad.id()[1],
+                    pad.id()[2],
+                    pad.id()[3],
                     pad.name(),
                 );
                 pads.push(*pad);
