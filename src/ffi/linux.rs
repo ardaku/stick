@@ -52,22 +52,21 @@ struct PadState {
 
 /// Describes some hardware joystick mapping
 struct PadDescriptor {
-    // spliced VENDOR_BE, PRODUCT_BE
-    id: u32,
     // Pad name
     name: &'static str,
+    
     // (Axis) value = Full range min to max axis
-    axes: &'static [(fn(f32) -> Event, c_ushort)],
+    axes: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
     // (Button) value = Boolean 1 or 0
-    buttons: &'static [(fn(bool) -> Event, c_ushort)],
-    // (Button) value[0] = Boolean 1, value[1] = Boolean 1, or both 0
-    three: &'static [[(fn(Option<bool>) -> Event, c_ushort); 2]],
+    buttons: &'static [(&'static dyn Fn(bool) -> Event, c_ushort)],
+    // (Button) value = 0.0f64 or 1.0f64
+    trigbtns: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
     // (Axis) value = 0 thru 255
-    triggers: &'static [(fn(f64) -> Event, c_ushort)],
+    triggers: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
     // (Axis) value[0] = -1, 0, or 1; value[1] = -1, 0, or 1
-    hats: &'static [[(fn(bool) -> Event, fn(bool) -> Event, c_ushort); 2]],
+    three_ways: &'static [(&'static dyn Fn(bool, bool) -> Event, c_ushort)],
     // (RelativeAxis) value = Full range min to max axis
-    wheel: &'static [(fn(f64) -> Event, c_ushort)],
+    wheels: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
 }
 
 impl PadDescriptor {
@@ -85,26 +84,12 @@ impl PadDescriptor {
                         https://github.com/libcala/stick/issues", ev.ev_code));
                 for (new, evcode) in self.buttons {
                     if ev_code == *evcode {
-                        return Some(new(ev.ev_value == 1));
+                        return Some(new(ev.ev_value != 0));
                     }
                 }
-                for [(new_lo, evcode_lo), (new_hi, evcode_hi)] in self.three {
-                    match ev_code {
-                        _x if _x == *evcode_lo => {
-                            if ev.ev_value == 1 {
-                                return Some(new_lo(Some(false)));
-                            } else {
-                                return Some(new_lo(None));
-                            }
-                        }
-                        _x if _x == *evcode_hi => {
-                            if ev.ev_value == 1 {
-                                return Some(new_hi(Some(true)));
-                            } else {
-                                return Some(new_hi(None));
-                            }
-                        }
-                        _ => { /* Keep looking */ }
+                for (new, evcode) in self.trigbtns {
+                    if ev_code == *evcode {
+                        return Some(new(if ev.ev_value != 0 { 1.0 } else { 0.0 }));
                     }
                 }
                 eprintln!(
@@ -115,7 +100,7 @@ impl PadDescriptor {
             }
             0x02 => {
                 // Relative axis movement
-                for (new, evcode) in self.wheel {
+                for (new, evcode) in self.wheels {
                     if ev.ev_code == *evcode {
                         return Some(new(joyaxis_float(ev.ev_value)));
                     }
@@ -128,7 +113,7 @@ impl PadDescriptor {
             }
             0x03 => {
                 // Absolute axis movement
-                for (new, evcode) in self.wheel {
+                for (new, evcode) in self.axes {
                     if ev.ev_code == *evcode {
                         return Some(new(joyaxis_float(ev.ev_value)));
                     }

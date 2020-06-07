@@ -36,11 +36,11 @@ event = "EngineFuelFlowR"
 
 [[button]]
 code = 426
-event = "AutopilotSelectPath"
+event = "AutopilotPath"
 
 [[button]]
 code = 427
-event = "AutopilotSelectAlt"
+event = "AutopilotAlt"
 
 [[button]]
 code = 421
@@ -52,19 +52,19 @@ event = "FlapsDown"
 
 [[button]]
 code = 430
-event = "EngineOperateLIgnition"
+event = "EngineLIgnition"
 
 [[button]]
 code = 417
-event = "EngineOperateLMotor"
+event = "EngineLMotor"
 
 [[button]]
 code = 431
-event = "EngineOperateRIgnition"
+event = "EngineRIgnition"
 
 [[button]]
 code = 418
-event = "EngineOperateRMotor"
+event = "EngineRMotor"
 
 [[button]]
 code = 12
@@ -116,7 +116,7 @@ event = "MicRight"
 
 [[axis]]
 code = 6
-name = "Slew"
+event = "Slew"
 
 [[axis]]
 code = 5

@@ -9,7 +9,7 @@
 Stick supports getting controller input from a large variety of gamepads,
 joysticks, and other controllers, as well as rumble haptic effects.
 
-### Why Does `stick` Exist?
+### Why Does Stick Exist?
 The main reason is that I hadn't heard of gilrs when I started stick back in
 2017 when gilrs was only a year old and had less than 500 all-time downloads.
 Now, I think there are many other reasons for stick to exist despite gilrs:
@@ -17,7 +17,8 @@ Now, I think there are many other reasons for stick to exist despite gilrs:
  - Executor-agnostic `async/.await` for gamepads, joysticks, etc (I recommend
    using the `pasts` crate for a simple single-threaded executor).
  - Low-level hotplugging support (you assign the gamepad ID's)
- - Meaningful Event Names (`ActionA` and `ActionB` instead of `South` and `East`)
+ - Meaningful Event Names (`ActionA` and `ActionB` instead of `South` and
+   `East`)
  - Minimal dependencies
  - Dual licensed with the Zlib license (permission to use without attribution in
    the binary's UI) - making it great for game development.

@@ -1,139 +1,153 @@
+#[macro_use]
+extern crate serde_derive;
+
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::path::PathBuf;
-/// Describes some gamepad
 use std::{env, fs, path::Path};
 
-use serde_derive::{Deserialize, Serialize};
-use toml::value::Table;
+#[path = "./pad_db/format.rs"]
+mod format;
 
-#[derive(Deserialize, Debug, Serialize)]
-/// Describes some hardware joystick mapping
-struct DeviceDescriptor {
-    name: String,
-    id: String,
-}
-
-impl DeviceDescriptor {
-    /// Reads a device description file into a struct.
-    fn from_toml(input: PathBuf) -> Self {
-        let mut contents = String::new();
-        let mut file = OpenOptions::new().read(true).open(input).unwrap();
-        file.read_to_string(&mut contents).unwrap();
-        let data: DeviceDescriptor = toml::from_str(&contents).unwrap();
-        data
+fn generate_from_database() -> String {
+    let mut ret = String::new();
+    ret.push_str("pub(super) fn pad_desc(\n");
+    ret.push_str("    bus: u16, vendor: u16, product: u16, ver: u16\n");
+    ret.push_str(") -> &'static PadDescriptor\n");
+    ret.push_str("{\n");
+    ret.push_str("    match (bus, vendor, product, ver) {\n");
+    let path = "./pad_db/pad/mapping";
+    for dir_entry in fs::read_dir(path).unwrap() {
+        let dir_entry = dir_entry.unwrap();
+        let entry = dir_entry.path();
+        let dir_entry = dir_entry.file_name().to_str().unwrap().to_string();
+        assert!(dir_entry.ends_with(".toml") && dir_entry.len() == 21);
+        let bus = dir_entry.get(0..4).unwrap();
+        let vendor = dir_entry.get(4..8).unwrap();
+        let product = dir_entry.get(8..12).unwrap();
+        let ver = dir_entry.get(12..16).unwrap();
+        ret.push_str("        (");
+        if bus == "xxxx" {
+            ret.push('_');
+        } else {
+            ret.push_str("0x");
+            ret.push_str(bus);
+        }
+        ret.push_str(", ");
+        if vendor == "xxxx" {
+            ret.push('_');
+        } else {
+            ret.push_str("0x");
+            ret.push_str(vendor);
+        }
+        ret.push_str(", ");
+        if product == "xxxx" {
+            ret.push('_');
+        } else {
+            ret.push_str("0x");
+            ret.push_str(product);
+        }
+        ret.push_str(", ");
+        if ver == "xxxx" {
+            ret.push('_');
+        } else {
+            ret.push_str("0x");
+            ret.push_str(ver);
+        }
+        ret.push_str(") => PadDescriptor {\n");
+        let map: format::PadMapping = toml::from_slice(&fs::read(entry).unwrap()).unwrap();
+        ret.push_str("            name: \"");
+        ret.push_str(&map.name);
+        ret.push_str("\",\n");
+        ret.push_str("            buttons: &[\n");
+        let mut tb = String::new();
+        if let Some(buttons) = map.button {
+            for format::Button { code, event } in buttons {
+                if event.starts_with("Trigger") {
+                    tb.push_str("                (&Event::");
+                    tb.push_str(&event);
+                    tb.push_str(", ");
+                    tb.push_str(&code.to_string());
+                    tb.push_str("),\n");
+                } else {
+                    ret.push_str("                (&Event::");
+                    ret.push_str(&event);
+                    ret.push_str(", ");
+                    ret.push_str(&code.to_string());
+                    ret.push_str("),\n");
+                }
+            }
+        }
+        ret.push_str("            ],\n");
+        ret.push_str("            trigbtns: &[\n");
+        ret.push_str(&tb);
+        ret.push_str("            ],\n");
+        ret.push_str("            axes: &[\n");
+        if let Some(axes) = map.axis {
+            for format::Axis { code, event, max } in axes {
+                ret.push_str("                (&Event::");
+                ret.push_str(&event);
+                ret.push_str(", ");
+                ret.push_str(&code.to_string());
+                ret.push_str(", ");
+                if let Some(max) = max {
+                    ret.push_str("Some(");
+                    ret.push_str(&max.to_string());
+                    ret.push_str(")");
+                } else {
+                    ret.push_str("None");
+                }
+                ret.push_str("),\n");
+            }
+        }
+        ret.push_str("            ],\n");
+        ret.push_str("            triggers: &[\n");
+        if let Some(triggers) = map.trigger {
+            for format::Trigger { code, event, max } in triggers {
+                ret.push_str("                (&Event::");
+                ret.push_str(&event);
+                ret.push_str(", ");
+                ret.push_str(&code.to_string());
+                ret.push_str(", ");
+                if let Some(max) = max {
+                    ret.push_str("Some(");
+                    ret.push_str(&max.to_string());
+                    ret.push_str(")");
+                } else {
+                    ret.push_str("None");
+                }
+                ret.push_str("),\n");
+            }
+        }
+        ret.push_str("            ],\n");
+        ret.push_str("            three_ways: &[\n");
+        if let Some(three_ways) = map.three_way {
+            for format::ThreeWay { code, neg, pos } in three_ways {
+                ret.push_str("                (&|neg, state| if neg { Event::");
+                ret.push_str(&neg);
+                ret.push_str("(state) } else { Event::");
+                ret.push_str(&pos);
+                ret.push_str("(state) }, ");
+                ret.push_str(&code.to_string());
+                ret.push_str("),\n");
+            }
+        }
+        ret.push_str("            ],\n");
+        ret.push_str("            wheels: &[\n");
+        if let Some(wheels) = map.wheel {
+            for format::Wheel { code, event } in wheels {
+                ret.push_str("                (&Event::");
+                ret.push_str(&event);
+                ret.push_str(", ");
+                ret.push_str(&code.to_string());
+                ret.push_str("),\n");
+            }
+        }
+        ret.push_str("            ],\n");
+        ret.push_str("        },\n");
     }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-/// Represents some named two-state event.
-struct Event {
-    /// Event ID.
-    code: u32,
-    /// Emitted event name.
-    name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-/// Represents an Axis.
-struct AxisEvent {
-    /// Name of event emitted when this axis changes.
-    action: Event,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-/// Represents a button.
-struct ButtonEvent {
-    /// Event ID for this button
-    code: u32,
-    /// Name of event emitted when button is pressed.
-    pressed_name: String,
-    /// Name of event emitted when button is released.
-    released_name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-/// Represents a two-way switch.
-struct TwoWaySwitchEvent {
-    // Event ID for this switch
-    code: u32,
-    // Name of event emitted when the switch is in its high "on" state.
-    high: String,
-    // Name of event emitted when the switch is in its neutral "off" state
-    neutral: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-/// Three-way switch event
-struct ThreeWaySwitchEvent {
-    // Name of event emitted when the switch is in its neutral "middle" state
-    neutral: String,
-    // Name of event emitted when the switch is in its High "up" state
-    high: Event,
-    // Name of event emitted when the switch is in its Low "down" state
-    low: Event,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-/// Hat.
-struct HatEvent {
-    /// Hat's name
-    name: String,
-    /// ID of north event.
-    north: u32,
-    /// ID of south event.
-    south: u32,
-    /// ID of west event.
-    west: u32,
-    // ID of east event.
-    east: u32,
-}
-
-#[cfg(target_arch = "wasm32")]
-const GAMEPAD_DB: &str = "./pad_db/wasm32/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "linux"))]
-const GAMEPAD_DB: &str = "./pad_db/linux/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "android"))]
-const GAMEPAD_DB: &str = "./pad_db/android/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "macos"))]
-const GAMEPAD_DB: &str = "./pad_db/macos/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "ios"))]
-const GAMEPAD_DB: &str = "./pad_db/ios/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "windows"))]
-const GAMEPAD_DB: &str = "./pad_db/windows/";
-#[cfg(all(
-    not(target_arch = "wasm32"),
-    any(
-        target_os = "freebsd",
-        target_os = "dragonfly",
-        target_os = "bitrig",
-        target_os = "openbsd",
-        target_os = "netbsd"
-    )
-))]
-const GAMEPAD_DB: &str = "./pad_db/bsd/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "fuchsia"))]
-const GAMEPAD_DB: &str = "./pad_db/fuchsia/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "redox"))]
-const GAMEPAD_DB: &str = "./pad_db/redox/";
-#[cfg(all(not(target_arch = "wasm32"), target_os = "none"))]
-const GAMEPAD_DB: &str = "./pad_db/none/";
-
-#[cfg(target_os = "dummy")]
-fn generate_from_database() -> String {
-    let mut ret = String::new();
-    ret.push_str(
-        "fn database(pad_id: u32) -> Option<&'static PadDescriptor> {\
-            None\
-        }\
-        ",
-    );
-    ret
-}
-
-#[cfg(not(target_os = "dummy"))]
-fn generate_from_database() -> String {
-    let mut ret = String::new();
+    ret.push_str("    }\n");
+    ret.push_str("}\n");
     ret
 }
 

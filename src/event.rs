@@ -36,7 +36,7 @@ pub enum Event {
 
     /* Center buttons */
     /// Home button (Exit gameplay, usually into a console menu)
-    Home,
+    Home(bool),
     /// Back / Select / Minus / Stop Button (Escape)
     Prev(bool),
     /// Forward / Start / Plus / Play Button (Tab)
@@ -152,6 +152,18 @@ pub enum Event {
     /// - `true` - Normal
     /// - `false` - Override
     EngineFuelFlowR(bool),
+    /// EAC two-way switch
+    /// - `true` - Arm
+    /// - `false` - Off
+    Eac(bool),
+    /// Radar Altimeter two-way switch
+    /// - `true` - Normal
+    /// - `false` - Disabled
+    RadarAltimeter(bool),
+    /// APU two-way switch
+    /// - `true` - Start
+    /// - `false` - Off
+    Apu(bool),
 
     /// Autopilot three-way switch Forward.
     /// - `true` - Forward (Path)
@@ -246,7 +258,7 @@ impl std::fmt::Display for Event {
             PovZ(v) => write!(f, "PovZ {}", v),
             JoyPush(p) => write!(f, "JoyPush {}", pushed(p)),
             PovPush(p) => write!(f, "PovPush {}", pushed(p)),
-            Home => write!(f, "Home"),
+            Home(p) => write!(f, "Home {}", pushed(p)),
             Action(l, p) => write!(f, "Action{} {}", l, pushed(p)),
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),
             LandingGearSilence(p) => {
