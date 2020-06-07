@@ -1,21 +1,23 @@
-name = "Shanwan PlayStation3 Gamepad"
-type = "PlayStation"
+name = "PDP Wired Gamepad for Xbox 360"
+type = "XBox"
+
+deadzone = 0.070
 
 [[button]]
 code = 16
-event = "ActionB"
-
-[[button]]
-code = 17
 event = "ActionA"
 
 [[button]]
+code = 17
+event = "ActionB"
+
+[[button]]
 code = 19
-event = "ActionV"
+event = "ActionH"
 
 [[button]]
 code = 20
-event = "ActionH"
+event = "ActionV"
 
 [[button]]
 code = 22
@@ -53,22 +55,6 @@ event = "JoyPush"
 code = 30
 event = "PovPush"
 
-[[button]]
-code = 256
-event = "DpadUp"
-
-[[button]]
-code = 257
-event = "DpadDown"
-
-[[button]]
-code = 258
-event = "DpadLeft"
-
-[[button]]
-code = 259
-event = "DpadRight"
-
 [[axis]]
 code = 1
 event = "JoyY"
@@ -92,3 +78,13 @@ event = "TriggerL"
 [[trigger]]
 code = 5
 event = "TriggerR"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

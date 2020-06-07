@@ -38,6 +38,8 @@ pub(super) struct PadMapping {
     pub(super) name: String,
     // Type of the controller.
     pub(super) r#type: String,
+    // Override flatness value returned from gamepad.
+    pub(super) deadzone: Option<f64>,
     // Buttons are simple on or off
     pub(super) button: Option<Vec<Button>>,
     // Signed axes are "continuous" from min to max value

@@ -20,6 +20,7 @@ use std::{
         unix::io::{IntoRawFd, RawFd},
     },
     task::{Context, Poll},
+    num::FpCategory
 };
 
 use crate::Event;
@@ -40,11 +41,14 @@ struct PadState {
     neg: Vec<Option<bool>>,
     // If last three-way axis state was negative (1 for each three-way).
     neg_axis: Vec<Option<bool>>,
-
-    // Minimum axis value
-    min: f64,
-    // Maximum axis value - Minimum axis value
-    range: f64,
+    // If axis is zero (1 for each axis).
+    dead: Vec<bool>,
+    // Zero point
+    zero: f64,
+    // Normalization (-1.0, 1.0)
+    norm: f64,
+    // Flat value
+    flat: f64,
     queued: Option<Event>,
 }
 
@@ -52,6 +56,8 @@ struct PadState {
 struct PadDescriptor {
     // Pad name
     name: &'static str,
+    // Deadzone override
+    deadzone: Option<f64>,
 
     // (Axis) value = Full range min to max axis
     axes: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
@@ -73,7 +79,14 @@ struct PadDescriptor {
 impl PadDescriptor {
     // Convert evdev event into JoyPush event.
     fn event_from(&self, ev: EvdevEv, state: &mut PadState) -> Option<Event> {
-        let joyaxis_float = |x| (x as f64 - state.min) / state.range;
+        let joyaxis_float = |x| {
+            let v = (x as f64 - state.zero) * state.norm;
+            if v.abs() <= state.flat {
+                0.0
+            } else {
+                v
+            }
+        };
         let trigger_float = |x| x as f64 / 255.0;
 
         match ev.ev_type {
@@ -125,9 +138,20 @@ impl PadDescriptor {
             }
             0x03 => {
                 // Absolute axis movement
-                for (new, evcode, max) in self.axes {
+                for (i, (new, evcode, max)) in self.axes.iter().enumerate() {
                     if ev.ev_code == *evcode {
-                        return Some(new(joyaxis_float(ev.ev_value)));
+                        let v = joyaxis_float(ev.ev_value);
+                        let is_zero = v.classify() == FpCategory::Zero;
+                        if is_zero && state.dead[i] {
+                            return None;
+                        } else {
+                            if is_zero {
+                                state.dead[i] = true;
+                            } else {
+                                state.dead[i] = false;
+                            }
+                            return Some(new(v));
+                        }
                     }
                 }
                 for (new, evcode, max) in self.triggers {
@@ -304,8 +328,12 @@ struct EvdevEv {
 struct AbsInfo {
     // struct input_absinfo, from C.
     value: i32,
-    minimum: u32,
-    maximum: u32,
+    // Though in the C header it's defined as uint32, define as int32 because
+    // that's how it's meant to be interpreted.
+    minimum: i32,
+    // Though in the C header it's defined as uint32, define as int32 because
+    // that's how it's meant to be interpreted.
+    maximum: i32,
     fuzz: i32,
     flat: i32,
     resolution: i32,
@@ -550,16 +578,6 @@ impl Pad {
         // Enable evdev async.
         assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
 
-        // Get the min and max absolute values for axis.
-        let mut a = MaybeUninit::<AbsInfo>::uninit();
-        assert_ne!(
-            unsafe { ioctl(fd, 0x_8018_4540, a.as_mut_ptr().cast()) },
-            -1
-        );
-        let a = unsafe { a.assume_init() };
-        let min = a.minimum as f64;
-        let range = a.maximum as f64 - a.minimum as f64;
-
         // Get the hardware id of this controller.
         let mut a = MaybeUninit::<InputId>::uninit();
         assert_ne!(
@@ -576,6 +594,27 @@ impl Pad {
 
         // Get the pad's descriptor
         let desc = pad_desc(bustype, vendor, product, version);
+
+        // Get the min and max absolute values for axis.
+        let mut a = MaybeUninit::<AbsInfo>::uninit();
+        assert_ne!(
+            unsafe { ioctl(fd, 0x_8018_4540, a.as_mut_ptr().cast()) },
+            -1
+        );
+        let a = unsafe { a.assume_init() };
+        let range = a.maximum as f64 - a.minimum as f64;
+        let norm = (range * 0.5);
+        let zero = a.minimum as f64 + norm;
+        let flat = if let Some(flat) = desc.deadzone {
+            flat
+        } else {
+            a.flat as f64 / norm
+        };
+        // Invert so multiplication can be used instead of division
+        let norm = norm.recip();
+        dbg!(flat);
+
+        dbg!((a.fuzz, a.flat, a.resolution));
 
         // Initialize driver state
         let state = PadState {
@@ -595,8 +634,16 @@ impl Pad {
                 }
                 neg
             },
-            min,
-            range,
+            dead: {
+                let mut dead = vec![];
+                for _ in desc.axes {
+                    dead.push(true);
+                }
+                dead
+            },
+            norm,
+            zero,
+            flat,
             queued: None,
         };
 
@@ -1112,7 +1159,8 @@ impl Pad {
         );
         let a = unsafe { a.assume_init() };
         let name = unsafe { std::ffi::CStr::from_ptr(a.as_ptr()) };
-        name.to_string_lossy().to_string()
+        let name = name.to_string_lossy().to_string();
+        format!("{} ({})", self.desc.name, name)
     }
 
     pub(super) fn rumble(&mut self, v: f32) {

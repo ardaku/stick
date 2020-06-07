@@ -63,6 +63,9 @@ fn generate_from_database() -> String {
         ret.push_str("            name: \"");
         ret.push_str(&map.name);
         ret.push_str("\",\n");
+        ret.push_str("            deadzone: ");
+        ret.push_str(&format!("{:?}", map.deadzone));
+        ret.push_str(",\n");
         ret.push_str("            buttons: &[\n");
         let mut tb = String::new();
         if let Some(buttons) = map.button {
