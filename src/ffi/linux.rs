@@ -946,7 +946,7 @@ impl Pad {
                     }
                     28 => {
                         if is {
-                            Event::Cmd
+                            Event::Home
                         } else {
                             return self.poll(cx);
                         }

@@ -27,7 +27,7 @@ event = "ActionV"
 
 [[button]]
 code = 16
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 13
@@ -47,7 +47,7 @@ event = "ActionH"
 
 [[button]]
 code = 12
-event = "Cmd"
+event = "Home"
 
 [[axis]]
 code = 2

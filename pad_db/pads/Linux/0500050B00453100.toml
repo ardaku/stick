@@ -15,7 +15,7 @@ event = "BumperR"
 
 [[button]]
 code = 6
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 2

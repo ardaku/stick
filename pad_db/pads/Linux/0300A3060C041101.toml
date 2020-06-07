@@ -7,7 +7,7 @@ event = "TriggerR"
 
 [[button]]
 code = 9
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 12

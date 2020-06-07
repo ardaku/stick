@@ -43,7 +43,7 @@ event = "Next"
 
 [[button]]
 code = 16
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 12

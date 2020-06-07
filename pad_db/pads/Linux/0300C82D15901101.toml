@@ -27,7 +27,7 @@ event = "ActionA"
 
 [[button]]
 code = 2
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 7

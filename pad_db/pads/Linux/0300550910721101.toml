@@ -35,7 +35,7 @@ event = "ActionV"
 
 [[button]]
 code = 13
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 2

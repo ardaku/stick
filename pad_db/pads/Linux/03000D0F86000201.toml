@@ -43,7 +43,7 @@ event = "BumperL"
 
 [[button]]
 code = 10
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 8

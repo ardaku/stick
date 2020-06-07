@@ -15,7 +15,7 @@ event = "JoyPush"
 
 [[button]]
 code = 8
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 1

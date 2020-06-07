@@ -7,7 +7,7 @@ event = "DpadRight"
 
 [[button]]
 code = 10
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 0

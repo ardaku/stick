@@ -15,7 +15,7 @@ event = "Prev"
 
 [[button]]
 code = 2
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 13

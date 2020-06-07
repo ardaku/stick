@@ -35,7 +35,7 @@ event = "PovPush"
 
 [[button]]
 code = 12
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 10

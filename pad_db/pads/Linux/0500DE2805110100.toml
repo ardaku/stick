@@ -23,7 +23,7 @@ event = "DpadUp"
 
 [[button]]
 code = 8
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 13

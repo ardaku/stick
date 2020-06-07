@@ -35,8 +35,8 @@ pub enum Event {
      */
 
     /* Center buttons */
-    /// Command button (Exit gameplay, usually into a menu)
-    Cmd,
+    /// Home button (Exit gameplay, usually into a console menu)
+    Home,
     /// Back / Select / Minus / Stop Button (Escape)
     Prev(bool),
     /// Forward / Start / Plus / Play Button (Tab)
@@ -246,7 +246,7 @@ impl std::fmt::Display for Event {
             PovZ(v) => write!(f, "PovZ {}", v),
             JoyPush(p) => write!(f, "JoyPush {}", pushed(p)),
             PovPush(p) => write!(f, "PovPush {}", pushed(p)),
-            Cmd => write!(f, "Cmd"),
+            Home => write!(f, "Home"),
             Action(l, p) => write!(f, "Action{} {}", l, pushed(p)),
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),
             LandingGearSilence(p) => {

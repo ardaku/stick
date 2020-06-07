@@ -11,7 +11,7 @@ event = "TriggerL"
 
 [[button]]
 code = 5
-event = "Cmd"
+event = "Home"
 
 [[button]]
 code = 3

@@ -43,7 +43,7 @@ event = "ActionB"
 
 [[button]]
 code = 8
-event = "Cmd"
+event = "Home"
 
 [[axis]]
 code = 0

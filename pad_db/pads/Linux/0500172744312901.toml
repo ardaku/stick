@@ -43,7 +43,7 @@ event = "BumperR"
 
 [[button]]
 code = 20
-event = "Cmd"
+event = "Home"
 
 [[axis]]
 code = 2
