@@ -3,7 +3,7 @@ type = "Unknown"
 
 [[button]]
 code = 7
-event = "TriggerR"
+event = "BumperR"
 
 [[button]]
 code = 2
@@ -35,7 +35,7 @@ event = "Next"
 
 [[button]]
 code = 6
-event = "TriggerL"
+event = "BumperL"
 
 [[axis]]
 code = 1
@@ -43,11 +43,11 @@ event = "JoyY"
 
 [[axis]]
 code = 4
-event = "BumperL"
+event = "TriggerL"
 
 [[axis]]
 code = 5
-event = "BumperR"
+event = "TriggerR"
 
 [[axis]]
 code = 0

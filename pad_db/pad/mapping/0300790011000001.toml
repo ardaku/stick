@@ -17,18 +17,22 @@ event = "Next"
 code = 2
 event = "ActionA"
 
-[[axis]]
+[[three_way]]
 code = 4
-event = "DpadUp"
+pos = "DpadUp"
+neg = "DpadUp"
 
-[[axis]]
+[[three_way]]
 code = 1
-event = "DpadLeft"
+pos = "DpadLeft"
+neg = "DpadLeft"
 
-[[axis]]
+[[three_way]]
 code = 0
-event = "DpadDown"
+pos = "DpadDown"
+neg = "DpadDown"
 
-[[axis]]
+[[three_way]]
 code = 2
-event = "DpadRight"
+pos = "DpadRight"
+neg = "DpadRight"

@@ -42,6 +42,11 @@ struct PadState {
     trigger_l: Option<f32>,
     // Trigger state
     trigger_r: Option<f32>,
+    // If last three-way state was negative (1 for each three-way).
+    neg: Vec<Option<bool>>,
+    // If last three-way axis state was negative (1 for each three-way).
+    neg_axis: Vec<Option<bool>>,
+    
     // Minimum axis value
     min: f64,
     // Maximum axis value - Minimum axis value
@@ -63,8 +68,10 @@ struct PadDescriptor {
     trigbtns: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
     // (Axis) value = 0 thru 255
     triggers: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>)],
-    // (Axis) value[0] = -1, 0, or 1; value[1] = -1, 0, or 1
+    // (Axis) value = -1, 0, or 1
     three_ways: &'static [(&'static dyn Fn(bool, bool) -> Event, c_ushort)],
+    // (Axis) value = -1.0f64, 0, or 1.0f64
+    three_axis: &'static [(&'static dyn Fn(bool, f64) -> Event, c_ushort)],
     // (RelativeAxis) value = Full range min to max axis
     wheels: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
 }
@@ -84,12 +91,12 @@ impl PadDescriptor {
                         https://github.com/libcala/stick/issues", ev.ev_code));
                 for (new, evcode) in self.buttons {
                     if ev_code == *evcode {
-                        return Some(new(ev.ev_value != 0));
+                        return Some(new(ev.ev_value > 0));
                     }
                 }
                 for (new, evcode) in self.trigbtns {
                     if ev_code == *evcode {
-                        return Some(new(if ev.ev_value != 0 { 1.0 } else { 0.0 }));
+                        return Some(new(if ev.ev_value > 0 { 1.0 } else if ev.ev_value < 0 { -1.0 } else { 0.0 }));
                     }
                 }
                 eprintln!(
@@ -113,83 +120,35 @@ impl PadDescriptor {
             }
             0x03 => {
                 // Absolute axis movement
-                for (new, evcode) in self.axes {
+                for (new, evcode, max) in self.axes {
                     if ev.ev_code == *evcode {
                         return Some(new(joyaxis_float(ev.ev_value)));
                     }
                 }
-                for (new, evcode) in self.triggers {
+                for (new, evcode, max) in self.triggers {
                     if ev.ev_code == *evcode {
                         return Some(new(trigger_float(ev.ev_value)));
                     }
                 }
-                for (i, [(up, down, vercode), (left, right, horcode)]) in
-                    self.hats.iter().enumerate()
-                {
-                    match ev.ev_code {
-                        _x if _x == *vercode => {
-                            let hat_value = state.hats[i].ver;
-                            state.hats[i].ver = ev.ev_value;
-                            return match ev.ev_value {
-                                -1 => match hat_value {
-                                    -1 => None,
-                                    1 => {
-                                        state.queued = Some(up(true));
-                                        Some(down(false))
-                                    }
-                                    0 => Some(up(true)),
-                                    _ => unreachable!(),
-                                },
-                                0 => match hat_value {
-                                    -1 => Some(up(false)),
-                                    1 => Some(down(false)),
-                                    0 => None,
-                                    _ => unreachable!(),
-                                },
-                                1 => match hat_value {
-                                    -1 => {
-                                        state.queued = Some(down(true));
-                                        Some(up(false))
-                                    }
-                                    1 => None,
-                                    0 => Some(down(true)),
-                                    _ => unreachable!(),
-                                },
-                                _ => unreachable!(),
-                            };
+                for (i, (new, evcode)) in self.three_ways.iter().enumerate() {
+                    if ev.ev_code == *evcode {
+                        return match ev.ev_value {
+                            0 => {
+                                if let Some(old) = state.neg[i].take() {
+                                    Some(new(old, false))
+                                } else {
+                                    None
+                                }
+                            }
+                            v if v > 0 => {
+                                state.neg[i] = Some(false);
+                                Some(new(false, true))
+                            }
+                            _ => {
+                                state.neg[i] = Some(true);
+                                Some(new(true, false))
+                            }
                         }
-                        _x if _x == *horcode => {
-                            let hat_value = state.hats[i].hor;
-                            state.hats[i].hor = ev.ev_value;
-                            return match ev.ev_value {
-                                -1 => match hat_value {
-                                    -1 => None,
-                                    1 => {
-                                        state.queued = Some(left(true));
-                                        Some(right(false))
-                                    }
-                                    0 => Some(left(true)),
-                                    _ => unreachable!(),
-                                },
-                                0 => match hat_value {
-                                    -1 => Some(left(false)),
-                                    1 => Some(right(false)),
-                                    0 => None,
-                                    _ => unreachable!(),
-                                },
-                                1 => match hat_value {
-                                    -1 => {
-                                        state.queued = Some(right(true));
-                                        Some(left(false))
-                                    }
-                                    1 => None,
-                                    0 => unreachable!(),
-                                    _ => Some(right(true)),
-                                },
-                                _ => unreachable!(),
-                            };
-                        }
-                        _ => { /* Keep looking */ }
                     }
                 }
                 eprintln!(
@@ -943,7 +902,7 @@ impl Pad {
                     }
                     28 => {
                         if is {
-                            Event::Home
+                            Event::Home(true)
                         } else {
                             return self.poll(cx);
                         }

@@ -21,7 +21,7 @@ async fn event_loop() {
                 println!("Disconnected p{}", id + 1);
                 pads.swap_remove(id);
             }
-            (id, Event::Home) => {
+            (id, Event::Home(true)) => {
                 println!("p{} ended the session", id + 1);
                 break 'e;
             }

@@ -1,9 +1,6 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::fs::OpenOptions;
-use std::io::Read;
-use std::path::PathBuf;
 use std::{env, fs, path::Path};
 
 #[path = "./pad_db/format.rs"]
@@ -11,16 +8,22 @@ mod format;
 
 fn generate_from_database() -> String {
     let mut ret = String::new();
-    ret.push_str("pub(super) fn pad_desc(\n");
+    ret.push_str("fn pad_desc(\n");
     ret.push_str("    bus: u16, vendor: u16, product: u16, ver: u16\n");
     ret.push_str(") -> &'static PadDescriptor\n");
     ret.push_str("{\n");
     ret.push_str("    match (bus, vendor, product, ver) {\n");
     let path = "./pad_db/pad/mapping";
+    let mut dirs = vec![];
     for dir_entry in fs::read_dir(path).unwrap() {
         let dir_entry = dir_entry.unwrap();
         let entry = dir_entry.path();
         let dir_entry = dir_entry.file_name().to_str().unwrap().to_string();
+        dirs.push((dir_entry, entry));
+    }
+    dirs.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+    for (dir_entry, entry) in dirs {
         assert!(dir_entry.ends_with(".toml") && dir_entry.len() == 21);
         let bus = dir_entry.get(0..4).unwrap();
         let vendor = dir_entry.get(4..8).unwrap();
@@ -54,7 +57,7 @@ fn generate_from_database() -> String {
             ret.push_str("0x");
             ret.push_str(ver);
         }
-        ret.push_str(") => PadDescriptor {\n");
+        ret.push_str(") => &PadDescriptor {\n");
         let map: format::PadMapping = toml::from_slice(&fs::read(entry).unwrap()).unwrap();
         ret.push_str("            name: \"");
         ret.push_str(&map.name);
@@ -63,7 +66,7 @@ fn generate_from_database() -> String {
         let mut tb = String::new();
         if let Some(buttons) = map.button {
             for format::Button { code, event } in buttons {
-                if event.starts_with("Trigger") {
+                if event.starts_with("Trigger") || event == "JoyX" || event == "JoyY" || event == "PovX" || event == "PovY" {
                     tb.push_str("                (&Event::");
                     tb.push_str(&event);
                     tb.push_str(", ");
@@ -121,17 +124,32 @@ fn generate_from_database() -> String {
         }
         ret.push_str("            ],\n");
         ret.push_str("            three_ways: &[\n");
+        let mut ta = String::new();
         if let Some(three_ways) = map.three_way {
             for format::ThreeWay { code, neg, pos } in three_ways {
-                ret.push_str("                (&|neg, state| if neg { Event::");
-                ret.push_str(&neg);
-                ret.push_str("(state) } else { Event::");
-                ret.push_str(&pos);
-                ret.push_str("(state) }, ");
-                ret.push_str(&code.to_string());
-                ret.push_str("),\n");
+                if neg.starts_with("Trigger") {
+                    assert!(pos.starts_with("Trigger"));
+                    ta.push_str("                (&|neg, state| if neg { Event::");
+                    ta.push_str(&neg);
+                    ta.push_str("(state) } else { Event::");
+                    ta.push_str(&pos);
+                    ta.push_str("(state) }, ");
+                    ta.push_str(&code.to_string());
+                    ta.push_str("),\n");
+                } else {
+                    ret.push_str("                (&|neg, state| if neg { Event::");
+                    ret.push_str(&neg);
+                    ret.push_str("(state) } else { Event::");
+                    ret.push_str(&pos);
+                    ret.push_str("(state) }, ");
+                    ret.push_str(&code.to_string());
+                    ret.push_str("),\n");
+                }
             }
         }
+        ret.push_str("            ],\n");
+        ret.push_str("            three_axis: &[\n");
+        ret.push_str(&ta);
         ret.push_str("            ],\n");
         ret.push_str("            wheels: &[\n");
         if let Some(wheels) = map.wheel {
