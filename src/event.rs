@@ -216,6 +216,12 @@ pub enum Event {
     /*
      * Mice-like controllers extra buttons, scroll wheel
      */
+     
+    /*
+     * Ignore Events
+     */
+    #[doc(hidden)]
+    Nil(bool)
 }
 
 impl std::fmt::Display for Event {
@@ -297,6 +303,7 @@ impl std::fmt::Display for Event {
             BoatBackward(p) => write!(f, "BoatBackward {}", sw(p)),
             ChinaForward(p) => write!(f, "ChinaForward {}", sw(p)),
             ChinaBackward(p) => write!(f, "ChinaBackward {}", sw(p)),
+            Nil(p) => write!(f, "Nil {}", pushed(p)),
         }
     }
 }

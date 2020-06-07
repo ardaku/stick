@@ -377,6 +377,7 @@ impl PadDescriptor {
                 state.mic.left = p;
                 event
             },
+            Some(Event::Nil(_)) => None,
             event => event,
         };
         

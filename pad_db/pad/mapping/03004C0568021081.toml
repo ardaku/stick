@@ -27,11 +27,11 @@ event = "BumperR"
 
 [[button]]
 code = 24
-event = "TriggerL"
+event = "Nil"
 
 [[button]]
 code = 25
-event = "TriggerR"
+event = "Nil"
 
 [[button]]
 code = 26
