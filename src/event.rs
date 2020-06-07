@@ -216,12 +216,12 @@ pub enum Event {
     /*
      * Mice-like controllers extra buttons, scroll wheel
      */
-     
+
     /*
      * Ignore Events
      */
     #[doc(hidden)]
-    Nil(bool)
+    Nil(bool),
 }
 
 impl std::fmt::Display for Event {

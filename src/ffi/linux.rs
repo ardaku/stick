@@ -15,12 +15,12 @@ use std::{
     fs::{self, File, OpenOptions},
     io::ErrorKind,
     mem::MaybeUninit,
+    num::FpCategory,
     os::{
         raw::{c_char, c_int, c_long, c_ulong, c_ushort, c_void},
         unix::io::{IntoRawFd, RawFd},
     },
     task::{Context, Poll},
-    num::FpCategory
 };
 
 use crate::Event;
@@ -56,7 +56,7 @@ struct PadState {
     // If axis is zero (1 for each axis).
     dead: Vec<bool>,
     dead_trig: Vec<bool>,
-    // 
+    //
     dpad: PadStateHat,
     mic: PadStateHat,
     pov: PadStateHat,
@@ -83,8 +83,12 @@ struct PadDescriptor {
     // (Button) value = 0.0f64 or 1.0f64
     trigbtns: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
     // (Axis) value = 0 thru 255
-    triggers:
-        &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<c_int>, Option<f64>)],
+    triggers: &'static [(
+        &'static dyn Fn(f64) -> Event,
+        c_ushort,
+        Option<c_int>,
+        Option<f64>,
+    )],
     // (Axis) value = -1, 0, or 1
     three_ways: &'static [(&'static dyn Fn(bool, bool) -> Event, c_ushort)],
     // (Axis) value = -1.0f64, 0, or 1.0f64
@@ -140,32 +144,38 @@ impl PadDescriptor {
                     if ev_code == *evcode {
                         unknown = false;
                         let mut held = false;
-                        event = Some(match new(if ev.ev_value > 0 {
-                            held = true;
-                            1.0
-                        } else if ev.ev_value < 0 {
-                            -1.0
-                        } else {
-                            0.0
-                        }) {
-                            Event::TriggerL(v) => {
-                                state.trigger_l_held = held;
-                                Event::TriggerL(if v.classify() == FpCategory::Zero {
-                                    state.trigger_l
-                                } else {
-                                    v
-                                })
-                            }
-                            Event::TriggerR(v) => {
-                                state.trigger_r_held = held;
-                                Event::TriggerR(if v.classify() == FpCategory::Zero {
-                                    state.trigger_r
-                                } else {
-                                    v
-                                })
-                            }
-                            event => event,
-                        });
+                        event = Some(
+                            match new(if ev.ev_value > 0 {
+                                held = true;
+                                1.0
+                            } else if ev.ev_value < 0 {
+                                -1.0
+                            } else {
+                                0.0
+                            }) {
+                                Event::TriggerL(v) => {
+                                    state.trigger_l_held = held;
+                                    Event::TriggerL(
+                                        if v.classify() == FpCategory::Zero {
+                                            state.trigger_l
+                                        } else {
+                                            v
+                                        },
+                                    )
+                                }
+                                Event::TriggerR(v) => {
+                                    state.trigger_r_held = held;
+                                    Event::TriggerR(
+                                        if v.classify() == FpCategory::Zero {
+                                            state.trigger_r
+                                        } else {
+                                            v
+                                        },
+                                    )
+                                }
+                                event => event,
+                            },
+                        );
                     }
                 }
                 if unknown {
@@ -184,7 +194,8 @@ impl PadDescriptor {
                 for (new, evcode) in self.wheels {
                     if ev.ev_code == *evcode {
                         unknown = false;
-                        event = Some(new(joyaxis_float(ev.ev_value, 1.0, state)));
+                        event =
+                            Some(new(joyaxis_float(ev.ev_value, 1.0, state)));
                     }
                 }
                 if unknown {
@@ -203,7 +214,11 @@ impl PadDescriptor {
                 for (i, (new, evcode, max)) in self.axes.iter().enumerate() {
                     if ev.ev_code == *evcode {
                         unknown = false;
-                        let v = joyaxis_float(ev.ev_value, max.unwrap_or(1.0), state);
+                        let v = joyaxis_float(
+                            ev.ev_value,
+                            max.unwrap_or(1.0),
+                            state,
+                        );
                         let is_zero = v.classify() == FpCategory::Zero;
                         if !(is_zero && state.dead[i]) {
                             state.dead[i] = is_zero;
@@ -211,7 +226,9 @@ impl PadDescriptor {
                         }
                     }
                 }
-                for (i, (new, evcode, max, dead)) in self.triggers.iter().enumerate() {
+                for (i, (new, evcode, max, dead)) in
+                    self.triggers.iter().enumerate()
+                {
                     if ev.ev_code == *evcode {
                         unknown = false;
                         let v = trigger_float(ev.ev_value, dead.unwrap_or(0.0));
@@ -302,85 +319,109 @@ impl PadDescriptor {
                 None
             }
         };
-        
+
         // Remove duplicated events
         let event = match event {
-            Some(Event::DpadUp(p)) => if p == state.dpad.up {
-                None
-            } else {
-                state.dpad.up = p;
-                event
-            },
-            Some(Event::DpadDown(p)) => if p == state.dpad.down {
-                None
-            } else {
-                state.dpad.down = p;
-                event
-            },
-            Some(Event::DpadRight(p)) => if p == state.dpad.right {
-                None
-            } else {
-                state.dpad.right = p;
-                event
-            },
-            Some(Event::DpadLeft(p)) => if p == state.dpad.left {
-                None
-            } else {
-                state.dpad.left = p;
-                event
-            },
-            Some(Event::PovUp(p)) => if p == state.pov.up {
-                None
-            } else {
-                state.pov.up = p;
-                event
-            },
-            Some(Event::PovDown(p)) => if p == state.pov.down {
-                None
-            } else {
-                state.pov.down = p;
-                event
-            },
-            Some(Event::PovRight(p)) => if p == state.pov.right {
-                None
-            } else {
-                state.pov.right = p;
-                event
-            },
-            Some(Event::PovLeft(p)) => if p == state.pov.left {
-                None
-            } else {
-                state.pov.left = p;
-                event
-            },
-            Some(Event::MicUp(p)) => if p == state.mic.up {
-                None
-            } else {
-                state.mic.up = p;
-                event
-            },
-            Some(Event::MicDown(p)) => if p == state.mic.down {
-                None
-            } else {
-                state.mic.down = p;
-                event
-            },
-            Some(Event::MicRight(p)) => if p == state.mic.right {
-                None
-            } else {
-                state.mic.right = p;
-                event
-            },
-            Some(Event::MicLeft(p)) => if p == state.mic.left {
-                None
-            } else {
-                state.mic.left = p;
-                event
-            },
+            Some(Event::DpadUp(p)) => {
+                if p == state.dpad.up {
+                    None
+                } else {
+                    state.dpad.up = p;
+                    event
+                }
+            }
+            Some(Event::DpadDown(p)) => {
+                if p == state.dpad.down {
+                    None
+                } else {
+                    state.dpad.down = p;
+                    event
+                }
+            }
+            Some(Event::DpadRight(p)) => {
+                if p == state.dpad.right {
+                    None
+                } else {
+                    state.dpad.right = p;
+                    event
+                }
+            }
+            Some(Event::DpadLeft(p)) => {
+                if p == state.dpad.left {
+                    None
+                } else {
+                    state.dpad.left = p;
+                    event
+                }
+            }
+            Some(Event::PovUp(p)) => {
+                if p == state.pov.up {
+                    None
+                } else {
+                    state.pov.up = p;
+                    event
+                }
+            }
+            Some(Event::PovDown(p)) => {
+                if p == state.pov.down {
+                    None
+                } else {
+                    state.pov.down = p;
+                    event
+                }
+            }
+            Some(Event::PovRight(p)) => {
+                if p == state.pov.right {
+                    None
+                } else {
+                    state.pov.right = p;
+                    event
+                }
+            }
+            Some(Event::PovLeft(p)) => {
+                if p == state.pov.left {
+                    None
+                } else {
+                    state.pov.left = p;
+                    event
+                }
+            }
+            Some(Event::MicUp(p)) => {
+                if p == state.mic.up {
+                    None
+                } else {
+                    state.mic.up = p;
+                    event
+                }
+            }
+            Some(Event::MicDown(p)) => {
+                if p == state.mic.down {
+                    None
+                } else {
+                    state.mic.down = p;
+                    event
+                }
+            }
+            Some(Event::MicRight(p)) => {
+                if p == state.mic.right {
+                    None
+                } else {
+                    state.mic.right = p;
+                    event
+                }
+            }
+            Some(Event::MicLeft(p)) => {
+                if p == state.mic.left {
+                    None
+                } else {
+                    state.mic.left = p;
+                    event
+                }
+            }
             Some(Event::Nil(_)) => None,
             event => event,
         };
-        
+
         event
     }
 }
