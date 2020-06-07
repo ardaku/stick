@@ -1,0 +1,50 @@
+name = "Microntek USB Joystick"
+type = "Unknown"
+
+[[button]]
+code = 5
+event = "TriggerR"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 4
+event = "TriggerL"
+
+[[button]]
+code = 2
+event = "ActionA"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 7
+event = "BumperR"
+
+[[button]]
+code = 6
+event = "BumperL"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionV"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"

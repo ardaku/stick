@@ -1,0 +1,72 @@
+name = "Wii Classic Controller"
+type = "Unknown"
+
+[[button]]
+code = 10
+event = "Cmd"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionA"
+
+[[button]]
+code = 6
+event = "BumperL"
+
+[[button]]
+code = 5
+event = "TriggerR"
+
+[[button]]
+code = 0
+event = "ActionV"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 4
+event = "TriggerL"
+
+[[button]]
+code = 7
+event = "BumperR"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 3
+event = "PovY"
+
+[[axis]]
+code = 2
+event = "PovX"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

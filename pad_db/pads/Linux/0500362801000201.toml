@@ -1,0 +1,78 @@
+name = "OUYA Game Controller"
+type = "Unknown"
+
+[[button]]
+code = 9
+event = "DpadDown"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 2
+event = "ActionV"
+
+[[button]]
+code = 3
+event = "ActionB"
+
+[[button]]
+code = 8
+event = "DpadUp"
+
+[[button]]
+code = 1
+event = "ActionH"
+
+[[button]]
+code = 10
+event = "DpadLeft"
+
+[[button]]
+code = 6
+event = "JoyPush"
+
+[[button]]
+code = 11
+event = "DpadRight"
+
+[[button]]
+code = 14
+event = "Cmd"
+
+[[button]]
+code = 7
+event = "PovPush"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[trigger]]
+code = 5
+event = "TriggerR"
+
+[[trigger]]
+code = 2
+event = "TriggerL"

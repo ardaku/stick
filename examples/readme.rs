@@ -28,10 +28,10 @@ async fn event_loop() {
             (id, event) => {
                 println!("p{}: {}", id + 1, event);
                 match event {
-                    Event::ActA(pressed) => {
+                    Event::ActionA(pressed) => {
                         pads[id].rumble(if pressed { 1.0 } else { 0.0 });
                     }
-                    Event::ActB(pressed) => {
+                    Event::ActionB(pressed) => {
                         pads[id].rumble(if pressed { 0.25 } else { 0.0 });
                     }
                     _ => {}

@@ -1,0 +1,44 @@
+name = "8BitDo SNES30 Gamepad"
+type = "NES"
+
+[[button]]
+code = 7
+event = "BumperR"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 6
+event = "BumperL"
+
+[[button]]
+code = 10
+event = "Prev"
+
+[[button]]
+code = 4
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 11
+event = "Next"
+
+[[three_way]]
+code = 1
+neg = "DpadUp"
+pos = "DpadDown"
+
+[[three_way]]
+code = 0
+neg = "DpadLeft"
+pos = "DpadRight"

@@ -1,0 +1,26 @@
+name = "Competition Pro"
+type = "Unknown"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 2
+event = "Prev"
+
+[[button]]
+code = 3
+event = "Next"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"

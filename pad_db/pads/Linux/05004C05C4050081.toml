@@ -1,0 +1,80 @@
+name = "PS4 Controller"
+type = "Unknown"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 12
+event = "PovPush"
+
+[[button]]
+code = 10
+event = "Cmd"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 2
+event = "ActionV"
+
+[[button]]
+code = 11
+event = "JoyPush"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[trigger]]
+code = 5
+event = "TriggerR"
+
+[[trigger]]
+code = 2
+event = "TriggerL"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

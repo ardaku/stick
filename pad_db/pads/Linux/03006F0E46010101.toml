@@ -1,0 +1,70 @@
+name = "Rock Candy Xbox One Controller"
+type = "Unknown"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 9
+event = "JoyPush"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 8
+event = "Cmd"
+
+[[button]]
+code = 10
+event = "PovPush"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[trigger]]
+code = 2
+event = "TriggerL"
+
+[[trigger]]
+code = 5
+event = "TriggerR"

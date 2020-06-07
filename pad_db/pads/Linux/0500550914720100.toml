@@ -1,0 +1,80 @@
+name = "NVIDIA Controller v01.04"
+type = "Unknown"
+
+[[button]]
+code = 8
+event = "PovPush"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 7
+event = "JoyPush"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 16
+event = "Cmd"
+
+[[button]]
+code = 6
+event = "Next"
+
+[[button]]
+code = 14
+event = "Prev"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 2
+event = "PovX"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 5
+event = "PovY"
+
+[[trigger]]
+code = 4
+event = "TriggerR"
+
+[[trigger]]
+code = 3
+event = "TriggerL"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"

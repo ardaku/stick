@@ -1,0 +1,80 @@
+name = "EA Sports PS3 Controller"
+type = "Unknown"
+
+[[button]]
+code = 7
+event = "TriggerR"
+
+[[button]]
+code = 10
+event = "JoyPush"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 12
+event = "Cmd"
+
+[[button]]
+code = 2
+event = "ActionB"
+
+[[button]]
+code = 11
+event = "PovPush"
+
+[[button]]
+code = 0
+event = "ActionH"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 1
+event = "ActionA"
+
+[[axis]]
+code = 2
+event = "PovX"
+
+[[axis]]
+code = 3
+event = "PovY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

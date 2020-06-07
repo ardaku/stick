@@ -1,0 +1,44 @@
+name = "HuiJia SNES Controller"
+type = "Unknown"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 6
+event = "BumperL"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionV"
+
+[[button]]
+code = 7
+event = "BumperR"
+
+[[button]]
+code = 2
+event = "ActionA"
+
+[[three_way]]
+code = 0
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 1
+neg = "DpadUp"
+pos = "DpadDown"

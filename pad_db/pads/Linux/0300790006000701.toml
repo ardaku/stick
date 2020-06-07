@@ -1,0 +1,76 @@
+name = "USB Gamepad"
+type = "Unknown"
+
+[[button]]
+code = 0
+event = "ActionV"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionA"
+
+[[button]]
+code = 11
+event = "PovPush"
+
+[[button]]
+code = 7
+event = "TriggerR"
+
+[[button]]
+code = 10
+event = "JoyPush"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

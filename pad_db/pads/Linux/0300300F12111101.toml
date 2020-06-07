@@ -1,0 +1,64 @@
+name = "QanBa Arcade JoyJoyPush"
+type = "Unknown"
+
+[[button]]
+code = 4
+event = "TriggerL"
+
+[[button]]
+code = 5
+event = "BumperL"
+
+[[button]]
+code = 7
+event = "BumperR"
+
+[[button]]
+code = 1
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionA"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 8
+event = "Cmd"
+
+[[button]]
+code = 6
+event = "TriggerR"
+
+[[button]]
+code = 10
+event = "Prev"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

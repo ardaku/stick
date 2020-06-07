@@ -1,0 +1,56 @@
+name = "Akishop Customs PS360+ v1.66"
+type = "Unknown"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 2
+event = "ActionB"
+
+[[button]]
+code = 7
+event = "TriggerR"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 8
+event = "Cmd"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 0
+event = "ActionH"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 1
+event = "ActionA"
+
+[[button]]
+code = 12
+event = "Prev"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

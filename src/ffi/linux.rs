@@ -62,7 +62,7 @@ struct PadDescriptor {
 }
 
 impl PadDescriptor {
-    // Convert evdev event into Stick event.
+    // Convert evdev event into JoyPush event.
     fn event_from(&self, ev: EvdevEv, state: &mut PadState) -> Option<Event> {
         let joyaxis_float = |x| (x as f64 - state.min) / state.range;
         let trigger_float = |x| x as f64 / 255.0;
@@ -679,10 +679,10 @@ impl Pad {
             self.emulated |= left;
             if emulated & right != 0 {
                 self.emulated &= !right;
-                self.queued = Some(Event::DirLeft(true));
-                Event::DirRight(false)
+                self.queued = Some(Event::DpadLeft(true));
+                Event::DpadRight(false)
             } else {
-                Event::DirLeft(true)
+                Event::DpadLeft(true)
             }
         } else if value > 0 {
             // Right
@@ -692,17 +692,17 @@ impl Pad {
             self.emulated |= right;
             if emulated & left != 0 {
                 self.emulated &= !left;
-                self.queued = Some(Event::DirRight(true));
-                Event::DirLeft(false)
+                self.queued = Some(Event::DpadRight(true));
+                Event::DpadLeft(false)
             } else {
-                Event::DirRight(true)
+                Event::DpadRight(true)
             }
         } else {
             self.emulated &= !(left | right);
             if emulated & left != 0 {
-                Event::DirLeft(false)
+                Event::DpadLeft(false)
             } else if emulated & right != 0 {
-                Event::DirRight(false)
+                Event::DpadRight(false)
             } else {
                 return None;
             }
@@ -721,10 +721,10 @@ impl Pad {
             self.emulated |= up;
             if emulated & down != 0 {
                 self.emulated &= !down;
-                self.queued = Some(Event::DirUp(true));
-                Event::DirDown(false)
+                self.queued = Some(Event::DpadUp(true));
+                Event::DpadDown(false)
             } else {
-                Event::DirUp(true)
+                Event::DpadUp(true)
             }
         } else if value > 0 {
             // Down
@@ -734,17 +734,17 @@ impl Pad {
             self.emulated |= down;
             if emulated & up != 0 {
                 self.emulated &= !up;
-                self.queued = Some(Event::DirDown(true));
-                Event::DirUp(false)
+                self.queued = Some(Event::DpadDown(true));
+                Event::DpadUp(false)
             } else {
-                Event::DirDown(true)
+                Event::DpadDown(true)
             }
         } else {
             self.emulated &= !(up | down);
             if emulated & up != 0 {
-                Event::DirUp(false)
+                Event::DpadUp(false)
             } else if emulated & down != 0 {
-                Event::DirDown(false)
+                Event::DpadDown(false)
             } else {
                 return None;
             }
@@ -790,8 +790,8 @@ impl Pad {
                 23 => 25, // "R" -> RT
                 24 => 26, // "LT" -> Back
                 25 => 27, // "RT" -> Forward
-                26 => 29, // "Back" -> MotionStick
-                27 => 30, // "Forward" -> CameraStick
+                26 => 29, // "Back" -> MotionJoyPush
+                27 => 30, // "Forward" -> CameraJoyPush
                 x => x,
             };
         } else if hwid.is_mouse() {
@@ -827,7 +827,7 @@ impl Pad {
     fn axis_remapping(&self, mut id: u16) -> u16 {
         let hwid = HardwareId(self.hardware_id);
 
-        // Swap axis on Gamecube & Speedlink
+        // Swap axis on GameCube & Speedlink
         if hwid.is_gamecube()
             || hwid.is_playstation_compat()
             || hwid.is_thrustmaster()
@@ -891,10 +891,10 @@ impl Pad {
 
                 match self.remapping(ev.ev_code - 0x120) {
                     // Fallback Event IDs
-                    0 | 20 => Event::ActV(is),
-                    1 | 16 => Event::ActA(is),
-                    2 | 17 | 18 => Event::ActB(is),
-                    3 | 19 => Event::ActH(is),
+                    0 | 20 => Event::ActionV(is),
+                    1 | 16 => Event::ActionA(is),
+                    2 | 17 | 18 => Event::ActionB(is),
+                    3 | 19 => Event::ActionH(is),
                     4 | 24 => Event::TriggerL(if is {
                         self.emulated |= 0b0001_0000;
                         1.0
@@ -909,12 +909,12 @@ impl Pad {
                         self.emulated &= !0b0010_0000;
                         self.rt
                     }),
-                    6 | 22 => Event::ShoulderL(is), // 6 is Guess
-                    7 | 23 | 21 => Event::ShoulderR(is),
+                    6 | 22 => Event::BumperL(is), // 6 is Guess
+                    7 | 23 | 21 => Event::BumperR(is),
                     8 | 26 => Event::Prev(is), // 8 is Guess
                     9 | 27 => Event::Next(is),
-                    10 | 29 => Event::Stick(is),
-                    11 | 30 => Event::CStick(is),
+                    10 | 29 => Event::JoyPush(is),
+                    11 | 30 => Event::PovPush(is),
                     // D-PAD
                     12 | 256 => {
                         if let Some(ev) = self.dpad_v(if is { -1 } else { 0 }) {
@@ -952,18 +952,18 @@ impl Pad {
                         }
                     }
                     // 31 thru 47 are unknown
-                    48 => Event::Generic(0, is),
-                    49 => Event::Generic(1, is),
-                    50 => Event::Generic(2, is), // Guess
-                    51 => Event::Generic(3, is), // Guess
-                    52 => Event::Generic(4, is), // Guess
-                    53 => Event::Generic(5, is), // Guess
-                    54 => Event::Generic(6, is), // Guess
-                    55 => Event::Generic(7, is), // Guess
-                    56 => Event::Generic(8, is), // Guess
-                    57 => Event::Generic(9, is), // Guess
-                    58 => Event::Generic(10, is), // Guess
-                    59 => Event::Generic(11, is), // Guess
+                    48 => Event::Action(0, is),
+                    49 => Event::Action(1, is),
+                    50 => Event::Action(2, is), // Guess
+                    51 => Event::Action(3, is), // Guess
+                    52 => Event::Action(4, is), // Guess
+                    53 => Event::Action(5, is), // Guess
+                    54 => Event::Action(6, is), // Guess
+                    55 => Event::Action(7, is), // Guess
+                    56 => Event::Action(8, is), // Guess
+                    57 => Event::Action(9, is), // Guess
+                    58 => Event::Action(10, is), // Guess
+                    59 => Event::Action(11, is), // Guess
                     // 60 thru 255 are unknown
                     a => {
                         eprintln!(
@@ -977,7 +977,7 @@ impl Pad {
             }
             // Relative axis movement
             0x02 => match ev.ev_code {
-                8 => Event::StickY({
+                8 => Event::JoyY({
                     let value = self.joyaxis_float(ev.ev_value);
                     if value == self.movy {
                         return self.poll(cx);
@@ -993,7 +993,7 @@ impl Pad {
             // Absolute axis movement (abs)
             0x03 => {
                 match self.axis_remapping(ev.ev_code) {
-                    0 => Event::StickX({
+                    0 => Event::JoyX({
                         let value = self.joyaxis_float(ev.ev_value);
                         if value == self.movx {
                             return self.poll(cx);
@@ -1001,7 +1001,7 @@ impl Pad {
                         self.movx = value;
                         value
                     }),
-                    1 => Event::StickY({
+                    1 => Event::JoyY({
                         let value = self.joyaxis_float(ev.ev_value);
                         if value == self.movy {
                             return self.poll(cx);
@@ -1019,7 +1019,7 @@ impl Pad {
                         }
                         self.lt
                     }),
-                    3 => Event::CStickX({
+                    3 => Event::PovX({
                         let value =
                             if HardwareId(self.hardware_id).is_thrustmaster() {
                                 self.trigger_float(ev.ev_value) * 2.0 - 1.0
@@ -1032,7 +1032,7 @@ impl Pad {
                         self.camx = value;
                         value
                     }),
-                    4 => Event::CStickY({
+                    4 => Event::PovY({
                         let value = self.joyaxis_float(ev.ev_value);
                         if value == self.camy {
                             return self.poll(cx);
@@ -1040,7 +1040,7 @@ impl Pad {
                         self.camy = value;
                         value
                     }),
-                    6 => Event::CStickY({
+                    6 => Event::PovY({
                         let value = self.trigger_float(ev.ev_value) * 2.0 - 1.0;
                         if value == self.camy {
                             return self.poll(cx);

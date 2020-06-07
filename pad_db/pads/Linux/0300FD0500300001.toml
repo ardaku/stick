@@ -1,0 +1,42 @@
+name = "InterAct GoPad I-73000 (Fighting Game Layout)"
+type = "Unknown"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 4
+event = "ActionB"
+
+[[button]]
+code = 5
+event = "TriggerR"
+
+[[button]]
+code = 1
+event = "ActionV"
+
+[[button]]
+code = 3
+event = "ActionA"
+
+[[button]]
+code = 2
+event = "BumperR"
+
+[[button]]
+code = 0
+event = "ActionH"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"

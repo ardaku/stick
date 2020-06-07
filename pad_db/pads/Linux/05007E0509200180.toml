@@ -1,0 +1,80 @@
+name = "Nintendo Switch Pro Controller (joycond)"
+type = "Unknown"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionV"
+
+[[button]]
+code = 5
+event = "BumperL"
+
+[[button]]
+code = 10
+event = "Next"
+
+[[button]]
+code = 11
+event = "Cmd"
+
+[[button]]
+code = 13
+event = "PovPush"
+
+[[button]]
+code = 8
+event = "TriggerR"
+
+[[button]]
+code = 7
+event = "TriggerL"
+
+[[button]]
+code = 12
+event = "JoyPush"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 6
+event = "BumperR"
+
+[[button]]
+code = 9
+event = "Prev"
+
+[[axis]]
+code = 3
+event = "PovY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 2
+event = "PovX"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

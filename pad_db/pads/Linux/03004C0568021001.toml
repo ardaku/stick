@@ -1,0 +1,86 @@
+name = "PS3 Controller"
+type = "Unknown"
+
+[[button]]
+code = 15
+event = "ActionH"
+
+[[button]]
+code = 11
+event = "BumperR"
+
+[[button]]
+code = 0
+event = "Prev"
+
+[[button]]
+code = 5
+event = "DpadRight"
+
+[[button]]
+code = 14
+event = "ActionA"
+
+[[button]]
+code = 13
+event = "ActionB"
+
+[[button]]
+code = 8
+event = "TriggerL"
+
+[[button]]
+code = 4
+event = "DpadUp"
+
+[[button]]
+code = 9
+event = "TriggerR"
+
+[[button]]
+code = 3
+event = "Next"
+
+[[button]]
+code = 16
+event = "Cmd"
+
+[[button]]
+code = 12
+event = "ActionV"
+
+[[button]]
+code = 10
+event = "BumperL"
+
+[[button]]
+code = 6
+event = "DpadDown"
+
+[[button]]
+code = 7
+event = "DpadLeft"
+
+[[button]]
+code = 1
+event = "JoyPush"
+
+[[button]]
+code = 2
+event = "PovPush"
+
+[[axis]]
+code = 3
+event = "PovY"
+
+[[axis]]
+code = 2
+event = "PovX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"

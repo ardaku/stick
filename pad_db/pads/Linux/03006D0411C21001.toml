@@ -1,0 +1,72 @@
+name = "Logitech WingMan Cordless RumblePad"
+type = "Unknown"
+
+[[button]]
+code = 7
+event = "BumperR"
+
+[[button]]
+code = 9
+event = "TriggerL"
+
+[[button]]
+code = 5
+event = "Cmd"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 4
+event = "ActionV"
+
+[[button]]
+code = 10
+event = "TriggerR"
+
+[[button]]
+code = 6
+event = "BumperL"
+
+[[button]]
+code = 2
+event = "Prev"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 8
+event = "Next"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

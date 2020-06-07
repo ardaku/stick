@@ -1,0 +1,76 @@
+name = "Microsoft X-Box pad v2 (US)"
+type = "Unknown"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 2
+event = "BumperR"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 9
+event = "PovPush"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 4
+event = "ActionV"
+
+[[button]]
+code = 8
+event = "JoyPush"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 5
+event = "BumperL"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[trigger]]
+code = 5
+event = "TriggerR"
+
+[[trigger]]
+code = 2
+event = "TriggerL"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

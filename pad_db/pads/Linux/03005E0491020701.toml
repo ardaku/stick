@@ -1,0 +1,86 @@
+name = "X360 Wireless Controller"
+type = "Unknown"
+
+[[button]]
+code = 13
+event = "DpadUp"
+
+[[button]]
+code = 8
+event = "Cmd"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 12
+event = "DpadRight"
+
+[[button]]
+code = 14
+event = "DpadDown"
+
+[[button]]
+code = 11
+event = "DpadLeft"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 9
+event = "JoyPush"
+
+[[button]]
+code = 10
+event = "PovPush"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[trigger]]
+code = 2
+event = "TriggerL"
+
+[[trigger]]
+code = 5
+event = "TriggerR"

@@ -1,0 +1,46 @@
+name = "Joy-Con (L)"
+type = "Unknown"
+
+[[button]]
+code = 13
+event = "Prev"
+
+[[button]]
+code = 8
+event = "Next"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 10
+event = "JoyPush"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[axis]]
+code = 16
+event = "JoyX"
+
+[[axis]]
+code = 17
+event = "JoyY"

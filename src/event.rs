@@ -44,64 +44,61 @@ pub enum Event {
 
     /* Action pad - action button cluster */
     /// A / 1 / 4 / Circle / Return / Left Click.  Action A (Main action).
-    ActA(bool),
+    ActionA(bool),
     /// B / 2 / 3 / Cross / Shift.  Action B (Secondary action).
-    ActB(bool),
+    ActionB(bool),
     /// C
-    ActC(bool),
+    ActionC(bool),
     /// Y / X / Square / Right Click / H.  Horizontal action.
-    ActH(bool),
-    /// X / Y / Triangle / Space / V.  Vertical action (Topmost button).
-    ActV(bool),
+    ActionH(bool),
+    /// X / Y / Triangle / Space / V.  Vertical action (Topmost action button).
+    ActionV(bool),
+    /// Numbered or unlabeled programmable action buttons (If unlabelled,
+    /// numbered from left to right, upper to lower)
+    Action(u16, bool),
 
-    /* D-PAD / POV Hat (8-way) */
+    /* D-PAD */
     /// D-pad / POV Hat Up
-    DirUp(bool),
+    DpadUp(bool),
     /// D-pad / POV Hat Down
-    DirDown(bool),
+    DpadDown(bool),
     /// D-pad / POV Hat Left
-    DirLeft(bool),
+    DpadLeft(bool),
     /// D-pad / POV Hat Right
-    DirRight(bool),
+    DpadRight(bool),
 
-    /* Shoulder Triggers (LZ, RZ - 2)  */
-    /// Left Shoulder Trigger (far button if no trigger) - "Sneak" (Ctrl)
+    /* Bumper Triggers (LZ, RZ - 2)  */
+    /// Left Bumper Trigger (far button if no trigger) - "Sneak" (Ctrl)
     TriggerL(f64),
-    /// Right Shoulder Trigger (far button if no trigger) - "Precision Action"
+    /// Right Bumper Trigger (far button if no trigger) - "Precision Action"
     /// (Alt)
     TriggerR(f64),
 
-    /* Shoulder Buttons (L, R, Z - 1) */
+    /* Bumper Buttons (L, R, Z - 1) */
     /// Left shoulder button (near button if no trigger) - "Inventory" (E)
-    ShoulderL(bool),
+    BumperL(bool),
     /// Right shoulder button (near button if no trigger) - "Use" (R)
-    ShoulderR(bool),
+    BumperR(bool),
 
     /* Joystick */
     /// Main stick horizontal axis (A / D)
-    StickX(f64),
+    JoyX(f64),
     /// Main stick vertical / depth axis (W / S)
-    StickY(f64),
+    JoyY(f64),
     /// Main stick rotation / yaw axis
-    StickZ(f64),
+    JoyZ(f64),
     /// Secondary stick X axis (Mouse X Position)
-    CStickX(f64),
+    PovX(f64),
     /// Secondary stick Y axis (Mouse Y Position)
-    CStickY(f64),
+    PovY(f64),
     /// Secondary stick Z axis
-    CStickZ(f64),
+    PovZ(f64),
 
     /* Joystick Buttons */
     /// Left Joystick Button (Middle Click)
-    Stick(bool),
+    JoyPush(bool),
     /// Right Joystick Button (F)
-    CStick(bool),
-
-    /*
-     * Generic Extra Buttons
-     */
-    /// Extra unlabeled buttons (Indexed Left to Right, Upper to lower)
-    Generic(u16, bool),
+    PovPush(bool),
 
     /*
      * Special XBox Controllers Extra Buttons
@@ -116,6 +113,16 @@ pub enum Event {
     AutopilotToggle(bool),
     /// Landing Gear Horn Silence Button
     LandingGearSilence(bool),
+
+    /* 8-way POV Hat */
+    /// POV Hat Up
+    PovUp(bool),
+    /// POV Hat Down
+    PovDown(bool),
+    /// POV Hat Left
+    PovLeft(bool),
+    /// POV Hat Right
+    PovRight(bool),
 
     /* 4-way Mic Switch */
     /// Mic Hat Up
@@ -216,35 +223,39 @@ impl std::fmt::Display for Event {
         match self {
             Connect(_) => write!(f, "Controller Connected"),
             Disconnect => write!(f, "Controller Disconnected"),
-            ActA(p) => write!(f, "ActA {}", pushed(p)),
-            ActB(p) => write!(f, "ActB {}", pushed(p)),
-            ActC(p) => write!(f, "ActC {}", pushed(p)),
-            ActH(p) => write!(f, "ActH {}", pushed(p)),
-            ActV(p) => write!(f, "ActV {}", pushed(p)),
-            DirUp(p) => write!(f, "DirUp {}", pushed(p)),
-            DirDown(p) => write!(f, "DirDown {}", pushed(p)),
-            DirLeft(p) => write!(f, "DirLeft {}", pushed(p)),
-            DirRight(p) => write!(f, "DirRight {}", pushed(p)),
+            ActionA(p) => write!(f, "ActionA {}", pushed(p)),
+            ActionB(p) => write!(f, "ActionB {}", pushed(p)),
+            ActionC(p) => write!(f, "ActionC {}", pushed(p)),
+            ActionH(p) => write!(f, "ActionH {}", pushed(p)),
+            ActionV(p) => write!(f, "ActionV {}", pushed(p)),
+            DpadUp(p) => write!(f, "DpadUp {}", pushed(p)),
+            DpadDown(p) => write!(f, "DpadDown {}", pushed(p)),
+            DpadLeft(p) => write!(f, "DpadLeft {}", pushed(p)),
+            DpadRight(p) => write!(f, "DpadRight {}", pushed(p)),
             Prev(p) => write!(f, "Prev {}", pushed(p)),
             Next(p) => write!(f, "Next {}", pushed(p)),
-            ShoulderL(p) => write!(f, "ShoulderL {}", pushed(p)),
-            ShoulderR(p) => write!(f, "ShoulderR {}", pushed(p)),
+            BumperL(p) => write!(f, "BumperL {}", pushed(p)),
+            BumperR(p) => write!(f, "BumperR {}", pushed(p)),
             TriggerL(v) => write!(f, "TriggerL {}", v),
             TriggerR(v) => write!(f, "TriggerR {}", v),
-            StickX(v) => write!(f, "StickX {}", v),
-            StickY(v) => write!(f, "StickY {}", v),
-            StickZ(v) => write!(f, "StickZ {}", v),
-            CStickX(v) => write!(f, "CStickX {}", v),
-            CStickY(v) => write!(f, "CStickY {}", v),
-            CStickZ(v) => write!(f, "CStickZ {}", v),
-            Stick(p) => write!(f, "Stick {}", pushed(p)),
-            CStick(p) => write!(f, "CStick {}", pushed(p)),
+            JoyX(v) => write!(f, "JoyX {}", v),
+            JoyY(v) => write!(f, "JoyY {}", v),
+            JoyZ(v) => write!(f, "JoyZ {}", v),
+            PovX(v) => write!(f, "PovX {}", v),
+            PovY(v) => write!(f, "PovY {}", v),
+            PovZ(v) => write!(f, "PovZ {}", v),
+            JoyPush(p) => write!(f, "JoyPush {}", pushed(p)),
+            PovPush(p) => write!(f, "PovPush {}", pushed(p)),
             Cmd => write!(f, "Cmd"),
-            Generic(l, p) => write!(f, "Generic{} {}", l, pushed(p)),
+            Action(l, p) => write!(f, "Action{} {}", l, pushed(p)),
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),
             LandingGearSilence(p) => {
                 write!(f, "LandingGearSilence {}", pushed(p))
             }
+            PovUp(p) => write!(f, "PovUp {}", pushed(p)),
+            PovDown(p) => write!(f, "PovDown {}", pushed(p)),
+            PovLeft(p) => write!(f, "PovLeft {}", pushed(p)),
+            PovRight(p) => write!(f, "PovRight {}", pushed(p)),
             MicUp(p) => write!(f, "MicUp {}", pushed(p)),
             MicDown(p) => write!(f, "MicDown {}", pushed(p)),
             MicLeft(p) => write!(f, "MicLeft {}", pushed(p)),

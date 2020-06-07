@@ -1,0 +1,74 @@
+name = "Steam Controller"
+type = "Unknown"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 13
+event = "DpadRight"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 8
+event = "Cmd"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 15
+event = "DpadLeft"
+
+[[button]]
+code = 12
+event = "DpadUp"
+
+[[button]]
+code = 9
+event = "JoyPush"
+
+[[button]]
+code = 14
+event = "DpadDown"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[trigger]]
+code = 3
+event = "TriggerR"
+
+[[trigger]]
+code = 2
+event = "TriggerL"

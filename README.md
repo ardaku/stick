@@ -17,7 +17,7 @@ Now, I think there are many other reasons for stick to exist despite gilrs:
  - Executor-agnostic `async/.await` for gamepads, joysticks, etc (I recommend
    using the `pasts` crate for a simple single-threaded executor).
  - Low-level hotplugging support (you assign the gamepad ID's)
- - Meaningful Event Names (`ActA` and `ActB` instead of `South` and `East`)
+ - Meaningful Event Names (`ActionA` and `ActionB` instead of `South` and `East`)
  - Minimal dependencies
  - Dual licensed with the Zlib license (permission to use without attribution in
    the binary's UI) - making it great for game development.
@@ -91,10 +91,10 @@ async fn event_loop() {
             (id, event) => {
                 println!("p{}: {}", id + 1, event);
                 match event {
-                    Event::ActA(pressed) => {
+                    Event::ActionA(pressed) => {
                         pads[id].rumble(if pressed { 1.0 } else { 0.0 });
                     }
-                    Event::ActB(pressed) => {
+                    Event::ActionB(pressed) => {
                         pads[id].rumble(if pressed { 0.25 } else { 0.0 });
                     }
                     _ => {}

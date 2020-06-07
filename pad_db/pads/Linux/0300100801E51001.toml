@@ -1,0 +1,44 @@
+name = "NEXT SNES Controller"
+type = "Unknown"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionA"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 6
+event = "BumperR"
+
+[[button]]
+code = 0
+event = "ActionV"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[three_way]]
+code = 1
+neg = "DpadUp"
+pos = "DpadDown"
+
+[[three_way]]
+code = 0
+neg = "DpadLeft"
+pos = "DpadRight"

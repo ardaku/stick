@@ -1,0 +1,80 @@
+name = "xbox360 Wireless EasySMX"
+type = "Unknown"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 9
+event = "JoyPush"
+
+[[button]]
+code = 10
+event = "PovPush"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 8
+event = "Cmd"
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[trigger]]
+code = 2
+event = "TriggerL"
+
+[[trigger]]
+code = 5
+event = "TriggerR"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
