@@ -24,6 +24,11 @@ use std::{
 
 use crate::Event;
 
+// This input offset when subtracted, gives a platform-agnostic button ID.
+// Since Stick only looks for gamepads and joysticks, button IDs below this
+// number shouldn't occur.
+const LINUX_SPECIFIC_BTN_OFFSET: c_ushort = 0x120;
+
 /// Evdev hat data.
 struct PadStateHat {
     hor: c_int,
@@ -33,6 +38,10 @@ struct PadStateHat {
 /// Data associated with the state of the pad.  Used to produce the correct
 /// platform-agnostic events.
 struct PadState {
+    // Trigger state
+    trigger_l: Option<f32>,
+    // Trigger state
+    trigger_r: Option<f32>,
     // Minimum axis value
     min: f64,
     // Maximum axis value - Minimum axis value
@@ -71,13 +80,16 @@ impl PadDescriptor {
             0x00 => { /* Ignore SYN events. */ }
             0x01 => {
                 // button press / release (key)
+                let ev_code = ev.ev_code.checked_sub(LINUX_SPECIFIC_BTN_OFFSET)
+                    .expect(&format!("Out of range ev_code: {}, report at \
+                        https://github.com/libcala/stick/issues", ev.ev_code));
                 for (new, evcode) in self.buttons {
-                    if ev.ev_code == *evcode {
+                    if ev_code == *evcode {
                         return Some(new(ev.ev_value == 1));
                     }
                 }
                 for [(new_lo, evcode_lo), (new_hi, evcode_hi)] in self.three {
-                    match ev.ev_code {
+                    match ev_code {
                         _x if _x == *evcode_lo => {
                             if ev.ev_value == 1 {
                                 return Some(new_lo(Some(false)));
@@ -98,7 +110,7 @@ impl PadDescriptor {
                 eprintln!(
                     "*Evdev* Unknown Button Code: {}, report at \
                     https://github.com/libcala/stick/issues",
-                    ev.ev_code
+                    ev_code
                 );
             }
             0x02 => {
@@ -889,7 +901,7 @@ impl Pad {
             0x01 => {
                 let is = ev.ev_value == 1;
 
-                match self.remapping(ev.ev_code - 0x120) {
+                match self.remapping(ev.ev_code - LINUX_SPECIFIC_BTN_OFFSET) {
                     // Fallback Event IDs
                     0 | 20 => Event::ActionV(is),
                     1 | 16 => Event::ActionA(is),

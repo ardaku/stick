@@ -1,123 +1,119 @@
 name = "Thrustmaster Warthog Throttle"
 type = "HOTAS"
 
-# Buttons
 [[button]]
-code = 713
+code = 425
 event = "AutopilotToggle"
 
 [[button]]
-code = 708
+code = 420
 event = "LandingGearSilence"
 
 [[button]]
-code = 302
+code = 14
 event = "ThrottleButtonL"
 
 [[button]]
-code = 711
+code = 423
 event = "Eac"
 
 [[button]]
-code = 712
+code = 424
 event = "RadarAltimeter"
 
 # Two way switches (buttons in evdev)
 [[button]]
-code = 707
+code = 419
 event = "Apu"
 
 [[button]]
-code = 303
+code = 15
 event = "EngineFuelFlowL"
 
 [[button]]
-code = 704
+code = 416
 event = "EngineFuelFlowR"
 
-# Three way switches (buttons in evdev)
 [[button]]
-code = 714
+code = 426
 event = "AutopilotSelectPath"
 
 [[button]]
-code = 715
+code = 427
 event = "AutopilotSelectAlt"
 
 [[button]]
-code = 709
+code = 421
 event = "FlapsUp"
 
 [[button]]
-code = 710
+code = 422
 event = "FlapsDown"
 
 [[button]]
-code = 718
+code = 430
 event = "EngineOperateLIgnition"
 
 [[button]]
-code = 705
+code = 417
 event = "EngineOperateLMotor"
 
 [[button]]
-code = 719
+code = 431
 event = "EngineOperateRIgnition"
 
 [[button]]
-code = 706
+code = 418
 event = "EngineOperateRMotor"
 
 [[button]]
-code = 300
+code = 12
 event = "PinkyForward"
 
 [[button]]
-code = 301
+code = 13
 event = "PinkyBackward"
 
 [[button]]
-code = 294
+code = 6
 event = "SpeedbrakeForward"
 
 [[button]]
-code = 295
+code = 7
 event = "SpeedbrakeBackward"
 
 [[button]]
-code = 296
+code = 8
 event = "BoatForward"
 
 [[button]]
-code = 297
+code = 9
 event = "BoatBackward"
 
 [[button]]
-code = 298
+code = 10
 event = "ChinaForward"
 
 [[button]]
-code = 299
+code = 11
 event = "ChinaBackward"
 
-# Hats (buttons in evdev)
 [[button]]
-code = 544
+code = 256
 event = "MicUp"
 
 [[button]]
-code = 545
+code = 257
 event = "MicDown"
 
 [[button]]
-code = 546
+code = 258
 event = "MicLeft"
 
 [[button]]
-code = 547
+code = 259
 event = "MicRight"
 
-# Axes
 [[axis]]
 code = 6
 name = "Slew"
@@ -130,7 +126,6 @@ event = "ThrottleL"
 code = 2
 event = "ThrottleR"
 
-# Hats (unit axes in evdev)
 [[three_way]]
 code = 0
 neg = "PovLeft"
