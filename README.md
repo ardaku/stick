@@ -25,6 +25,8 @@ Now, I think there are many other reasons for stick to exist despite gilrs:
  - Not game-specific, doesn't depend on a "standard gamepad" model (which
    doesn't work due to the variety of controllers in existence) - therefore can
    also be used in robotics, control centers, advanced flight simulations, etc.
+ - Support more gamepads/joysticks than gilrs, and (WIP) unified support across
+   platforms.
 
 ### Platform Support
 - Linux
