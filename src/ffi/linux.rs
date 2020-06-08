@@ -86,13 +86,13 @@ struct PadDescriptor {
     triggers: &'static [(
         &'static dyn Fn(f64) -> Event,
         c_ushort,
-        Option<c_int>,
+        Option<f64>,
         Option<f64>,
     )],
     // (Axis) value = -1, 0, or 1
     three_ways: &'static [(&'static dyn Fn(bool, bool) -> Event, c_ushort)],
     // (Axis) value = -1.0f64, 0, or 1.0f64
-    three_axis: &'static [(&'static dyn Fn(bool, f64) -> Event, c_ushort)],
+    three_axes: &'static [(&'static dyn Fn(bool, f64) -> Event, c_ushort)],
     // (RelativeAxis) value = Full range min to max axis
     wheels: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
 }
@@ -108,8 +108,8 @@ impl PadDescriptor {
                 v.min(1.0).max(-1.0)
             }
         };
-        let trigger_float = |x, flat| {
-            let v = x as f64 / 255.0;
+        let trigger_float = |x, flat, max| {
+            let v: f64 = (x as f64 / 255.0) / max;
             if v.abs() <= flat {
                 0.0
             } else {
@@ -231,7 +231,7 @@ impl PadDescriptor {
                 {
                     if ev.ev_code == *evcode {
                         unknown = false;
-                        let v = trigger_float(ev.ev_value, dead.unwrap_or(0.0));
+                        let v = trigger_float(ev.ev_value, dead.unwrap_or(0.0), max.unwrap_or(1.0));
                         let is_zero = v.classify() == FpCategory::Zero;
                         if !(is_zero && state.dead_trig[i]) {
                             state.dead_trig[i] = is_zero;
@@ -280,6 +280,40 @@ impl PadDescriptor {
                                 state.queued = Some(new(true, true));
                                 if old == Some(false) {
                                     Some(new(false, false))
+                                } else {
+                                    state.queued.take()
+                                }
+                            }
+                        };
+                    }
+                }
+                for (i, (new, evcode)) in self.three_axes.iter().enumerate() {
+                    if ev.ev_code == *evcode {
+                        unknown = false;
+                        event = match ev.ev_value {
+                            0 => {
+                                if let Some(old) = state.neg_axis[i].take() {
+                                    Some(new(old, 0.0))
+                                } else {
+                                    None
+                                }
+                            }
+                            v if v > 0 => {
+                                let old = state.neg_axis[i];
+                                state.neg_axis[i] = Some(false);
+                                state.queued = Some(new(false, 1.0));
+                                if old == Some(true) {
+                                    Some(new(true, 0.0))
+                                } else {
+                                    state.queued.take()
+                                }
+                            }
+                            _ => {
+                                let old = state.neg_axis[i];
+                                state.neg_axis[i] = Some(true);
+                                state.queued = Some(new(true, 1.0));
+                                if old == Some(false) {
+                                    Some(new(false, 0.0))
                                 } else {
                                     state.queued.take()
                                 }
@@ -427,23 +461,6 @@ impl PadDescriptor {
 }
 
 include!(concat!(env!("OUT_DIR"), "/database.rs"));
-
-const HARDWARE_ID_SIXAXIS_PS3: u32 = 0x_4C05_6802;
-const HARDWARE_ID_DUALSHOCK_PS4: u32 = 0x_4C05_C405;
-
-const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_3807_1817;
-
-struct HardwareId(u32);
-
-impl HardwareId {
-    fn is_playstation_official(&self) -> bool {
-        self.0 == HARDWARE_ID_SIXAXIS_PS3 || self.0 == HARDWARE_ID_DUALSHOCK_PS4
-    }
-
-    fn is_mouse(&self) -> bool {
-        self.0 == HARDWARE_ID_MAD_CATZ_RAT_MOUSE
-    }
-}
 
 #[repr(C)]
 struct InotifyEv {
@@ -775,8 +792,7 @@ impl Pad {
             -1
         );
         let a = unsafe { a.assume_init() };
-        let range = a.maximum as f64 - a.minimum as f64;
-        let norm = (range * 0.5);
+        let norm = (a.maximum as f64 - a.minimum as f64) * 0.5;
         let zero = a.minimum as f64 + norm;
         let flat = if let Some(flat) = desc.deadzone {
             flat
@@ -801,7 +817,7 @@ impl Pad {
             },
             neg_axis: {
                 let mut neg = vec![];
-                for _ in desc.three_axis {
+                for _ in desc.three_axes {
                     neg.push(None);
                 }
                 neg
@@ -840,240 +856,11 @@ impl Pad {
             desc,
         }
     }
-    /*
-        // Convert value as though it were a trigger axis (returns 0 to 1).
-        fn trigger_float(&self, x: c_int) -> f64 {
-            // Deadzone multiply
-            let dm = match self.hardware_id {
-                HARDWARE_ID_MAYFLASH_GAMECUBE => 2.0,
-                _ => 1.0,
-            };
 
-            let scale = match self.hardware_id {
-                HARDWARE_ID_XBOX_PDP => 0.25,
-                _ => 1.0,
-            };
-
-            let x = (x as f64 * scale / 255.0).min(1.0).max(0.0);
-            if x < dm * 0.075 {
-                0.0
-            } else {
-                x
-            }
-        }
-
-        // Convert value as though it were a joystick axis (returns -1 to 1).
-        fn joyaxis_float(&self, x: c_int) -> f64 {
-            // Deadzone multiply
-            let dm = if self.hardware_id == HARDWARE_ID_THRUSTMASTER1 {
-                2.0
-            } else {
-                1.0
-            };
-
-            let scale = if self.hardware_id == HARDWARE_ID_MAYFLASH_GAMECUBE {
-                1.5
-            } else {
-                1.0
-            };
-
-            let x = (x - self.abs_min) as f64 / self.abs_range as f64;
-            // Deadzone
-            if (x - 0.5).abs() < dm * 0.0625 {
-                0.0
-            } else {
-                (x * 2.0 * scale - scale).min(1.0).max(-1.0)
-            }
-        }
-    */
     pub(super) fn id(&self) -> [u16; 4] {
         self.hardware_id
     }
-    /*
-    fn dpad_h(&mut self, value: c_int) -> Option<Event> {
-        let emulated = self.emulated;
-        let left = 0b0000_0001;
-        let right = 0b0000_0010;
-        Some(if value < 0 {
-            // Left
-            if emulated & left != 0 {
-                return None;
-            }
-            self.emulated |= left;
-            if emulated & right != 0 {
-                self.emulated &= !right;
-                self.queued = Some(Event::DpadLeft(true));
-                Event::DpadRight(false)
-            } else {
-                Event::DpadLeft(true)
-            }
-        } else if value > 0 {
-            // Right
-            if emulated & right != 0 {
-                return None;
-            }
-            self.emulated |= right;
-            if emulated & left != 0 {
-                self.emulated &= !left;
-                self.queued = Some(Event::DpadRight(true));
-                Event::DpadLeft(false)
-            } else {
-                Event::DpadRight(true)
-            }
-        } else {
-            self.emulated &= !(left | right);
-            if emulated & left != 0 {
-                Event::DpadLeft(false)
-            } else if emulated & right != 0 {
-                Event::DpadRight(false)
-            } else {
-                return None;
-            }
-        })
-    }
 
-    fn dpad_v(&mut self, value: c_int) -> Option<Event> {
-        let emulated = self.emulated;
-        let up = 0b0000_0100;
-        let down = 0b0000_1000;
-        Some(if value < 0 {
-            // Up
-            if emulated & up != 0 {
-                return None;
-            }
-            self.emulated |= up;
-            if emulated & down != 0 {
-                self.emulated &= !down;
-                self.queued = Some(Event::DpadUp(true));
-                Event::DpadDown(false)
-            } else {
-                Event::DpadUp(true)
-            }
-        } else if value > 0 {
-            // Down
-            if emulated & down != 0 {
-                return None;
-            }
-            self.emulated |= down;
-            if emulated & up != 0 {
-                self.emulated &= !up;
-                self.queued = Some(Event::DpadDown(true));
-                Event::DpadUp(false)
-            } else {
-                Event::DpadDown(true)
-            }
-        } else {
-            self.emulated &= !(up | down);
-            if emulated & up != 0 {
-                Event::DpadUp(false)
-            } else if emulated & down != 0 {
-                Event::DpadDown(false)
-            } else {
-                return None;
-            }
-        })
-    }
-
-    // Trigger axis disabled when trigger button pressed?
-    fn tad(&self) -> bool {
-        let hwid = HardwareId(self.hardware_id);
-        hwid.is_gamecube()
-    }
-
-    fn remapping(&self, mut id: u16) -> u16 {
-        let hwid = HardwareId(self.hardware_id);
-
-        // Swap Accept and Cancel Buttons, Action and Common Buttons
-        if hwid.is_playstation_official() {
-            id = match id {
-                17 => 16, // Accept <-> Cancel
-                16 => 17, // Accept <-> Cancel
-                19 => 20, // Common <-> Action
-                20 => 19, // Common <-> Action
-                x => x,
-            };
-        } else if hwid.is_playstation_logitech() {
-            id = match id {
-                17 => 16, // Accept <-> Cancel
-                16 => 17, // Accept <-> Cancel
-                19 => 20, // Common <-> Action
-                20 => 19, // Common <-> Action
-                4 => 6,   // LT <-> L
-                6 => 4,   // LT <-> L
-                5 => 7,   // RT <-> R
-                7 => 5,   // RT <-> R
-                x => x,
-            };
-        } else if hwid.is_playstation_compat() {
-            id = match id {
-                17 => 16, // "Cancel" -> Accept
-                16 => 20, // "Accept" -> Action
-                20 => 22, // "Action" -> L
-                22 => 24, // "L" -> LT
-                23 => 25, // "R" -> RT
-                24 => 26, // "LT" -> Back
-                25 => 27, // "RT" -> Forward
-                26 => 29, // "Back" -> MotionJoyPush
-                27 => 30, // "Forward" -> CameraJoyPush
-                x => x,
-            };
-        } else if hwid.is_mouse() {
-            id = match id {
-                3 => 26, // "Common" -> Back
-                4 => 27, // "Lt" -> Forward
-                5 => 4,  // "Rt" -> "Lt"
-                x => x,
-            };
-        } else if hwid.is_thrustmaster() {
-            id = match id {
-                // Left Custom Buttons
-                4 => 48, // Guess
-                5 => 50, // Guess
-                6 => 52, // Guess
-                7 => 54, // Guess
-                8 => 56, // Guess
-                9 => 58, // Guess
-                // Right Custom Buttons
-                10 => 49, // Guess
-                11 => 51, // Guess
-                12 => 53, // Guess
-                13 => 55, // Guess
-                14 => 57, // Guess
-                15 => 59, // Guess
-                x => x,
-            };
-        }
-
-        id
-    }
-
-    fn axis_remapping(&self, mut id: u16) -> u16 {
-        let hwid = HardwareId(self.hardware_id);
-
-        // Swap axis on GameCube & Speedlink
-        if hwid.is_gamecube()
-            || hwid.is_playstation_compat()
-            || hwid.is_thrustmaster()
-            || hwid.is_playstation_logitech()
-        {
-            id = match id {
-                2 => 4,
-                5 => 3,
-                3 => 2,
-                4 => 5,
-                x => x,
-            };
-        } else if hwid.is_mouse() {
-            id = match id {
-                0 => 3, // Mouse movement -> Camera
-                1 => 4, // Mouse movement -> Camera
-                5 => 0, // Scroll Wheel Horizontal -> Movement
-                x => x,
-            };
-        }
-
-        id
-    }*/
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
         if let Some(event) = self.state.queued.take() {
@@ -1111,225 +898,6 @@ impl Pad {
         } else {
             self.poll(cx)
         }
-
-        /*let event = match ev.ev_type {
-            0x00 => return self.poll(cx), // Ignore SYN events.
-            // button press / release (key)
-            0x01 => {
-                let is = ev.ev_value == 1;
-
-                match self.remapping(ev.ev_code - LINUX_SPECIFIC_BTN_OFFSET) {
-                    // Fallback Event IDs
-                    0 | 20 => Event::ActionV(is),
-                    1 | 16 => Event::ActionA(is),
-                    2 | 17 | 18 => Event::ActionB(is),
-                    3 | 19 => Event::ActionH(is),
-                    4 | 24 => Event::TriggerL(if is {
-                        self.emulated |= 0b0001_0000;
-                        1.0
-                    } else {
-                        self.emulated &= !0b0001_0000;
-                        self.lt
-                    }),
-                    5 | 25 => Event::TriggerR(if is {
-                        self.emulated |= 0b0010_0000;
-                        1.0
-                    } else {
-                        self.emulated &= !0b0010_0000;
-                        self.rt
-                    }),
-                    6 | 22 => Event::BumperL(is), // 6 is Guess
-                    7 | 23 | 21 => Event::BumperR(is),
-                    8 | 26 => Event::Prev(is), // 8 is Guess
-                    9 | 27 => Event::Next(is),
-                    10 | 29 => Event::JoyPush(is),
-                    11 | 30 => Event::PovPush(is),
-                    // D-PAD
-                    12 | 256 => {
-                        if let Some(ev) = self.dpad_v(if is { -1 } else { 0 }) {
-                            ev
-                        } else {
-                            return self.poll(cx);
-                        }
-                    }
-                    13 | 259 => {
-                        if let Some(ev) = self.dpad_h(if is { 1 } else { 0 }) {
-                            ev
-                        } else {
-                            return self.poll(cx);
-                        }
-                    }
-                    14 | 257 => {
-                        if let Some(ev) = self.dpad_v(if is { 1 } else { 0 }) {
-                            ev
-                        } else {
-                            return self.poll(cx);
-                        }
-                    }
-                    15 | 258 => {
-                        if let Some(ev) = self.dpad_h(if is { -1 } else { 0 }) {
-                            ev
-                        } else {
-                            return self.poll(cx);
-                        }
-                    }
-                    28 => {
-                        if is {
-                            Event::Home(true)
-                        } else {
-                            return self.poll(cx);
-                        }
-                    }
-                    // 31 thru 47 are unknown
-                    48 => Event::Action(0, is),
-                    49 => Event::Action(1, is),
-                    50 => Event::Action(2, is), // Guess
-                    51 => Event::Action(3, is), // Guess
-                    52 => Event::Action(4, is), // Guess
-                    53 => Event::Action(5, is), // Guess
-                    54 => Event::Action(6, is), // Guess
-                    55 => Event::Action(7, is), // Guess
-                    56 => Event::Action(8, is), // Guess
-                    57 => Event::Action(9, is), // Guess
-                    58 => Event::Action(10, is), // Guess
-                    59 => Event::Action(11, is), // Guess
-                    // 60 thru 255 are unknown
-                    a => {
-                        eprintln!(
-                            "Button {} is Unknown, report at \
-                            https://github.com/libcala/stick/issues",
-                            a
-                        );
-                        return self.poll(cx);
-                    }
-                }
-            }
-            // Relative axis movement
-            0x02 => match ev.ev_code {
-                8 => Event::JoyY({
-                    let value = self.joyaxis_float(ev.ev_value);
-                    if value == self.movy {
-                        return self.poll(cx);
-                    }
-                    self.movy = value;
-                    value
-                }),
-                u => {
-                    eprintln!("Unknown Relative Axis {}", u);
-                    return self.poll(cx);
-                }
-            },
-            // Absolute axis movement (abs)
-            0x03 => {
-                match self.axis_remapping(ev.ev_code) {
-                    0 => Event::JoyX({
-                        let value = self.joyaxis_float(ev.ev_value);
-                        if value == self.movx {
-                            return self.poll(cx);
-                        }
-                        self.movx = value;
-                        value
-                    }),
-                    1 => Event::JoyY({
-                        let value = self.joyaxis_float(ev.ev_value);
-                        if value == self.movy {
-                            return self.poll(cx);
-                        }
-                        self.movy = value;
-                        value
-                    }),
-                    21 | 2 => Event::TriggerL({
-                        let old = self.lt;
-                        self.lt = self.trigger_float(ev.ev_value);
-                        if (self.emulated & 0b0001_0000 != 0 && self.tad())
-                            || old == self.lt
-                        {
-                            return self.poll(cx);
-                        }
-                        self.lt
-                    }),
-                    3 => Event::PovX({
-                        let value =
-                            if HardwareId(self.hardware_id).is_thrustmaster() {
-                                self.trigger_float(ev.ev_value) * 2.0 - 1.0
-                            } else {
-                                self.joyaxis_float(ev.ev_value)
-                            };
-                        if value == self.camx {
-                            return self.poll(cx);
-                        }
-                        self.camx = value;
-                        value
-                    }),
-                    4 => Event::PovY({
-                        let value = self.joyaxis_float(ev.ev_value);
-                        if value == self.camy {
-                            return self.poll(cx);
-                        }
-                        self.camy = value;
-                        value
-                    }),
-                    6 => Event::PovY({
-                        let value = self.trigger_float(ev.ev_value) * 2.0 - 1.0;
-                        if value == self.camy {
-                            return self.poll(cx);
-                        }
-                        self.camy = value;
-                        value
-                    }),
-                    20 | 5 => Event::TriggerR({
-                        let old = self.rt;
-                        self.rt = self.trigger_float(ev.ev_value);
-                        if (self.emulated & 0b0010_0000 != 0 && self.tad())
-                            || old == self.rt
-                        {
-                            return self.poll(cx);
-                        }
-                        self.rt
-                    }),
-                    16 => {
-                        if let Some(event) = self.dpad_h(ev.ev_value) {
-                            event
-                        } else {
-                            return self.poll(cx);
-                        }
-                    }
-                    17 => {
-                        if let Some(event) = self.dpad_v(ev.ev_value) {
-                            event
-                        } else {
-                            return self.poll(cx);
-                        }
-                    }
-                    40 | 11 => return self.poll(cx), // IGNORE: Duplicate axis.
-                    a => {
-                        eprintln!(
-                            "Unknown Axis: {}, report at \
-                            https://github.com/libcala/stick/issues",
-                            a
-                        );
-                        return self.poll(cx);
-                    }
-                }
-            }
-            0x04 => {
-                if ev.ev_code == 4
-                /* scan */
-                { /* ignore */
-                } else {
-                    eprintln!("Misc {} {}.", ev.ev_code, ev.ev_value);
-                }
-                return self.poll(cx);
-            }
-            0x15 => {
-                // Force Feedback echo, ignore
-                return self.poll(cx);
-            }
-            u => {
-                eprintln!("Unknown {} {} {}.", u, ev.ev_code, ev.ev_value);
-                return self.poll(cx);
-            }
-        };*/
     }
 
     pub(super) fn name(&self) -> String {

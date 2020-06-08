@@ -72,12 +72,12 @@ event = "PovY"
 [[trigger]]
 code = 2
 event = "TriggerL"
-max = 64
+max = 0.25
 
 [[trigger]]
 code = 5
 event = "TriggerR"
-max = 64
+max = 0.25
 
 [[three_way]]
 code = 16

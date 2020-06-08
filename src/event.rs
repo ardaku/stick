@@ -215,9 +215,16 @@ pub enum Event {
     ChinaForward(bool),
     /// China hat three-way switch Backward.
     ChinaBackward(bool),
+
     /*
      * Mice-like controllers extra buttons, scroll wheel
      */
+    /// DPI Switch
+    Dpi(bool),
+    /// Scroll wheel horizontal
+    WheelX(f64),
+    /// Scroll wheel vertical
+    WheelY(f64),
 
     /*
      * Ignore Events
@@ -306,6 +313,9 @@ impl std::fmt::Display for Event {
             BoatBackward(p) => write!(f, "BoatBackward {}", sw(p)),
             ChinaForward(p) => write!(f, "ChinaForward {}", sw(p)),
             ChinaBackward(p) => write!(f, "ChinaBackward {}", sw(p)),
+            Dpi(p) => write!(f, "Dpi {}", pushed(p)),
+            WheelX(v) => write!(f, "WheelX {}", v),
+            WheelY(v) => write!(f, "WheelY {}", v),
             Nil(p) => write!(f, "Nil {}", pushed(p)),
         }
     }

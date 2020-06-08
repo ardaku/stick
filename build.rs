@@ -175,7 +175,7 @@ fn generate_from_database() -> String {
             }
         }
         ret.push_str("            ],\n");
-        ret.push_str("            three_axis: &[\n");
+        ret.push_str("            three_axes: &[\n");
         ret.push_str(&ta);
         ret.push_str("            ],\n");
         ret.push_str("            wheels: &[\n");
