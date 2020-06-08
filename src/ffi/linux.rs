@@ -428,11 +428,7 @@ impl PadDescriptor {
 
 include!(concat!(env!("OUT_DIR"), "/database.rs"));
 
-const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_7900_4418;
-
 const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_4F04_0AB1;
-
-const HARDWARE_ID_PLAYSTATION_LOGITECH: u32 = 0x_6D04_16C2;
 
 const HARDWARE_ID_SIXAXIS_PS3: u32 = 0x_4C05_6802;
 const HARDWARE_ID_DUALSHOCK_PS4: u32 = 0x_4C05_C405;
@@ -450,10 +446,6 @@ impl HardwareId {
         self.0 == HARDWARE_ID_SIXAXIS_PS3 || self.0 == HARDWARE_ID_DUALSHOCK_PS4
     }
 
-    fn is_gamecube(&self) -> bool {
-        self.0 == HARDWARE_ID_MAYFLASH_GAMECUBE
-    }
-
     fn is_mouse(&self) -> bool {
         self.0 == HARDWARE_ID_MAD_CATZ_RAT_MOUSE
     }
@@ -461,10 +453,6 @@ impl HardwareId {
     fn is_thrustmaster(&self) -> bool {
         self.0 == HARDWARE_ID_THRUSTMASTER1
             || self.0 == HARDWARE_ID_THRUSTMASTER2
-    }
-
-    fn is_playstation_logitech(&self) -> bool {
-        self.0 == HARDWARE_ID_PLAYSTATION_LOGITECH
     }
 }
 
