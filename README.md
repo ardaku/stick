@@ -57,7 +57,7 @@ Add the following to your `Cargo.toml`.
 ```toml
 [dependencies]
 pasts = "0.4"
-stick = "0.9"
+stick = "0.10"
 ```
 
 ### Example
