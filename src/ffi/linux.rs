@@ -107,7 +107,7 @@ struct PadDescriptor {
 }
 
 impl PadDescriptor {
-    // Convert evdev event into JoyPush event.
+    // Convert evdev event into Stick event.
     fn event_from(&self, ev: EvdevEv, state: &mut PadState) -> Option<Event> {
         let joyaxis_float = |x, max, state: &mut PadState| {
             let v: f64 = (x as f64 - state.zero) * state.norm / max;
