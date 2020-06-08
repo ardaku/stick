@@ -11,9 +11,9 @@ use std::task::{Context, Poll};
 
 use crate::Event;
 
-pub(crate) struct Port {}
+pub(crate) struct Hub {}
 
-impl Port {
+impl Hub {
     pub(super) fn new() -> Self {
         Port {}
     }
@@ -28,18 +28,18 @@ impl Port {
     }
 }
 
-pub(crate) struct Gamepad {}
+pub(crate) struct Pad {}
 
-impl Gamepad {
+impl Pad {
     #[allow(unused)]
     fn new(device: ()) -> Self {
         let _ = device;
 
-        Gamepad {}
+        Pad {}
     }
 
-    pub(super) fn id(&self) -> u32 {
-        0xFFFF_FFFF
+    pub(super) fn id(&self) -> [u16; 4] {
+        [0, 0, 0, 0]
     }
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
