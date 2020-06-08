@@ -4,6 +4,98 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
 
+## [0.10.0] - Unreleased
+### Added
+ - Support for all of the gamepads and joysticks in SDL_gamecontrollerdb by
+   creating a database of gamepads (using a TOML format), as well as others that
+   weren't in the database (pads stick supported before, plus the Thrustmaster
+   Warthog).
+ - `Event` variants:
+   - `ActionC(bool)`
+   - `JoyZ(f64)`
+   - `PovZ(f64)`
+   - `AutopilotToggle(bool)`
+   - `LandingGearSilence(bool)`
+   - `PovUp(bool)`
+   - `PovDown(bool)`
+   - `PovLeft(bool)`
+   - `PovRight(bool)`
+   - `MicUp(bool)`
+   - `MicDown(bool)`
+   - `MicLeft(bool)`
+   - `MicRight(bool)`
+   - `Slew(f64)`
+   - `Throttle(f64)`
+   - `ThrottleL(f64)`
+   - `ThrottleR(f64)`
+   - `ThrottleButtonL(bool)`
+   - `EngineFuelFlowL(bool)`
+   - `EngineFuelFlowR(bool)`
+   - `Eac(bool)`
+   - `RadarAltimeter(bool)`
+   - `Apu(bool)`
+   - `AutopilotPath(bool)`
+   - `AutopilotAlt(bool)`
+   - `FlapsUp(bool)`
+   - `FlapsDown(bool)`
+   - `EngineLIgnition(bool)`
+   - `EngineLMotor(bool)`
+   - `EngineRIgnition(bool)`
+   - `EngineRMotor(bool)`
+   - `PinkyForward(bool)`
+   - `PinkyBackward(bool)`
+   - `SpeedbrakeForward(bool)`
+   - `SpeedbrakeBackward(bool)`
+   - `BoatForward(bool)`
+   - `BoatBackward(bool)`
+   - `ChinaForward(bool)`
+   - `ChinaBackward(bool)`
+   - `Dpi(bool)`
+   - `WheelX(f64)`
+   - `WheelY(f64)`
+
+### Changed
+ - Renamed `Port` to `Hub`
+ - Renamed `Gamepad` to `Pad`
+ - `id()` now returns a `[u16; 4]` instead of a `u32` for gamepad ID.
+ - Renamed `Event` variants:
+   - `Accept(bool)` -> `ActionA(bool)`
+   - `Cancel(bool)` -> `ActionB(bool)`
+   - `Common(bool)` -> `ActionH(bool)`
+   - `Action(bool)` -> `ActionV(bool)`
+   - `Up(bool)` -> `DpadUp(bool)`
+   - `Down(bool)` -> `DpadDown(bool)`
+   - `Left(bool)` -> `DpadLeft(bool)`
+   - `Right(bool)` -> `DpadRight(bool)`
+   - `Back(bool)` -> `Prev(bool)`
+   - `Forward(bool)` -> `Next(bool)`
+   - `L(bool)` -> `BumperL(bool)`
+   - `R(bool)` -> `BumperR(bool)`
+   - `Lt(f32)` -> `TriggerL(f64)`
+   - `Rt(f32)` -> `TriggerR(f64)`
+   - `MotionH(f32)` -> `JoyX(f64)`
+   - `MotionV(f32)` -> `JoyY(f64)`
+   - `CameraH(f32)` -> `PovX(f64)`
+   - `CameraV(f32)` -> `PovY(f64)`
+   - `MotionButton(bool)` -> `JoyPush(bool)`
+   - `CameraButton(bool)` -> `PovPush(bool)`
+   - `ExtL(u8, bool)` -> `Action(u16, bool)`
+   - `ExtR(u8, bool)` -> `Action(u16, bool)`
+   - `Quit` -> `Home(bool)`
+ - `Event` is now marked `#[non_exhaustive]`, so you will alway have to match
+   for `_`.
+
+### Fixed
+ - Randomly crashing
+ - All clippy lints
+ - No longer does `dbg!()` prints constantly.
+
+### Contributors
+Thanks to everyone who contributed to make this version of stick possible!
+
+- [AldaronLau](https://github.com/AldaronLau)
+- [theunkn0wn1](https://github.com/theunkn0wn1)
+
 ## [0.9.0] - 2020-05-18
 ### Added
 - Support for a lot of different kinds of joysticks.
@@ -16,8 +108,13 @@ and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
 - `Lz` and `Rz` variants on `Event` are renamed to `Lt` and `Rt`
 
 ### Contributions
-- Thanks to everyone who helped test joysticks at
-  [https://github.com/libcala/stick/issues/5](https://github.com/libcala/stick/issues/5)!
+Thanks to everyone who contributed to make this version of stick possible!
+
+ - [AldaronLau](https://github.com/AldaronLau)
+ - [Chronophylos](https://github.com/Chronophylos)
+
+ - Thanks to everyone who helped test joysticks at
+   [https://github.com/libcala/stick/issues/5](https://github.com/libcala/stick/issues/5)!
 
 ## [0.8.0] - 2020-05-03
 ### Added
