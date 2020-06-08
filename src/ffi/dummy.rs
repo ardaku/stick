@@ -15,7 +15,7 @@ pub(crate) struct Hub {}
 
 impl Hub {
     pub(super) fn new() -> Self {
-        Port {}
+        Hub {}
     }
 
     pub(super) fn poll(
