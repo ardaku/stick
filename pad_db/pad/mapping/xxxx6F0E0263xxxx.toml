@@ -1,0 +1,113 @@
+name = "Afterglow PlayStation3 Gamepad"
+type = "PlayStation"
+
+[[button]]
+code = 16
+event = "ActionV"
+
+[[button]]
+code = 17
+event = "ActionA"
+
+[[button]]
+code = 18
+event = "ActionB"
+
+[[button]]
+code = 19
+event = "ActionH"
+
+[[button]]
+code = 20
+event = "BumperL"
+
+[[button]]
+code = 21
+event = "BumperR"
+
+[[button]]
+code = 22
+event = "TriggerL"
+
+[[button]]
+code = 23
+event = "TriggerR"
+
+[[button]]
+code = 24
+event = "Prev"
+
+[[button]]
+code = 25
+event = "Next"
+
+[[button]]
+code = 26
+event = "JoyPush"
+
+[[button]]
+code = 27
+event = "PovPush"
+
+[[button]]
+code = 28
+event = "Home"
+
+# FIXME: What are the actual events for dpad input (covering all possible)?
+[[button]]
+code = 12
+event = "DpadUp"
+[[button]]
+code = 256
+event = "DpadUp"
+[[button]]
+code = 14
+event = "DpadDown"
+[[button]]
+code = 257
+event = "DpadDown"
+[[button]]
+code = 15
+event = "DpadLeft"
+[[button]]
+code = 258
+event = "DpadLeft"
+[[button]]
+code = 13
+event = "DpadRight"
+[[button]]
+code = 259
+event = "DpadRight"
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"
+# End Guess (fixme)
+
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 2
+event = "PovY"
+
+[[axis]]
+code = 5
+event = "PovX"
+
+[[trigger]]
+code = 3
+event = "TriggerL"
+
+[[trigger]]
+code = 4
+event = "TriggerR"

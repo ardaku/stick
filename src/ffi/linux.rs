@@ -428,7 +428,6 @@ impl PadDescriptor {
 
 include!(concat!(env!("OUT_DIR"), "/database.rs"));
 
-const HARDWARE_ID_MAYFLASH_ARCADE_FIGHTSTICK_PS3_COMPAT: u32 = 0x_7900_3018;
 const HARDWARE_ID_MAYFLASH_GAMECUBE: u32 = 0x_7900_4418;
 
 const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_4F04_0AB1;
@@ -444,20 +443,11 @@ const HARDWARE_ID_THRUSTMASTER1: u32 = 0x_B507_1603;
 
 const HARDWARE_ID_XBOX_PDP: u32 = 0x_6F0E_A802;
 
-const HARDWARE_ID_SPEEDLINK_PS3_COMPAT: u32 = 0x_8F0E_7530;
-const HARDWARE_ID_AFTERGLOW_PS3_COMPAT: u32 = 0x_6F0E_0263;
-
 struct HardwareId(u32);
 
 impl HardwareId {
     fn is_playstation_official(&self) -> bool {
         self.0 == HARDWARE_ID_SIXAXIS_PS3 || self.0 == HARDWARE_ID_DUALSHOCK_PS4
-    }
-
-    fn is_playstation_compat(&self) -> bool {
-        self.0 == HARDWARE_ID_SPEEDLINK_PS3_COMPAT
-            || self.0 == HARDWARE_ID_AFTERGLOW_PS3_COMPAT
-            || self.0 == HARDWARE_ID_MAYFLASH_ARCADE_FIGHTSTICK_PS3_COMPAT
     }
 
     fn is_gamecube(&self) -> bool {

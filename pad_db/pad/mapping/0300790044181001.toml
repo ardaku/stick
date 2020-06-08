@@ -55,13 +55,13 @@ event = "JoyX"
 max = 0.67
 
 [[axis]]
-code = 2
-event = "PovY"
+code = 1
+event = "JoyY"
 max = 0.67
 
 [[axis]]
-code = 1
-event = "JoyY"
+code = 2
+event = "PovY"
 max = 0.67
 
 [[axis]]
