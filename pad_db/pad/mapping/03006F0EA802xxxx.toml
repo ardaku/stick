@@ -1,5 +1,5 @@
 name = "PDP Wired Controller for Xbox One"
-type = "Unknown"
+type = "XBOX"
 
 [[button]]
 code = 8
@@ -54,20 +54,30 @@ code = 2
 event = "ActionH"
 
 [[axis]]
-code = 3
-event = "PovY"
-
-[[axis]]
-code = 2
-event = "PovX"
-
-[[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
 code = 1
 event = "JoyY"
+
+[[axis]]
+code = 3
+event = "PovX"
+
+[[axis]]
+code = 4
+event = "PovY"
+
+[[trigger]]
+code = 2
+event = "TriggerL"
+max = 64
+
+[[trigger]]
+code = 5
+event = "TriggerR"
+max = 64
 
 [[three_way]]
 code = 16

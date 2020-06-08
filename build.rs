@@ -70,7 +70,13 @@ fn generate_from_database() -> String {
         let mut tb = String::new();
         if let Some(buttons) = map.button {
             for format::Button { code, event } in buttons {
-                if event.starts_with("Trigger")
+                if event.starts_with("Action") && event.chars().last().unwrap().is_ascii_digit() {
+                    ret.push_str("                (&|p| Event::Action(");
+                    ret.push_str(&event[6..]);
+                    ret.push_str(", p), ");
+                    ret.push_str(&code.to_string());
+                    ret.push_str("),\n");
+                } else if event.starts_with("Trigger")
                     || event == "JoyX"
                     || event == "JoyY"
                     || event == "PovX"

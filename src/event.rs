@@ -136,6 +136,8 @@ pub enum Event {
 
     /// Slew Control
     Slew(f64),
+    /// Stationary throttle
+    Throttle(f64),
     /// Left stationary throttle
     ThrottleL(f64),
     /// Right stationary throttle
@@ -279,6 +281,7 @@ impl std::fmt::Display for Event {
             MicLeft(p) => write!(f, "MicLeft {}", pushed(p)),
             MicRight(p) => write!(f, "MicRight {}", pushed(p)),
             Slew(v) => write!(f, "Slew {}", v),
+            Throttle(v) => write!(f, "Throttle {}", v),
             ThrottleL(v) => write!(f, "ThrottleL {}", v),
             ThrottleR(v) => write!(f, "ThrottleR {}", v),
             ThrottleButtonL(p) => write!(f, "ThrottleButtonL {}", pushed(p)),

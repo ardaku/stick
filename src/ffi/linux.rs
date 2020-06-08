@@ -428,16 +428,10 @@ impl PadDescriptor {
 
 include!(concat!(env!("OUT_DIR"), "/database.rs"));
 
-const HARDWARE_ID_THRUSTMASTER2: u32 = 0x_4F04_0AB1;
-
 const HARDWARE_ID_SIXAXIS_PS3: u32 = 0x_4C05_6802;
 const HARDWARE_ID_DUALSHOCK_PS4: u32 = 0x_4C05_C405;
 
 const HARDWARE_ID_MAD_CATZ_RAT_MOUSE: u32 = 0x_3807_1817;
-
-const HARDWARE_ID_THRUSTMASTER1: u32 = 0x_B507_1603;
-
-const HARDWARE_ID_XBOX_PDP: u32 = 0x_6F0E_A802;
 
 struct HardwareId(u32);
 
@@ -448,11 +442,6 @@ impl HardwareId {
 
     fn is_mouse(&self) -> bool {
         self.0 == HARDWARE_ID_MAD_CATZ_RAT_MOUSE
-    }
-
-    fn is_thrustmaster(&self) -> bool {
-        self.0 == HARDWARE_ID_THRUSTMASTER1
-            || self.0 == HARDWARE_ID_THRUSTMASTER2
     }
 }
 
