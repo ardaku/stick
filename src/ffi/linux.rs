@@ -21,6 +21,7 @@ use std::{
         unix::io::{IntoRawFd, RawFd},
     },
     task::{Context, Poll},
+    cmp::Ordering,
 };
 
 use crate::Event;
@@ -69,6 +70,19 @@ struct PadState {
     queued: Option<Event>,
 }
 
+type PadDescriptorAxes = (&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>);
+type PadDescriptorButtons = (&'static dyn Fn(bool) -> Event, c_ushort);
+type PadDescriptorTrigButtons = (&'static dyn Fn(f64) -> Event, c_ushort);
+type PadDescriptorTriggers = (
+    &'static dyn Fn(f64) -> Event,
+    c_ushort,
+    Option<f64>,
+    Option<f64>,
+);
+type PadDescriptorThreeWays = (&'static dyn Fn(bool, bool) -> Event, c_ushort);
+type PadDescriptorThreeAxes = (&'static dyn Fn(bool, f64) -> Event, c_ushort);
+type PadDescriptorWheels = (&'static dyn Fn(f64) -> Event, c_ushort);
+
 /// Describes some hardware joystick mapping
 struct PadDescriptor {
     // Pad name
@@ -77,24 +91,19 @@ struct PadDescriptor {
     deadzone: Option<f64>,
 
     // (Axis) value = Full range min to max axis
-    axes: &'static [(&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>)],
+    axes: &'static [PadDescriptorAxes],
     // (Button) value = Boolean 1 or 0
-    buttons: &'static [(&'static dyn Fn(bool) -> Event, c_ushort)],
+    buttons: &'static [PadDescriptorButtons],
     // (Button) value = 0.0f64 or 1.0f64
-    trigbtns: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
+    trigbtns: &'static [PadDescriptorTrigButtons],
     // (Axis) value = 0 thru 255
-    triggers: &'static [(
-        &'static dyn Fn(f64) -> Event,
-        c_ushort,
-        Option<f64>,
-        Option<f64>,
-    )],
+    triggers: &'static [PadDescriptorTriggers],
     // (Axis) value = -1, 0, or 1
-    three_ways: &'static [(&'static dyn Fn(bool, bool) -> Event, c_ushort)],
+    three_ways: &'static [PadDescriptorThreeWays],
     // (Axis) value = -1.0f64, 0, or 1.0f64
-    three_axes: &'static [(&'static dyn Fn(bool, f64) -> Event, c_ushort)],
+    three_axes: &'static [PadDescriptorThreeAxes],
     // (RelativeAxis) value = Full range min to max axis
-    wheels: &'static [(&'static dyn Fn(f64) -> Event, c_ushort)],
+    wheels: &'static [PadDescriptorWheels],
 }
 
 impl PadDescriptor {
@@ -129,7 +138,7 @@ impl PadDescriptor {
                 let ev_code = ev
                     .ev_code
                     .checked_sub(LINUX_SPECIFIC_BTN_OFFSET)
-                    .expect(&format!(
+                    .unwrap_or_else(|| panic!(
                         "Out of range ev_code: {}, report at \
                         https://github.com/libcala/stick/issues",
                         ev.ev_code
@@ -145,13 +154,13 @@ impl PadDescriptor {
                         unknown = false;
                         let mut held = false;
                         event = Some(
-                            match new(if ev.ev_value > 0 {
-                                held = true;
-                                1.0
-                            } else if ev.ev_value < 0 {
-                                -1.0
-                            } else {
-                                0.0
+                            match new(match ev.ev_value.cmp(&0) {
+                                Ordering::Greater => {
+                                    held = true;
+                                    1.0
+                                }
+                                Ordering::Less => -1.0,
+                                Ordering::Equal => 0.0,
                             }) {
                                 Event::TriggerL(v) => {
                                     state.trigger_l_held = held;
@@ -355,7 +364,7 @@ impl PadDescriptor {
         };
 
         // Remove duplicated events
-        let event = match event {
+        match event {
             Some(Event::DpadUp(p)) => {
                 if p == state.dpad.up {
                     None
@@ -454,13 +463,17 @@ impl PadDescriptor {
             }
             Some(Event::Nil(_)) => None,
             event => event,
-        };
-
-        event
+        }
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/database.rs"));
+mod gen {
+    #![allow(clippy::if_same_then_else)]
+
+    use super::*;
+
+    include!(concat!(env!("OUT_DIR"), "/database.rs"));
+}
 
 #[repr(C)]
 struct InotifyEv {
@@ -658,10 +671,9 @@ impl Hub {
                     std::mem::size_of::<u64>(),
                 )
             } == std::mem::size_of::<u64>() as isize
+             && unsafe { num.assume_init() } >= 100
             {
-                if unsafe { num.assume_init() } >= 100 {
-                    self.timer = None;
-                }
+                self.timer = None;
             }
         }
 
@@ -783,7 +795,7 @@ impl Pad {
         let hardware_id = [bustype, vendor, product, version];
 
         // Get the pad's descriptor
-        let desc = pad_desc(bustype, vendor, product, version);
+        let desc = gen::pad_desc(bustype, vendor, product, version);
 
         // Get the min and max absolute values for axis.
         let mut a = MaybeUninit::<AbsInfo>::uninit();

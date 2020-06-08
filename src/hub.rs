@@ -24,6 +24,12 @@ impl Hub {
     }
 }
 
+impl Default for Hub {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Future for Hub {
     type Output = (usize, Event);
 

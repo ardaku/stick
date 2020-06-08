@@ -8,7 +8,7 @@ mod format;
 
 fn generate_from_database() -> String {
     let mut ret = String::new();
-    ret.push_str("fn pad_desc(\n");
+    ret.push_str("pub(super) fn pad_desc(\n");
     ret.push_str("    bus: u16, vendor: u16, product: u16, ver: u16\n");
     ret.push_str(") -> &'static PadDescriptor\n");
     ret.push_str("{\n");
