@@ -134,6 +134,8 @@ pub enum Event {
     MicLeft(bool),
     /// Mic Hat Right
     MicRight(bool),
+    /// Mic Hat Push Button
+    MicPush(bool),
 
     /// Range(0.0, 1.0) - Slew Control
     Slew(f64),
@@ -290,6 +292,7 @@ impl std::fmt::Display for Event {
             MicDown(p) => write!(f, "MicDown {}", pushed(p)),
             MicLeft(p) => write!(f, "MicLeft {}", pushed(p)),
             MicRight(p) => write!(f, "MicRight {}", pushed(p)),
+            MicPush(p) => write!(f, "MicPush {}", pushed(p)),
             Slew(v) => write!(f, "Slew {}", v),
             Throttle(v) => write!(f, "Throttle {}", v),
             ThrottleL(v) => write!(f, "ThrottleL {}", v),
