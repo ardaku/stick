@@ -22,79 +22,6 @@ code = 5
 event = "MicRight"
 
 [[button]]
-code = 425
-event = "AutopilotToggle"
-
-[[button]]
-code = 420
-event = "LandingGearSilence"
-
-[[button]]
-code = 14
-event = "ThrottleButtonL"
-
-[[button]]
-code = 423
-event = "Eac"
-
-[[button]]
-code = 424
-event = "RadarAltimeter"
-
-# Two way switches (buttons in evdev)
-[[button]]
-code = 419
-event = "Apu"
-
-[[button]]
-code = 15
-event = "EngineFuelFlowL"
-
-[[button]]
-code = 416
-event = "EngineFuelFlowR"
-
-[[button]]
-code = 426
-event = "AutopilotPath"
-
-[[button]]
-code = 427
-event = "AutopilotAlt"
-
-[[button]]
-code = 421
-event = "FlapsUp"
-
-[[button]]
-code = 422
-event = "FlapsDown"
-
-[[button]]
-code = 430
-event = "EngineLIgnition"
-
-[[button]]
-code = 417
-event = "EngineLMotor"
-
-[[button]]
-code = 431
-event = "EngineRIgnition"
-
-[[button]]
-code = 418
-event = "EngineRMotor"
-
-[[button]]
-code = 12
-event = "PinkyForward"
-
-[[button]]
-code = 13
-event = "PinkyBackward"
-
-[[button]]
 code = 6
 event = "SpeedbrakeForward"
 
@@ -117,6 +44,78 @@ event = "ChinaForward"
 [[button]]
 code = 11
 event = "ChinaBackward"
+
+[[button]]
+code = 12
+event = "PinkyForward"
+
+[[button]]
+code = 13
+event = "PinkyBackward"
+
+[[button]]
+code = 14
+event = "ThrottleButtonL"
+
+[[button]]
+code = 15
+event = "EngineFuelFlowL"
+
+[[button]]
+code = 416
+event = "EngineFuelFlowR"
+
+[[button]]
+code = 417
+event = "EngineLMotor"
+
+[[button]]
+code = 418
+event = "EngineRMotor"
+
+[[button]]
+code = 419
+event = "Apu"
+
+[[button]]
+code = 420
+event = "LandingGearSilence"
+
+[[button]]
+code = 421
+event = "FlapsUp"
+
+[[button]]
+code = 422
+event = "FlapsDown"
+
+[[button]]
+code = 423
+event = "Eac"
+
+[[button]]
+code = 424
+event = "RadarAltimeter"
+
+[[button]]
+code = 425
+event = "AutopilotToggle"
+
+[[button]]
+code = 426
+event = "AutopilotPath"
+
+[[button]]
+code = 427
+event = "AutopilotAlt"
+
+[[button]]
+code = 430
+event = "EngineLIgnition"
+
+[[button]]
+code = 431
+event = "EngineRIgnition"
 
 # [[button]]
 # code = 256
@@ -144,10 +143,6 @@ code = 1
 event = "CamY"
 max = 1024
 
-[[axis]]
-code = 6
-event = "Slew"
-
 [[trigger]]
 code = 2
 event = "ThrottleR"
@@ -159,6 +154,10 @@ code = 5
 event = "ThrottleL"
 max = 16_339
 invert = true
+
+[[axis]]
+code = 6
+event = "Slew"
 
 [[three_way]]
 code = 16
