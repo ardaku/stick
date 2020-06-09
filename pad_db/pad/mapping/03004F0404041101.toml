@@ -114,18 +114,6 @@ event = "MicLeft"
 code = 259
 event = "MicRight"
 
-[[axis]]
-code = 6
-event = "Slew"
-
-[[axis]]
-code = 5
-event = "ThrottleL"
-
-[[axis]]
-code = 2
-event = "ThrottleR"
-
 [[three_way]]
 code = 0
 neg = "PovLeft"
@@ -135,3 +123,15 @@ pos = "PovRight"
 code = 1
 neg = "PovUp"
 pos = "PovDown"
+
+[[axis]]
+code = 6
+event = "Slew"
+
+[[trigger]]
+code = 5
+event = "ThrottleL"
+
+[[trigger]]
+code = 2
+event = "ThrottleR"
