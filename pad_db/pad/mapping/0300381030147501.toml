@@ -27,7 +27,7 @@ event = "Home"
 
 [[button]]
 code = 10
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 5
@@ -51,11 +51,11 @@ event = "JoyY"
 
 [[axis]]
 code = 3
-event = "PovX"
+event = "CamX"
 
 [[axis]]
 code = 4
-event = "PovY"
+event = "CamY"
 
 [[axis]]
 code = 0

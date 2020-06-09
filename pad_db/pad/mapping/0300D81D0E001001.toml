@@ -11,7 +11,7 @@ event = "ActionA"
 
 [[button]]
 code = 11
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 8

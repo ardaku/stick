@@ -43,7 +43,7 @@ event = "JoyPush"
 
 [[button]]
 code = 10
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 16
@@ -87,11 +87,11 @@ event = "JoyPush"
 
 [[button]]
 code = 30
-event = "PovPush"
+event = "CamPush"
 
 [[axis]]
 code = 4
-event = "PovY"
+event = "CamY"
 max = 0.992
 
 [[axis]]
@@ -101,7 +101,7 @@ max = 0.992
 
 [[axis]]
 code = 3
-event = "PovX"
+event = "CamX"
 max = 0.992
 
 [[axis]]

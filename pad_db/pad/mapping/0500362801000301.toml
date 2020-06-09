@@ -47,7 +47,7 @@ event = "Home"
 
 [[button]]
 code = 7
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 10
@@ -63,11 +63,11 @@ event = "JoyX"
 
 [[axis]]
 code = 4
-event = "PovY"
+event = "CamY"
 
 [[axis]]
 code = 3
-event = "PovX"
+event = "CamX"
 
 [[trigger]]
 code = 5

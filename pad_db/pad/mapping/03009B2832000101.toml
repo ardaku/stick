@@ -51,7 +51,7 @@ event = "BumperR"
 
 [[axis]]
 code = 4
-event = "PovY"
+event = "CamY"
 
 [[axis]]
 code = 0
@@ -63,4 +63,4 @@ event = "JoyY"
 
 [[axis]]
 code = 3
-event = "PovX"
+event = "CamX"

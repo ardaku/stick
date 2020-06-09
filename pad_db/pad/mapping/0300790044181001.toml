@@ -61,12 +61,12 @@ max = 0.67
 
 [[axis]]
 code = 2
-event = "PovY"
+event = "CamY"
 max = 0.67
 
 [[axis]]
 code = 5
-event = "PovX"
+event = "CamX"
 max = 0.67
 
 [[trigger]]

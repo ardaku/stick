@@ -47,7 +47,7 @@ event = "JoyPush"
 
 [[button]]
 code = 11
-event = "PovPush"
+event = "CamPush"
 
 # Some buttons may also appear in same order with offset of 16
 
@@ -81,7 +81,7 @@ event = "JoyPush"
 
 [[button]]
 code = 27
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 28
@@ -97,15 +97,15 @@ event = "JoyY"
 
 [[axis]]
 code = 2
-event = "PovX"
+event = "CamX"
 
 [[axis]]
 code = 3
-event = "PovY"
+event = "CamY"
 
 [[axis]]
 code = 5
-event = "PovX"
+event = "CamX"
 max = 0.67
 
 [[three_way]]

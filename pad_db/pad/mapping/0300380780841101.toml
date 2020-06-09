@@ -47,11 +47,11 @@ event = "JoyY"
 
 [[axis]]
 code = 2
-event = "PovX"
+event = "CamX"
 
 [[axis]]
 code = 5
-event = "PovY"
+event = "CamY"
 
 [[trigger]]
 code = 3

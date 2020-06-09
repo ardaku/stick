@@ -136,12 +136,12 @@ event = "ChinaBackward"
 
 [[trigger]]
 code = 0
-event = "PovX"
+event = "CamX"
 max = 1024
 
 [[trigger]]
 code = 1
-event = "PovY"
+event = "CamY"
 max = 1024
 
 [[axis]]

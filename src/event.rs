@@ -89,17 +89,17 @@ pub enum Event {
     /// Range(-1.0, 1.0) - Main stick rotation / yaw axis
     JoyZ(f64),
     /// Range(-1.0, 1.0) - Secondary stick X axis (Mouse X Position)
-    PovX(f64),
+    CamX(f64),
     /// Range(-1.0, 1.0) - Secondary stick Y axis (Mouse Y Position)
-    PovY(f64),
+    CamY(f64),
     /// Range(-1.0, 1.0) - Secondary stick Z axis
-    PovZ(f64),
+    CamZ(f64),
 
     /* Joystick Buttons */
     /// Left Joystick Button (Middle Click)
     JoyPush(bool),
     /// Right Joystick Button (F)
-    PovPush(bool),
+    CamPush(bool),
 
     /*
      * Special XBox Controllers Extra Buttons
@@ -273,11 +273,11 @@ impl std::fmt::Display for Event {
             JoyX(v) => write!(f, "JoyX {}", v),
             JoyY(v) => write!(f, "JoyY {}", v),
             JoyZ(v) => write!(f, "JoyZ {}", v),
-            PovX(v) => write!(f, "PovX {}", v),
-            PovY(v) => write!(f, "PovY {}", v),
-            PovZ(v) => write!(f, "PovZ {}", v),
+            CamX(v) => write!(f, "CamX {}", v),
+            CamY(v) => write!(f, "CamY {}", v),
+            CamZ(v) => write!(f, "CamZ {}", v),
             JoyPush(p) => write!(f, "JoyPush {}", pushed(p)),
-            PovPush(p) => write!(f, "PovPush {}", pushed(p)),
+            CamPush(p) => write!(f, "CamPush {}", pushed(p)),
             Home(p) => write!(f, "Home {}", pushed(p)),
             Action(l, p) => write!(f, "Action{} {}", l, pushed(p)),
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),

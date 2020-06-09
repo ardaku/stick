@@ -19,7 +19,7 @@ event = "JoyPush"
 
 [[button]]
 code = 9
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 6
@@ -51,11 +51,11 @@ event = "JoyX"
 
 [[axis]]
 code = 3
-event = "PovX"
+event = "CamX"
 
 [[axis]]
 code = 4
-event = "PovY"
+event = "CamY"
 
 [[axis]]
 code = 1

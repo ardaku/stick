@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
  - `Event` variants:
    - `ActionC(bool)`
    - `JoyZ(f64)`
-   - `PovZ(f64)`
+   - `CamZ(f64)`
    - `AutopilotToggle(bool)`
    - `LandingGearSilence(bool)`
    - `PovUp(bool)`
@@ -75,10 +75,10 @@ and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
    - `Rt(f32)` -> `TriggerR(f64)`
    - `MotionH(f32)` -> `JoyX(f64)`
    - `MotionV(f32)` -> `JoyY(f64)`
-   - `CameraH(f32)` -> `PovX(f64)`
-   - `CameraV(f32)` -> `PovY(f64)`
+   - `CameraH(f32)` -> `CamX(f64)`
+   - `CameraV(f32)` -> `CamY(f64)`
    - `MotionButton(bool)` -> `JoyPush(bool)`
-   - `CameraButton(bool)` -> `PovPush(bool)`
+   - `CameraButton(bool)` -> `CamPush(bool)`
    - `ExtL(u8, bool)` -> `Action(u16, bool)`
    - `ExtR(u8, bool)` -> `Action(u16, bool)`
    - `Quit` -> `Home(bool)`

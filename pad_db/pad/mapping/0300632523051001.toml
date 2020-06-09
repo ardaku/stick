@@ -7,7 +7,7 @@ event = "Prev"
 
 [[button]]
 code = 11
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 7
@@ -51,11 +51,11 @@ event = "BumperR"
 
 [[axis]]
 code = 3
-event = "PovY"
+event = "CamY"
 
 [[axis]]
 code = 2
-event = "PovX"
+event = "CamX"
 
 [[axis]]
 code = 1

@@ -3,7 +3,7 @@ type = "Unknown"
 
 [[button]]
 code = 11
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 1
@@ -63,11 +63,11 @@ event = "JoyY"
 
 [[axis]]
 code = 2
-event = "PovX"
+event = "CamX"
 
 [[axis]]
 code = 3
-event = "PovY"
+event = "CamY"
 
 [[three_way]]
 code = 17

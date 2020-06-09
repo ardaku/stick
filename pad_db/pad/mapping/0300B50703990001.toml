@@ -15,7 +15,7 @@ event = "JoyPush"
 
 [[button]]
 code = 0
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 5

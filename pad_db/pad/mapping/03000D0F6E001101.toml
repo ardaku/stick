@@ -35,7 +35,7 @@ event = "BumperR"
 
 [[button]]
 code = 11
-event = "PovPush"
+event = "CamPush"
 
 [[button]]
 code = 7
@@ -59,7 +59,7 @@ event = "JoyX"
 
 [[axis]]
 code = 3
-event = "PovY"
+event = "CamY"
 
 [[axis]]
 code = 1
@@ -67,7 +67,7 @@ event = "JoyY"
 
 [[axis]]
 code = 2
-event = "PovX"
+event = "CamX"
 
 [[three_way]]
 code = 17

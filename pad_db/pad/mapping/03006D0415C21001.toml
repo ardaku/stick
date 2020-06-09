@@ -48,4 +48,4 @@ event = "JoyX"
 [[three_way]]
 code = 16
 neg = "JoyPush"
-pos = "PovPush"
+pos = "CamPush"

@@ -79,8 +79,8 @@ fn generate_from_database() -> String {
                 } else if event.starts_with("Trigger")
                     || event == "JoyX"
                     || event == "JoyY"
-                    || event == "PovX"
-                    || event == "PovY"
+                    || event == "CamX"
+                    || event == "CamY"
                 {
                     tb.push_str("                (&Event::");
                     tb.push_str(&event);
