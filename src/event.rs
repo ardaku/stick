@@ -68,10 +68,11 @@ pub enum Event {
     DpadRight(bool),
 
     /* Bumper Triggers (LZ, RZ - 2)  */
-    /// Left Bumper Trigger (far button if no trigger) - "Sneak" (Ctrl)
+    /// Range(0.0, 1.0) - Left Bumper Trigger (far button if no trigger) -
+    /// "Sneak" (Ctrl)
     TriggerL(f64),
-    /// Right Bumper Trigger (far button if no trigger) - "Precision Action"
-    /// (Alt)
+    /// Range(0.0, 1.0) - Right Bumper Trigger (far button if no trigger) -
+    /// "Precision Action" (Alt)
     TriggerR(f64),
 
     /* Bumper Buttons (L, R, Z - 1) */
@@ -81,17 +82,17 @@ pub enum Event {
     BumperR(bool),
 
     /* Joystick */
-    /// Main stick horizontal axis (A / D)
+    /// Range(-1.0, 1.0) - Main stick horizontal axis (A / D)
     JoyX(f64),
-    /// Main stick vertical / depth axis (W / S)
+    /// Range(-1.0, 1.0) - Main stick vertical / depth axis (W / S)
     JoyY(f64),
-    /// Main stick rotation / yaw axis
+    /// Range(-1.0, 1.0) - Main stick rotation / yaw axis
     JoyZ(f64),
-    /// Secondary stick X axis (Mouse X Position)
+    /// Range(-1.0, 1.0) - Secondary stick X axis (Mouse X Position)
     PovX(f64),
-    /// Secondary stick Y axis (Mouse Y Position)
+    /// Range(-1.0, 1.0) - Secondary stick Y axis (Mouse Y Position)
     PovY(f64),
-    /// Secondary stick Z axis
+    /// Range(-1.0, 1.0) - Secondary stick Z axis
     PovZ(f64),
 
     /* Joystick Buttons */
@@ -134,13 +135,13 @@ pub enum Event {
     /// Mic Hat Right
     MicRight(bool),
 
-    /// Slew Control
+    /// Range(0.0, 1.0) - Slew Control
     Slew(f64),
-    /// Stationary throttle
+    /// Range(0.0, 1.0) - Stationary throttle
     Throttle(f64),
-    /// Left stationary throttle
+    /// Range(0.0, 1.0) - Left stationary throttle
     ThrottleL(f64),
-    /// Right stationary throttle
+    /// Range(0.0, 1.0) - Right stationary throttle
     ThrottleR(f64),
 
     /// Left throttle button
@@ -221,9 +222,9 @@ pub enum Event {
      */
     /// DPI Switch
     Dpi(bool),
-    /// Scroll wheel horizontal
+    /// Range(-1.0, 1.0) - Scroll wheel horizontal
     WheelX(f64),
-    /// Scroll wheel vertical
+    /// Range(-1.0, 1.0) - Scroll wheel vertical
     WheelY(f64),
 
     /*

@@ -103,8 +103,22 @@ fn generate_from_database() -> String {
         ret.push_str("            axes: &[\n");
         if let Some(axes) = map.axis {
             for format::Axis { code, event, max } in axes {
-                ret.push_str("                (&Event::");
-                ret.push_str(&event);
+                ret.push_str("                (&");
+                match event.as_str() {
+                    "Slew" | "Throttle" | "ThrottleL" | "ThrottleR"
+                        | "TriggerL" | "TriggerR" =>
+                    {
+                        // Axes can be negative, and these events may not be,
+                        // so move into range 0-1
+                        ret.push_str("|p| Event::");
+                        ret.push_str(&event);
+                        ret.push_str("(p * 0.5 + 0.5)");
+                    }
+                    _ => {
+                        ret.push_str("Event::");
+                        ret.push_str(&event);
+                    }
+                }
                 ret.push_str(", ");
                 ret.push_str(&code.to_string());
                 ret.push_str(", ");

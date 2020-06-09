@@ -21,7 +21,6 @@ use std::{
         unix::io::{IntoRawFd, RawFd},
     },
     task::{Context, Poll},
-    cmp::Ordering,
 };
 
 use crate::Event;
@@ -76,7 +75,7 @@ type PadDescriptorTrigButtons = (&'static dyn Fn(f64) -> Event, c_ushort);
 type PadDescriptorTriggers = (
     &'static dyn Fn(f64) -> Event,
     c_ushort,
-    Option<f64>,
+    Option<c_int>,
     Option<f64>,
 );
 type PadDescriptorThreeWays = (&'static dyn Fn(bool, bool) -> Event, c_ushort);
@@ -109,22 +108,35 @@ struct PadDescriptor {
 impl PadDescriptor {
     // Convert evdev event into Stick event.
     fn event_from(&self, ev: EvdevEv, state: &mut PadState) -> Option<Event> {
-        let joyaxis_float = |x, max, state: &mut PadState| {
-            let v: f64 = (x as f64 - state.zero) * state.norm / max;
+        fn check_held(value: c_int) -> Option<bool> {
+            match value {
+                0 => Some(false),
+                1 => Some(true),
+                2 => None, // Skip repeat "held" events
+                v => {
+                    eprintln!("Unknown Button State {}, report at \
+                        https://github.com/libcala/stick/issues",
+                        v);
+                    None
+                },
+            }
+        }
+        fn joyaxis_float(x: c_int, max: f64, state: &mut PadState) -> f64 {
+            let v = (x as f64 - state.zero) * state.norm / max;
             if v.abs() <= state.flat {
                 0.0
             } else {
                 v.min(1.0).max(-1.0)
             }
-        };
-        let trigger_float = |x, flat, max| {
-            let v: f64 = (x as f64 / 255.0) / max;
+        }
+        fn trigger_float(x: c_int, flat: f64, max: c_int) -> f64 {
+            let v = x as f64 / max as f64;
             if v.abs() <= flat {
                 0.0
             } else {
                 v.min(1.0).max(0.0)
             }
-        };
+        }
 
         let event = match ev.ev_type {
             0x00 => {
@@ -146,22 +158,24 @@ impl PadDescriptor {
                 for (new, evcode) in self.buttons {
                     if ev_code == *evcode {
                         unknown = false;
-                        event = Some(new(ev.ev_value > 0));
+                        let held = if let Some(held) = check_held(ev.ev_value) {
+                            held
+                        } else {
+                            continue;
+                        };
+                        event = Some(new(held));
                     }
                 }
                 for (new, evcode) in self.trigbtns {
                     if ev_code == *evcode {
                         unknown = false;
-                        let mut held = false;
+                        let held = if let Some(held) = check_held(ev.ev_value) {
+                            held
+                        } else {
+                            continue;
+                        };
                         event = Some(
-                            match new(match ev.ev_value.cmp(&0) {
-                                Ordering::Greater => {
-                                    held = true;
-                                    1.0
-                                }
-                                Ordering::Less => -1.0,
-                                Ordering::Equal => 0.0,
-                            }) {
+                            match new(if held { 1.0 } else { 0.0 }) {
                                 Event::TriggerL(v) => {
                                     state.trigger_l_held = held;
                                     Event::TriggerL(
@@ -189,12 +203,14 @@ impl PadDescriptor {
                 }
                 if unknown {
                     eprintln!(
-                        "*Evdev* Unknown Button Code: {}, report at \
+                        "*Evdev* Unknown Button Code: {}, Value: {}, report at \
                         https://github.com/libcala/stick/issues",
-                        ev_code
+                        ev_code, ev.ev_value
                     );
+                    None
+                } else {
+                    event
                 }
-                event
             }
             0x02 => {
                 // Relative axis movement
@@ -209,9 +225,9 @@ impl PadDescriptor {
                 }
                 if unknown {
                     eprintln!(
-                        "*Evdev* Unknown Relative Axis Code: {}, report at \
-                        https://github.com/libcala/stick/issues",
-                        ev.ev_code
+                        "*Evdev* Unknown Relative Axis Code: {}, Value: {}, \
+                        report at https://github.com/libcala/stick/issues",
+                        ev.ev_code, ev.ev_value
                     );
                 }
                 event
@@ -240,7 +256,7 @@ impl PadDescriptor {
                 {
                     if ev.ev_code == *evcode {
                         unknown = false;
-                        let v = trigger_float(ev.ev_value, dead.unwrap_or(0.0), max.unwrap_or(1.0));
+                        let v = trigger_float(ev.ev_value, dead.unwrap_or(0.0), max.unwrap_or(255));
                         let is_zero = v.classify() == FpCategory::Zero;
                         if !(is_zero && state.dead_trig[i]) {
                             state.dead_trig[i] = is_zero;
@@ -332,9 +348,9 @@ impl PadDescriptor {
                 }
                 if unknown {
                     eprintln!(
-                        "*Evdev* Unknown Absolute Axis Code: {}, report at \
-                        https://github.com/libcala/stick/issues",
-                        ev.ev_code
+                        "*Evdev* Unknown Absolute Axis Code: {}, Value: {}, \
+                        report at https://github.com/libcala/stick/issues",
+                        ev.ev_code, ev.ev_value
                     );
                 }
                 event
@@ -342,7 +358,7 @@ impl PadDescriptor {
             0x04 => {
                 if ev.ev_code != /* scan */ 4 {
                     eprintln!(
-                        "*Evdev* Unknown Misc Code: {} value: {}, report \
+                        "*Evdev* Unknown Misc Code: {}, Value: {}, report \
                         at https://github.com/libcala/stick/issues",
                         ev.ev_code, ev.ev_value
                     );
@@ -355,7 +371,7 @@ impl PadDescriptor {
             }
             u => {
                 eprintln!(
-                    "*Evdev* Unknown Event: {}, Code: {} value: {}, \
+                    "*Evdev* Unknown Event: {}, Code: {}, Value: {}, \
                     report at https://github.com/libcala/stick/issues.",
                     u, ev.ev_code, ev.ev_value
                 );
