@@ -2,6 +2,10 @@ name = "Thrustmaster Warthog Throttle"
 type = "Flight"
 
 [[button]]
+code = 0
+event = "MousePush"
+
+[[button]]
 code = 1
 event = "MicPush"
 
@@ -116,26 +120,6 @@ event = "EngineLIgnition"
 [[button]]
 code = 431
 event = "EngineRIgnition"
-
-[[button]]
-code = 0
-event = "MousePush"
-
-# [[button]]
-# code = 256
-# event = "MicUp"
-
-# [[button]]
-# code = 257
-# event = "MicDown"
-
-# [[button]]
-# code = 258
-# event = "MicLeft"
-
-# [[button]]
-# code = 259
-# event = "MicRight"
 
 [[trigger]]
 code = 0
