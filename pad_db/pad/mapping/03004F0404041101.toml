@@ -124,14 +124,14 @@ code = 1
 neg = "PovUp"
 pos = "PovDown"
 
+# [[axis]]
+# code = 2
+# event = "ThrottleR"
+#
+# [[axis]]
+# code = 5
+# event = "ThrottleL"
+
 [[axis]]
 code = 6
 event = "Slew"
-
-[[trigger]]
-code = 5
-event = "ThrottleL"
-
-[[trigger]]
-code = 2
-event = "ThrottleR"
