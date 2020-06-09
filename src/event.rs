@@ -226,10 +226,20 @@ pub enum Event {
      */
     /// DPI Switch
     Dpi(bool),
+    /// Range(-1.0, 1.0) - Mouse delta position horizontal
+    MouseX(f64),
+    /// Range(-1.0, 1.0) - Mouse delta position vertical
+    MouseY(f64),
+    /// Left click (main click, push button)
+    MousePush(bool),
+    /// Right click (secondary click, push button 2)
+    MouseMenu(bool),
     /// Range(-1.0, 1.0) - Scroll wheel horizontal
     WheelX(f64),
     /// Range(-1.0, 1.0) - Scroll wheel vertical
     WheelY(f64),
+    /// Middle click (scroll wheel push button)
+    WheelPush(bool),
 
     /*
      * Ignore Events
@@ -320,8 +330,13 @@ impl std::fmt::Display for Event {
             ChinaForward(p) => write!(f, "ChinaForward {}", sw(p)),
             ChinaBackward(p) => write!(f, "ChinaBackward {}", sw(p)),
             Dpi(p) => write!(f, "Dpi {}", pushed(p)),
+            MouseX(v) => write!(f, "MouseX {}", v),
+            MouseY(v) => write!(f, "MouseY {}", v),
+            MousePush(p) => write!(f, "MousePush {}", pushed(p)),
+            MouseMenu(p) => write!(f, "MouseMenu {}", pushed(p)),
             WheelX(v) => write!(f, "WheelX {}", v),
             WheelY(v) => write!(f, "WheelY {}", v),
+            WheelPush(p) => write!(f, "WheelPush {}", pushed(p)),
             Nil(p) => write!(f, "Nil {}", pushed(p)),
         }
     }

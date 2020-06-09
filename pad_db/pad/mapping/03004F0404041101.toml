@@ -135,12 +135,12 @@ event = "EngineRIgnition"
 
 [[trigger]]
 code = 0
-event = "CamX"
+event = "MouseX"
 max = 1024
 
 [[trigger]]
 code = 1
-event = "CamY"
+event = "MouseY"
 max = 1024
 
 [[trigger]]

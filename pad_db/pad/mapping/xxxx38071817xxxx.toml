@@ -3,11 +3,11 @@ type = "MOUSE"
 
 [[button]]
 code = 1
-event = "CamPush"
+event = "MouseMenu"
 
 [[button]]
 code = 2
-event = "JoyPush"
+event = "WheelPush"
 
 [[button]]
 code = 3
@@ -27,11 +27,11 @@ event = "Dpi"
 
 [[axis]]
 code = 0
-event = "CamX"
+event = "MouseX"
 
 [[axis]]
 code = 1
-event = "CamY"
+event = "MouseY"
 
 [[axis]]
 code = 5
