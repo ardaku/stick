@@ -2,11 +2,11 @@
 All notable changes to `stick` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
+and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
-## [0.10.0] - Unreleased
+## [0.10.0] - 2020-06-09
 ### Added
- - Support for all of the gamepads and joysticks in SDL_gamecontrollerdb by
+ - Support for all of the gamepads and joysticks in SDL\_gamecontrollerdb by
    creating a database of gamepads (using a TOML format), as well as others that
    weren't in the database (pads stick supported before, plus the Thrustmaster
    Warthog).
@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
    - `MicDown(bool)`
    - `MicLeft(bool)`
    - `MicRight(bool)`
+   - `MicPush(bool)`
    - `Slew(f64)`
    - `Throttle(f64)`
    - `ThrottleL(f64)`
@@ -51,8 +52,12 @@ and this project adheres to [Semantic Versioning](https://jeronlau.tk/semver/).
    - `ChinaForward(bool)`
    - `ChinaBackward(bool)`
    - `Dpi(bool)`
+   - `MouseX(f64)`
+   - `MouseY(f64)`
+   - `MousePush(bool)`
    - `WheelX(f64)`
    - `WheelY(f64)`
+   - `WheelPush(bool)`
 
 ### Changed
  - Renamed `Port` to `Hub`
