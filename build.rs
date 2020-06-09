@@ -124,7 +124,7 @@ fn generate_from_database() -> String {
                 ret.push_str(", ");
                 if let Some(max) = max {
                     ret.push_str("Some(");
-                    ret.push_str(&max.to_string());
+                    ret.push_str(&format!("{:?}", max));
                     ret.push_str(")");
                 } else {
                     ret.push_str("None");

@@ -137,11 +137,13 @@ pub enum Event {
 
     /// Range(0.0, 1.0) - Slew Control
     Slew(f64),
-    /// Range(0.0, 1.0) - Stationary throttle
+    /// Range(0.0, 1.0) - Stationary throttle (1.0 is forward, 0.0 is backward)
     Throttle(f64),
-    /// Range(0.0, 1.0) - Left stationary throttle
+    /// Range(0.0, 1.0) - Left stationary throttle (1.0 is forward,
+    /// 0.0 is backward)
     ThrottleL(f64),
-    /// Range(0.0, 1.0) - Right stationary throttle
+    /// Range(0.0, 1.0) - Right stationary throttle (1.0 is forward, 0.0 is
+    /// backward)
     ThrottleR(f64),
 
     /// Left throttle button
