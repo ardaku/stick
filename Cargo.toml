@@ -17,7 +17,8 @@ description = "Platform-agnostic asynchronous gamepad library for Rust"
 repository = "https://github.com/libcala/stick"
 documentation = "https://docs.rs/stick"
 homepage = "https://github.com/libcala/stick/blob/master/CHANGELOG.md"
-include = ["Cargo.toml", "README.md", "LICENSE-ZLIB", "LICENSE-APACHE", "src/*"]
+include = ["pad_db/", "build.rs", "Cargo.toml", "README.md", "LICENSE-ZLIB",
+    "LICENSE-APACHE", "src/"]
 categories = ["hardware-support", "asynchronous", "game-development"]
 keywords = ["ux", "joystick", "gamepad", "platform-agnostic", "controller"]
 readme = "README.md"
@@ -29,7 +30,7 @@ is-it-maintained-issue-resolution = { repository = "libcala/stick" }
 is-it-maintained-open-issues = { repository = "libcala/stick" }
 maintenance = { status = "actively-developed" }
 
-[target.'cfg(all(not(target_arch = "wasm32"), target_os = "linux"))'.dependencies]
+[target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
 smelling_salts = "0.1"
 
 [build-dependencies]

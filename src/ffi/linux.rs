@@ -114,11 +114,13 @@ impl PadDescriptor {
                 1 => Some(true),
                 2 => None, // Skip repeat "held" events
                 v => {
-                    eprintln!("Unknown Button State {}, report at \
+                    eprintln!(
+                        "Unknown Button State {}, report at \
                         https://github.com/libcala/stick/issues",
-                        v);
+                        v
+                    );
                     None
-                },
+                }
             }
         }
         fn joyaxis_float(x: c_int, max: f64, state: &mut PadState) -> f64 {
@@ -150,11 +152,13 @@ impl PadDescriptor {
                 let ev_code = ev
                     .ev_code
                     .checked_sub(LINUX_SPECIFIC_BTN_OFFSET)
-                    .unwrap_or_else(|| panic!(
-                        "Out of range ev_code: {}, report at \
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Out of range ev_code: {}, report at \
                         https://github.com/libcala/stick/issues",
-                        ev.ev_code
-                    ));
+                            ev.ev_code
+                        )
+                    });
                 for (new, evcode) in self.buttons {
                     if ev_code == *evcode {
                         unknown = false;
@@ -174,31 +178,29 @@ impl PadDescriptor {
                         } else {
                             continue;
                         };
-                        event = Some(
-                            match new(if held { 1.0 } else { 0.0 }) {
-                                Event::TriggerL(v) => {
-                                    state.trigger_l_held = held;
-                                    Event::TriggerL(
-                                        if v.classify() == FpCategory::Zero {
-                                            state.trigger_l
-                                        } else {
-                                            v
-                                        },
-                                    )
-                                }
-                                Event::TriggerR(v) => {
-                                    state.trigger_r_held = held;
-                                    Event::TriggerR(
-                                        if v.classify() == FpCategory::Zero {
-                                            state.trigger_r
-                                        } else {
-                                            v
-                                        },
-                                    )
-                                }
-                                event => event,
-                            },
-                        );
+                        event = Some(match new(if held { 1.0 } else { 0.0 }) {
+                            Event::TriggerL(v) => {
+                                state.trigger_l_held = held;
+                                Event::TriggerL(
+                                    if v.classify() == FpCategory::Zero {
+                                        state.trigger_l
+                                    } else {
+                                        v
+                                    },
+                                )
+                            }
+                            Event::TriggerR(v) => {
+                                state.trigger_r_held = held;
+                                Event::TriggerR(
+                                    if v.classify() == FpCategory::Zero {
+                                        state.trigger_r
+                                    } else {
+                                        v
+                                    },
+                                )
+                            }
+                            event => event,
+                        });
                     }
                 }
                 if unknown && ev.ev_value != 2 {
@@ -256,7 +258,11 @@ impl PadDescriptor {
                 {
                     if ev.ev_code == *evcode {
                         unknown = false;
-                        let v = trigger_float(ev.ev_value, dead.unwrap_or(0.0), max.unwrap_or(255));
+                        let v = trigger_float(
+                            ev.ev_value,
+                            dead.unwrap_or(0.0),
+                            max.unwrap_or(255),
+                        );
                         let is_zero = v.classify() == FpCategory::Zero;
                         if !(is_zero && state.dead_trig[i]) {
                             state.dead_trig[i] = is_zero;
@@ -687,7 +693,7 @@ impl Hub {
                     std::mem::size_of::<u64>(),
                 )
             } == std::mem::size_of::<u64>() as isize
-             && unsafe { num.assume_init() } >= 100
+                && unsafe { num.assume_init() } >= 100
             {
                 self.timer = None;
             }
@@ -888,7 +894,6 @@ impl Pad {
     pub(super) fn id(&self) -> [u16; 4] {
         self.hardware_id
     }
-
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
         if let Some(event) = self.state.queued.take() {

@@ -70,7 +70,9 @@ fn generate_from_database() -> String {
         let mut tb = String::new();
         if let Some(buttons) = map.button {
             for format::Button { code, event } in buttons {
-                if event.starts_with("Action") && event.chars().last().unwrap().is_ascii_digit() {
+                if event.starts_with("Action")
+                    && event.chars().last().unwrap().is_ascii_digit()
+                {
                     ret.push_str("                (&|p| Event::Action(");
                     ret.push_str(&event[6..]);
                     ret.push_str(", p), ");
@@ -106,8 +108,7 @@ fn generate_from_database() -> String {
                 ret.push_str("                (&");
                 match event.as_str() {
                     "Slew" | "Throttle" | "ThrottleL" | "ThrottleR"
-                        | "TriggerL" | "TriggerR" =>
-                    {
+                    | "TriggerL" | "TriggerR" => {
                         // Axes can be negative, and these events may not be,
                         // so move into range 0-1
                         ret.push_str("|p| Event::");
@@ -146,8 +147,7 @@ fn generate_from_database() -> String {
                 ret.push_str("                (&");
                 match event.as_str() {
                     "Slew" | "Throttle" | "ThrottleL" | "ThrottleR"
-                        | "TriggerL" | "TriggerR" =>
-                    {
+                    | "TriggerL" | "TriggerR" => {
                         if invert == Some(true) {
                             ret.push_str("|v| Event::");
                             ret.push_str(&event);
