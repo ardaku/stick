@@ -201,7 +201,7 @@ impl PadDescriptor {
                         );
                     }
                 }
-                if unknown {
+                if unknown && ev.ev_value != 2 {
                     eprintln!(
                         "*Evdev* Unknown Button Code: {}, Value: {}, report at \
                         https://github.com/libcala/stick/issues",

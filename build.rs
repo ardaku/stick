@@ -140,11 +140,19 @@ fn generate_from_database() -> String {
                 event,
                 max,
                 deadzone,
+                invert,
             } in triggers
             {
-                ret.push_str("                (&Event::");
-                ret.push_str(&event);
-                ret.push_str(", ");
+                ret.push_str("                (&");
+                if invert == Some(true) {
+                    ret.push_str("|v| Event::");
+                    ret.push_str(&event);
+                    ret.push_str("(1.0 - v), ");
+                } else {
+                    ret.push_str("Event::");
+                    ret.push_str(&event);
+                    ret.push_str(", ");
+                }
                 ret.push_str(&code.to_string());
                 ret.push_str(", ");
                 if let Some(max) = max {

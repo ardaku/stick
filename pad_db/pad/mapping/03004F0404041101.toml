@@ -2,6 +2,26 @@ name = "Thrustmaster Warthog Throttle"
 type = "Flight"
 
 [[button]]
+code = 1
+event = "PovPush"
+
+[[button]]
+code = 2
+event = "PovUp"
+
+[[button]]
+code = 3
+event = "PovLeft"
+
+[[button]]
+code = 4
+event = "PovDown"
+
+[[button]]
+code = 5
+event = "PovRight"
+
+[[button]]
 code = 425
 event = "AutopilotToggle"
 
@@ -114,25 +134,17 @@ event = "MicLeft"
 code = 259
 event = "MicRight"
 
-[[three_way]]
-code = 0
-neg = "PovLeft"
-pos = "PovRight"
-
-[[three_way]]
-code = 1
-neg = "PovUp"
-pos = "PovDown"
-
 [[trigger]]
 code = 2
 event = "ThrottleR"
 max = 16_339
+invert = true
 
 [[trigger]]
 code = 5
 event = "ThrottleL"
 max = 16_339
+invert = true
 
 [[axis]]
 code = 6
