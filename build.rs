@@ -144,14 +144,31 @@ fn generate_from_database() -> String {
             } in triggers
             {
                 ret.push_str("                (&");
-                if invert == Some(true) {
-                    ret.push_str("|v| Event::");
-                    ret.push_str(&event);
-                    ret.push_str("(1.0 - v), ");
-                } else {
-                    ret.push_str("Event::");
-                    ret.push_str(&event);
-                    ret.push_str(", ");
+                match event.as_str() {
+                    "Slew" | "Throttle" | "ThrottleL" | "ThrottleR"
+                        | "TriggerL" | "TriggerR" =>
+                    {
+                        if invert == Some(true) {
+                            ret.push_str("|v| Event::");
+                            ret.push_str(&event);
+                            ret.push_str("(1.0 - v), ");
+                        } else {
+                            ret.push_str("Event::");
+                            ret.push_str(&event);
+                            ret.push_str(", ");
+                        }
+                    }
+                    _ => {
+                        // Events that should be -1 thru 1
+                        ret.push_str("|v| Event::");
+                        if invert == Some(true) {
+                            ret.push_str(&event);
+                            ret.push_str("((1.0 - v) * 2.0 - 1.0), ");
+                        } else {
+                            ret.push_str(&event);
+                            ret.push_str("(v * 2.0 - 1.0), ");
+                        }
+                    }
                 }
                 ret.push_str(&code.to_string());
                 ret.push_str(", ");
