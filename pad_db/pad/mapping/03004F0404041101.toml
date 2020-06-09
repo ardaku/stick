@@ -3,23 +3,23 @@ type = "Flight"
 
 [[button]]
 code = 1
-event = "PovPush"
+event = "MicPush"
 
 [[button]]
 code = 2
-event = "PovUp"
+event = "MicUp"
 
 [[button]]
 code = 3
-event = "PovLeft"
+event = "MicLeft"
 
 [[button]]
 code = 4
-event = "PovDown"
+event = "MicDown"
 
 [[button]]
 code = 5
-event = "PovRight"
+event = "MicRight"
 
 [[button]]
 code = 425
@@ -118,21 +118,35 @@ event = "ChinaForward"
 code = 11
 event = "ChinaBackward"
 
-[[button]]
-code = 256
-event = "MicUp"
+# [[button]]
+# code = 256
+# event = "MicUp"
 
-[[button]]
-code = 257
-event = "MicDown"
+# [[button]]
+# code = 257
+# event = "MicDown"
 
-[[button]]
-code = 258
-event = "MicLeft"
+# [[button]]
+# code = 258
+# event = "MicLeft"
 
-[[button]]
-code = 259
-event = "MicRight"
+# [[button]]
+# code = 259
+# event = "MicRight"
+
+[[trigger]]
+code = 0
+event = "PovX"
+max = 1024
+
+[[trigger]]
+code = 1
+event = "PovY"
+max = 1024
+
+[[axis]]
+code = 6
+event = "Slew"
 
 [[trigger]]
 code = 2
@@ -146,6 +160,12 @@ event = "ThrottleL"
 max = 16_339
 invert = true
 
-[[axis]]
-code = 6
-event = "Slew"
+[[three_way]]
+code = 16
+neg = "PovLeft"
+pos = "PovRight"
+
+[[three_way]]
+code = 17
+neg = "PovUp"
+pos = "PovDown"

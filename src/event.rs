@@ -58,13 +58,13 @@ pub enum Event {
     Action(u16, bool),
 
     /* D-PAD */
-    /// D-pad / POV Hat Up
+    /// D-pad Up
     DpadUp(bool),
-    /// D-pad / POV Hat Down
+    /// D-pad Down
     DpadDown(bool),
-    /// D-pad / POV Hat Left
+    /// D-pad Left
     DpadLeft(bool),
-    /// D-pad / POV Hat Right
+    /// D-pad Right
     DpadRight(bool),
 
     /* Bumper Triggers (LZ, RZ - 2)  */
