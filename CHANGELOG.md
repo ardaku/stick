@@ -4,6 +4,14 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.10.1] - 2020-06-26
+### Added
+ - Support for XBox and Steam controller Grip Buttons / Paddles:
+   - `Event::PaddleRight(bool)`
+   - `Event::PaddleLeft(bool)`
+   - `Event::PaddleRightPinky(bool)`
+   - `Event::PaddleLeftPinky(bool)`
+
 ## [0.10.0] - 2020-06-09
 ### Added
  - Support for all of the gamepads and joysticks in SDL\_gamecontrollerdb by

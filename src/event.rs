@@ -102,8 +102,18 @@ pub enum Event {
     CamPush(bool),
 
     /*
-     * Special XBox Controllers Extra Buttons
+     * Special XBox/Steam Controllers Extra Buttons
      */
+    
+    /* Paddles */
+    /// Back right grip button (upper if there are two)
+    PaddleRight(bool),
+    /// Back left grip button (upper if there are two)
+    PaddleLeft(bool),
+    /// Back lower right grip button
+    PaddleRightPinky(bool),
+    /// Back lower left grip button
+    PaddleLeftPinky(bool),
 
     /*
      * Realistic flight simulation stick extra buttons, switches, etc.
@@ -224,8 +234,12 @@ pub enum Event {
     /*
      * Mice-like controllers extra buttons, scroll wheel
      */
+     
+    /* Extra Mouse buttons */
     /// DPI Switch
     Dpi(bool),
+    
+    /* Mouse Main */
     /// Range(-1.0, 1.0) - Mouse delta position horizontal
     MouseX(f64),
     /// Range(-1.0, 1.0) - Mouse delta position vertical
@@ -234,6 +248,8 @@ pub enum Event {
     MousePush(bool),
     /// Right click (secondary click, push button 2)
     MouseMenu(bool),
+    
+    /* Mouse Wheel */
     /// Range(-1.0, 1.0) - Scroll wheel horizontal
     WheelX(f64),
     /// Range(-1.0, 1.0) - Scroll wheel vertical
@@ -244,6 +260,8 @@ pub enum Event {
     /*
      * Ignore Events
      */
+     
+    /* */
     #[doc(hidden)]
     Nil(bool),
 }
@@ -288,6 +306,10 @@ impl std::fmt::Display for Event {
             CamZ(v) => write!(f, "CamZ {}", v),
             JoyPush(p) => write!(f, "JoyPush {}", pushed(p)),
             CamPush(p) => write!(f, "CamPush {}", pushed(p)),
+            PaddleRight(p) => write!(f, "PaddleRight {}", pushed(p)),
+            PaddleLeft(p) => write!(f, "PaddleLeft {}", pushed(p)),
+            PaddleRightPinky(p) => write!(f, "PaddleRightPinky {}", pushed(p)),
+            PaddleLeftPinky(p) => write!(f, "PaddleLeftPinky {}", pushed(p)),
             Home(p) => write!(f, "Home {}", pushed(p)),
             Action(l, p) => write!(f, "Action{} {}", l, pushed(p)),
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),

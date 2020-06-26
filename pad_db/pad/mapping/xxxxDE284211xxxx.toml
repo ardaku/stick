@@ -57,6 +57,14 @@ event = "BumperR"
 code = 7
 event = "Next"
 
+[[button]]
+code = 48
+event = "PaddleLeft"
+
+[[button]]
+code = 49
+event = "PaddleRight"
+
 [[axis]]
 code = 0
 event = "JoyX"
