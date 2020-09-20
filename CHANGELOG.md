@@ -4,6 +4,16 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.10.2] - 2020-09-20
+### Fixed
+ - Incorrect mapping for Xbox One wired controller
+
+### Contributors
+Thanks to everyone who contributed to make this version of stick possible!
+
+ - [AldaronLau](https://github.com/AldaronLau)
+ - [jamesmcm](https://github.com/jamesmcm)
+
 ## [0.10.1] - 2020-06-26
 ### Added
  - Support for XBox and Steam controller Grip Buttons / Paddles:
