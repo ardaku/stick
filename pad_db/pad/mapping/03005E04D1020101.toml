@@ -10,27 +10,27 @@ code = 6
 event = "Prev"
 
 [[button]]
-code = 2
+code = 19
 event = "ActionH"
 
 [[button]]
-code = 8
+code = 26
 event = "Home"
 
 [[button]]
-code = 1
+code = 17
 event = "ActionB"
 
 [[button]]
-code = 0
+code = 16
 event = "ActionA"
 
 [[button]]
-code = 3
+code = 20
 event = "ActionV"
 
 [[button]]
-code = 7
+code = 27
 event = "Next"
 
 [[button]]
@@ -38,11 +38,11 @@ code = 10
 event = "CamPush"
 
 [[button]]
-code = 5
+code = 23
 event = "BumperR"
 
 [[button]]
-code = 4
+code = 22
 event = "BumperL"
 
 [[axis]]
