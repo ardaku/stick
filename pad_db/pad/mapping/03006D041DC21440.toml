@@ -1,80 +1,80 @@
-name = "Logitech F310 Gamepad (XInput)"
-type = "Unknown"
-
-[[button]]
-code = 3
-event = "ActionV"
+name = 'Logitech F310 Gamepad (XInput)'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
 
 [[button]]
-code = 10
-event = "CamPush"
+code = 1
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "ActionH"
+event = 'ActionH'
 
 [[button]]
-code = 7
-event = "Next"
+code = 3
+event = 'ActionV'
 
 [[button]]
-code = 9
-event = "JoyPush"
+code = 4
+event = 'BumperL'
+
+[[button]]
+code = 5
+event = 'BumperR'
 
 [[button]]
 code = 6
-event = "Prev"
+event = 'Prev'
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 7
+event = 'Next'
 
 [[button]]
 code = 8
-event = "Home"
+event = 'Home'
 
 [[button]]
-code = 4
-event = "BumperL"
+code = 9
+event = 'JoyPush'
 
 [[button]]
-code = 5
-event = "BumperR"
+code = 10
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
-
-[[axis]]
-code = 4
-event = "CamY"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
 
 [[axis]]
 code = 3
-event = "CamX"
+event = 'CamX'
+
+[[axis]]
+code = 4
+event = 'CamY'
 
 [[trigger]]
 code = 2
-event = "TriggerL"
+event = 'TriggerL'
 
 [[trigger]]
 code = 5
-event = "TriggerR"
-
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+event = 'TriggerR'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

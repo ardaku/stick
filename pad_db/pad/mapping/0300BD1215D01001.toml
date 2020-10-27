@@ -1,44 +1,44 @@
-name = "Tomee SNES USB Controller"
-type = "Unknown"
+name = 'Tomee SNES USB Controller'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionV"
+event = 'ActionV'
 
 [[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 8
-event = "Prev"
+code = 1
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "ActionA"
+event = 'ActionA'
 
 [[button]]
-code = 9
-event = "Next"
+code = 3
+event = 'ActionH'
 
 [[button]]
 code = 4
-event = "BumperL"
-
-[[button]]
-code = 1
-event = "ActionB"
+event = 'BumperL'
 
 [[button]]
 code = 5
-event = "BumperR"
+event = 'BumperR'
 
-[[three_way]]
-code = 1
-neg = "DpadUp"
-pos = "DpadDown"
+[[button]]
+code = 8
+event = 'Prev'
+
+[[button]]
+code = 9
+event = 'Next'
 
 [[three_way]]
 code = 0
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 1
+neg = 'DpadUp'
+pos = 'DpadDown'

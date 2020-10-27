@@ -1,64 +1,64 @@
-name = "QanBa Arcade JoyStick"
-type = "Unknown"
-
-[[button]]
-code = 4
-event = "TriggerL"
-
-[[button]]
-code = 5
-event = "BumperL"
-
-[[button]]
-code = 7
-event = "BumperR"
-
-[[button]]
-code = 1
-event = "ActionH"
+name = 'QanBa Arcade JoyStick'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionB"
+event = 'ActionB'
+
+[[button]]
+code = 1
+event = 'ActionH'
 
 [[button]]
 code = 2
-event = "ActionA"
-
-[[button]]
-code = 9
-event = "Next"
-
-[[button]]
-code = 8
-event = "Home"
-
-[[button]]
-code = 6
-event = "TriggerR"
-
-[[button]]
-code = 10
-event = "Prev"
+event = 'ActionA'
 
 [[button]]
 code = 3
-event = "ActionV"
+event = 'ActionV'
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 4
+event = 'TriggerL'
+
+[[button]]
+code = 5
+event = 'BumperL'
+
+[[button]]
+code = 6
+event = 'TriggerR'
+
+[[button]]
+code = 7
+event = 'BumperR'
+
+[[button]]
+code = 8
+event = 'Home'
+
+[[button]]
+code = 9
+event = 'Next'
+
+[[button]]
+code = 10
+event = 'Prev'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
+
+[[axis]]
+code = 1
+event = 'JoyY'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
 
 [[three_way]]
 code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+neg = 'DpadUp'
+pos = 'DpadDown'

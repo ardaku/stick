@@ -1,52 +1,52 @@
-name = "8BitDo NES30"
-type = "Unknown"
-
-[[button]]
-code = 4
-event = "ActionV"
-
-[[button]]
-code = 9
-event = "BumperR"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 7
-event = "BumperL"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 10
-event = "Prev"
-
-[[button]]
-code = 8
-event = "TriggerR"
-
-[[button]]
-code = 11
-event = "Next"
+name = '8BitDo NES30'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[button]]
+code = 1
+event = 'ActionB'
+
+[[button]]
+code = 3
+event = 'ActionH'
+
+[[button]]
+code = 4
+event = 'ActionV'
+
+[[button]]
+code = 6
+event = 'TriggerL'
+
+[[button]]
+code = 7
+event = 'BumperL'
+
+[[button]]
+code = 8
+event = 'TriggerR'
+
+[[button]]
+code = 9
+event = 'BumperR'
+
+[[button]]
+code = 10
+event = 'Prev'
+
+[[button]]
+code = 11
+event = 'Next'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

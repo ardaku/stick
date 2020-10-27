@@ -1,76 +1,76 @@
-name = "ShanWan PS3/PC Wired GamePad"
-type = "Unknown"
-
-[[button]]
-code = 14
-event = "CamPush"
-
-[[button]]
-code = 11
-event = "Next"
+name = 'ShanWan PS3/PC Wired GamePad'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
-
-[[button]]
-code = 10
-event = "Prev"
+event = 'ActionA'
 
 [[button]]
 code = 1
-event = "ActionB"
+event = 'ActionB'
+
+[[button]]
+code = 3
+event = 'ActionH'
 
 [[button]]
 code = 4
-event = "ActionV"
-
-[[button]]
-code = 7
-event = "BumperR"
+event = 'ActionV'
 
 [[button]]
 code = 6
-event = "BumperL"
+event = 'BumperL'
+
+[[button]]
+code = 7
+event = 'BumperR'
+
+[[button]]
+code = 10
+event = 'Prev'
+
+[[button]]
+code = 11
+event = 'Next'
 
 [[button]]
 code = 13
-event = "JoyPush"
+event = 'JoyPush'
 
 [[button]]
-code = 3
-event = "ActionH"
+code = 14
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
-
-[[axis]]
-code = 3
-event = "CamY"
+event = 'JoyY'
 
 [[axis]]
 code = 2
-event = "CamX"
+event = 'CamX'
+
+[[axis]]
+code = 3
+event = 'CamY'
 
 [[trigger]]
 code = 4
-event = "TriggerR"
+event = 'TriggerR'
 
 [[trigger]]
 code = 5
-event = "TriggerL"
-
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+event = 'TriggerL'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

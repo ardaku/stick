@@ -1,46 +1,46 @@
-name = "CYPRESS USB Gamepad"
-type = "Unknown"
-
-[[button]]
-code = 6
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "Prev"
-
-[[button]]
-code = 7
-event = "BumperR"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 4
-event = "ActionV"
-
-[[button]]
-code = 8
-event = "Next"
+name = 'CYPRESS USB Gamepad'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
+
+[[button]]
+code = 1
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "Home"
+event = 'Home'
+
+[[button]]
+code = 3
+event = 'ActionH'
+
+[[button]]
+code = 4
+event = 'ActionV'
+
+[[button]]
+code = 5
+event = 'Prev'
+
+[[button]]
+code = 6
+event = 'BumperL'
+
+[[button]]
+code = 7
+event = 'BumperR'
+
+[[button]]
+code = 8
+event = 'Next'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'

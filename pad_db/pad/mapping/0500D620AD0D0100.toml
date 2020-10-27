@@ -1,72 +1,72 @@
-name = "Moga Pro"
-type = "Unknown"
+name = 'Moga Pro'
+type = 'Unknown'
 
 [[button]]
-code = 8
-event = "CamPush"
-
-[[button]]
-code = 4
-event = "BumperL"
+code = 0
+event = 'ActionA'
 
 [[button]]
 code = 1
-event = "ActionB"
+event = 'ActionB'
+
+[[button]]
+code = 2
+event = 'ActionH'
+
+[[button]]
+code = 3
+event = 'ActionV'
+
+[[button]]
+code = 4
+event = 'BumperL'
+
+[[button]]
+code = 5
+event = 'BumperR'
 
 [[button]]
 code = 6
-event = "Next"
-
-[[button]]
-code = 2
-event = "ActionH"
+event = 'Next'
 
 [[button]]
 code = 7
-event = "JoyPush"
+event = 'JoyPush'
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[axis]]
-code = 3
-event = "CamY"
+code = 8
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
 
 [[axis]]
 code = 2
-event = "CamX"
+event = 'CamX'
 
-[[trigger]]
-code = 5
-event = "TriggerL"
+[[axis]]
+code = 3
+event = 'CamY'
 
 [[trigger]]
 code = 4
-event = "TriggerR"
+event = 'TriggerR'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[trigger]]
+code = 5
+event = 'TriggerL'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

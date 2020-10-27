@@ -1,26 +1,26 @@
-name = "Competition Pro"
-type = "Unknown"
+name = 'Competition Pro'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
+
+[[button]]
+code = 1
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "Prev"
+event = 'Prev'
 
 [[button]]
 code = 3
-event = "Next"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[axis]]
-code = 1
-event = "JoyY"
+event = 'Next'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
+
+[[axis]]
+code = 1
+event = 'JoyY'

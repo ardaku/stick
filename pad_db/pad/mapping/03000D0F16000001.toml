@@ -1,56 +1,56 @@
-name = "Hori Real Arcade Pro.EX-SE (Xbox 360)"
-type = "Unknown"
-
-[[button]]
-code = 10
-event = "Home"
-
-[[button]]
-code = 2
-event = "ActionH"
+name = 'Hori Real Arcade Pro.EX-SE (Xbox 360)'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 9
-event = "Next"
-
-[[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 5
-event = "BumperR"
+event = 'ActionA'
 
 [[button]]
 code = 1
-event = "ActionB"
+event = 'ActionB'
 
 [[button]]
-code = 4
-event = "BumperL"
+code = 2
+event = 'ActionH'
 
 [[button]]
 code = 3
-event = "ActionV"
+event = 'ActionV'
+
+[[button]]
+code = 4
+event = 'BumperL'
+
+[[button]]
+code = 5
+event = 'BumperR'
 
 [[button]]
 code = 6
-event = "TriggerL"
+event = 'TriggerL'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[button]]
+code = 7
+event = 'TriggerR'
+
+[[button]]
+code = 8
+event = 'Prev'
+
+[[button]]
+code = 9
+event = 'Next'
+
+[[button]]
+code = 10
+event = 'Home'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

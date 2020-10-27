@@ -1,76 +1,76 @@
-name = "PC Game Controller"
-type = "Unknown"
+name = 'PC Game Controller'
+type = 'Unknown'
 
 [[button]]
-code = 10
-event = "JoyPush"
+code = 0
+event = 'ActionV'
 
 [[button]]
-code = 3
-event = "ActionH"
+code = 1
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "ActionA"
+event = 'ActionA'
 
 [[button]]
-code = 11
-event = "CamPush"
-
-[[button]]
-code = 8
-event = "Prev"
+code = 3
+event = 'ActionH'
 
 [[button]]
 code = 4
-event = "BumperL"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 9
-event = "Next"
-
-[[button]]
-code = 0
-event = "ActionV"
+event = 'BumperL'
 
 [[button]]
 code = 5
-event = "BumperR"
+event = 'BumperR'
 
-[[axis]]
-code = 3
-event = "CamY"
+[[button]]
+code = 6
+event = 'TriggerL'
 
-[[axis]]
-code = 2
-event = "CamX"
+[[button]]
+code = 7
+event = 'TriggerR'
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 8
+event = 'Prev'
+
+[[button]]
+code = 9
+event = 'Next'
+
+[[button]]
+code = 10
+event = 'JoyPush'
+
+[[button]]
+code = 11
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[axis]]
+code = 1
+event = 'JoyY'
+
+[[axis]]
+code = 2
+event = 'CamX'
+
+[[axis]]
+code = 3
+event = 'CamY'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

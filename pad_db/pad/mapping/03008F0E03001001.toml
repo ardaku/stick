@@ -1,76 +1,76 @@
-name = "PS3 Controller"
-type = "Unknown"
+name = 'PS3 Controller'
+type = 'Unknown'
+
+[[button]]
+code = 0
+event = 'ActionV'
 
 [[button]]
 code = 1
-event = "ActionB"
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "ActionA"
-
-[[button]]
-code = 5
-event = "BumperR"
+event = 'ActionA'
 
 [[button]]
 code = 3
-event = "ActionH"
+event = 'ActionH'
 
 [[button]]
 code = 4
-event = "BumperL"
+event = 'BumperL'
 
 [[button]]
-code = 11
-event = "CamPush"
-
-[[button]]
-code = 10
-event = "JoyPush"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 0
-event = "ActionV"
+code = 5
+event = 'BumperR'
 
 [[button]]
 code = 6
-event = "TriggerL"
+event = 'TriggerL'
 
 [[button]]
-code = 9
-event = "Next"
+code = 7
+event = 'TriggerR'
 
 [[button]]
 code = 8
-event = "Prev"
+event = 'Prev'
 
-[[axis]]
-code = 3
-event = "CamY"
+[[button]]
+code = 9
+event = 'Next'
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 10
+event = 'JoyPush'
 
-[[axis]]
-code = 2
-event = "CamX"
+[[button]]
+code = 11
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[axis]]
+code = 1
+event = 'JoyY'
+
+[[axis]]
+code = 2
+event = 'CamX'
+
+[[axis]]
+code = 3
+event = 'CamY'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

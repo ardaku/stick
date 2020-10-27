@@ -1,76 +1,76 @@
-name = "GreenAsia Electronics 4Axes 12Keys Gamepad"
-type = "Unknown"
+name = 'GreenAsia Electronics 4Axes 12Keys Gamepad'
+type = 'Unknown'
 
 [[button]]
-code = 6
-event = "BumperL"
-
-[[button]]
-code = 2
-event = "ActionA"
+code = 0
+event = 'ActionV'
 
 [[button]]
 code = 1
-event = "ActionB"
+event = 'ActionB'
+
+[[button]]
+code = 2
+event = 'ActionA'
+
+[[button]]
+code = 3
+event = 'ActionH'
 
 [[button]]
 code = 4
-event = "TriggerL"
-
-[[button]]
-code = 11
-event = "Next"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 0
-event = "ActionV"
-
-[[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 10
-event = "CamPush"
-
-[[button]]
-code = 7
-event = "BumperR"
+event = 'TriggerL'
 
 [[button]]
 code = 5
-event = "TriggerR"
+event = 'TriggerR'
+
+[[button]]
+code = 6
+event = 'BumperL'
+
+[[button]]
+code = 7
+event = 'BumperR'
+
+[[button]]
+code = 8
+event = 'Prev'
+
+[[button]]
+code = 9
+event = 'JoyPush'
+
+[[button]]
+code = 10
+event = 'CamPush'
+
+[[button]]
+code = 11
+event = 'Next'
 
 [[axis]]
 code = 0
-event = "JoyX"
-
-[[axis]]
-code = 3
-event = "CamX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
 
 [[axis]]
 code = 2
-event = "CamY"
+event = 'CamY'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[axis]]
+code = 3
+event = 'CamX'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

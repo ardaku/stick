@@ -1,50 +1,50 @@
-name = "8BitDo Zero Gamepad"
-type = "NES"
+name = '8BitDo Zero Gamepad'
+type = 'NES'
 
 [[button]]
 code = 0
-event = "ActionA"
-
-[[button]]
-code = 120
-event = "DpadRight"
-
-[[button]]
-code = 10
-event = "Prev"
-
-[[button]]
-code = 6
-event = "BumperL"
-
-[[button]]
-code = 3
-event = "ActionH"
+event = 'ActionA'
 
 [[button]]
 code = 1
-event = "ActionB"
+event = 'ActionB'
 
 [[button]]
-code = 7
-event = "BumperR"
-
-[[button]]
-code = 122
-event = "DpadDown"
-
-[[button]]
-code = 119
-event = "DpadLeft"
-
-[[button]]
-code = 11
-event = "Next"
-
-[[button]]
-code = 117
-event = "DpadUp"
+code = 3
+event = 'ActionH'
 
 [[button]]
 code = 4
-event = "ActionV"
+event = 'ActionV'
+
+[[button]]
+code = 6
+event = 'BumperL'
+
+[[button]]
+code = 7
+event = 'BumperR'
+
+[[button]]
+code = 10
+event = 'Prev'
+
+[[button]]
+code = 11
+event = 'Next'
+
+[[button]]
+code = 117
+event = 'DpadUp'
+
+[[button]]
+code = 119
+event = 'DpadLeft'
+
+[[button]]
+code = 120
+event = 'DpadRight'
+
+[[button]]
+code = 122
+event = 'DpadDown'

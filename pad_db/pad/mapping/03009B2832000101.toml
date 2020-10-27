@@ -1,66 +1,66 @@
-name = "Raphnet Technologies GC/N64 to USB v3.4"
-type = "Unknown"
-
-[[button]]
-code = 12
-event = "DpadLeft"
-
-[[button]]
-code = 1
-event = "ActionH"
-
-[[button]]
-code = 7
-event = "ActionB"
-
-[[button]]
-code = 10
-event = "DpadUp"
-
-[[button]]
-code = 3
-event = "Next"
-
-[[button]]
-code = 8
-event = "ActionV"
+name = 'Raphnet Technologies GC/N64 to USB v3.4'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
 
 [[button]]
-code = 4
-event = "TriggerL"
-
-[[button]]
-code = 5
-event = "TriggerR"
-
-[[button]]
-code = 13
-event = "DpadRight"
-
-[[button]]
-code = 11
-event = "DpadDown"
+code = 1
+event = 'ActionH'
 
 [[button]]
 code = 2
-event = "BumperR"
+event = 'BumperR'
 
-[[axis]]
+[[button]]
+code = 3
+event = 'Next'
+
+[[button]]
 code = 4
-event = "CamY"
+event = 'TriggerL'
+
+[[button]]
+code = 5
+event = 'TriggerR'
+
+[[button]]
+code = 7
+event = 'ActionB'
+
+[[button]]
+code = 8
+event = 'ActionV'
+
+[[button]]
+code = 10
+event = 'DpadUp'
+
+[[button]]
+code = 11
+event = 'DpadDown'
+
+[[button]]
+code = 12
+event = 'DpadLeft'
+
+[[button]]
+code = 13
+event = 'DpadRight'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
 
 [[axis]]
 code = 3
-event = "CamX"
+event = 'CamX'
+
+[[axis]]
+code = 4
+event = 'CamY'

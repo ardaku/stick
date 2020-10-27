@@ -1,78 +1,78 @@
-name = "OUYA Game Controller"
-type = "Unknown"
-
-[[button]]
-code = 9
-event = "DpadDown"
+name = 'OUYA Game Controller'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
-
-[[button]]
-code = 2
-event = "ActionV"
-
-[[button]]
-code = 3
-event = "ActionB"
-
-[[button]]
-code = 8
-event = "DpadUp"
+event = 'ActionA'
 
 [[button]]
 code = 1
-event = "ActionH"
+event = 'ActionH'
 
 [[button]]
-code = 10
-event = "DpadLeft"
+code = 2
+event = 'ActionV'
+
+[[button]]
+code = 3
+event = 'ActionB'
+
+[[button]]
+code = 4
+event = 'BumperL'
+
+[[button]]
+code = 5
+event = 'BumperR'
 
 [[button]]
 code = 6
-event = "JoyPush"
-
-[[button]]
-code = 11
-event = "DpadRight"
-
-[[button]]
-code = 14
-event = "Home"
+event = 'JoyPush'
 
 [[button]]
 code = 7
-event = "CamPush"
+event = 'CamPush'
 
 [[button]]
-code = 4
-event = "BumperL"
+code = 8
+event = 'DpadUp'
 
 [[button]]
-code = 5
-event = "BumperR"
+code = 9
+event = 'DpadDown'
 
-[[axis]]
-code = 4
-event = "CamY"
+[[button]]
+code = 10
+event = 'DpadLeft'
+
+[[button]]
+code = 11
+event = 'DpadRight'
+
+[[button]]
+code = 14
+event = 'Home'
 
 [[axis]]
 code = 0
-event = "JoyX"
-
-[[axis]]
-code = 3
-event = "CamX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
 
-[[trigger]]
-code = 5
-event = "TriggerR"
+[[axis]]
+code = 3
+event = 'CamX'
+
+[[axis]]
+code = 4
+event = 'CamY'
 
 [[trigger]]
 code = 2
-event = "TriggerL"
+event = 'TriggerL'
+
+[[trigger]]
+code = 5
+event = 'TriggerR'

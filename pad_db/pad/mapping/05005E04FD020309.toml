@@ -1,84 +1,84 @@
-name = "Xbox One Wireless Controller"
-type = "Unknown"
+name = 'Xbox One Wireless Controller'
+type = 'Unknown'
+
+[[button]]
+code = 0
+event = 'ActionA'
 
 [[button]]
 code = 1
-event = "ActionB"
+event = 'ActionB'
 
 [[button]]
-code = 15
-event = "Prev"
+code = 3
+event = 'ActionH'
 
 [[button]]
-code = 11
-event = "Next"
+code = 4
+event = 'ActionV'
 
 [[button]]
 code = 6
-event = "BumperL"
-
-[[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
-code = 4
-event = "ActionV"
-
-[[button]]
-code = 16
-event = "Home"
-
-[[button]]
-code = 13
-event = "JoyPush"
-
-[[button]]
-code = 14
-event = "CamPush"
+event = 'BumperL'
 
 [[button]]
 code = 7
-event = "BumperR"
+event = 'BumperR'
 
 [[button]]
-code = 3
-event = "ActionH"
+code = 11
+event = 'Next'
 
 [[button]]
 code = 12
-event = "Home"
+event = 'Home'
 
-[[axis]]
-code = 2
-event = "CamX"
+[[button]]
+code = 13
+event = 'JoyPush'
+
+[[button]]
+code = 14
+event = 'CamPush'
+
+[[button]]
+code = 15
+event = 'Prev'
+
+[[button]]
+code = 16
+event = 'Home'
 
 [[axis]]
 code = 0
-event = "JoyX"
-
-[[axis]]
-code = 3
-event = "CamY"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
 
-[[trigger]]
-code = 5
-event = "TriggerL"
+[[axis]]
+code = 2
+event = 'CamX'
+
+[[axis]]
+code = 3
+event = 'CamY'
 
 [[trigger]]
 code = 4
-event = "TriggerR"
+event = 'TriggerR'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[trigger]]
+code = 5
+event = 'TriggerL'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

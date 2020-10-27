@@ -1,14 +1,14 @@
-name = "Retronic Adapter"
-type = "Unknown"
+name = 'Retronic Adapter'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'

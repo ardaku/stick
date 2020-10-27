@@ -1,80 +1,80 @@
-name = "JYS Wireless Adapter"
-type = "Unknown"
+name = 'JYS Wireless Adapter'
+type = 'Unknown'
 
 [[button]]
-code = 8
-event = "Prev"
+code = 0
+event = 'ActionV'
 
 [[button]]
-code = 7
-event = "TriggerR"
+code = 1
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "ActionA"
+event = 'ActionA'
 
 [[button]]
-code = 12
-event = "Home"
+code = 3
+event = 'ActionH'
 
 [[button]]
 code = 4
-event = "BumperL"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 9
-event = "Next"
-
-[[button]]
-code = 0
-event = "ActionV"
+event = 'BumperL'
 
 [[button]]
 code = 5
-event = "BumperR"
+event = 'BumperR'
+
+[[button]]
+code = 6
+event = 'TriggerL'
+
+[[button]]
+code = 7
+event = 'TriggerR'
+
+[[button]]
+code = 8
+event = 'Prev'
+
+[[button]]
+code = 9
+event = 'Next'
 
 [[button]]
 code = 10
-event = "JoyPush"
+event = 'JoyPush'
 
 [[button]]
 code = 11
-event = "CamPush"
+event = 'CamPush'
 
 [[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[axis]]
-code = 2
-event = "CamX"
-
-[[axis]]
-code = 3
-event = "CamY"
+code = 12
+event = 'Home'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[axis]]
+code = 2
+event = 'CamX'
+
+[[axis]]
+code = 3
+event = 'CamY'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 17
+neg = 'DpadUp'
+pos = 'DpadDown'

@@ -1,76 +1,76 @@
-name = "8BitDo SN30 Pro"
-type = "Unknown"
+name = '8BitDo SN30 Pro'
+type = 'Unknown'
+
+[[button]]
+code = 0
+event = 'ActionB'
+
+[[button]]
+code = 1
+event = 'ActionA'
+
+[[button]]
+code = 3
+event = 'ActionV'
 
 [[button]]
 code = 4
-event = "ActionH"
-
-[[button]]
-code = 10
-event = "Prev"
-
-[[button]]
-code = 11
-event = "Next"
-
-[[button]]
-code = 14
-event = "CamPush"
-
-[[button]]
-code = 8
-event = "TriggerL"
+event = 'ActionH'
 
 [[button]]
 code = 6
-event = "BumperL"
-
-[[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
-code = 9
-event = "TriggerR"
-
-[[button]]
-code = 1
-event = "ActionA"
-
-[[button]]
-code = 0
-event = "ActionB"
-
-[[button]]
-code = 13
-event = "JoyPush"
+event = 'BumperL'
 
 [[button]]
 code = 7
-event = "BumperR"
+event = 'BumperR'
 
-[[axis]]
-code = 3
-event = "CamX"
+[[button]]
+code = 8
+event = 'TriggerL'
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 9
+event = 'TriggerR'
+
+[[button]]
+code = 10
+event = 'Prev'
+
+[[button]]
+code = 11
+event = 'Next'
+
+[[button]]
+code = 13
+event = 'JoyPush'
+
+[[button]]
+code = 14
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
+
+[[axis]]
+code = 1
+event = 'JoyY'
+
+[[axis]]
+code = 3
+event = 'CamX'
 
 [[axis]]
 code = 4
-event = "CamY"
+event = 'CamY'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
 
 [[three_way]]
 code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+neg = 'DpadUp'
+pos = 'DpadDown'

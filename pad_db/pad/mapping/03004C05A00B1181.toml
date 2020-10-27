@@ -1,80 +1,80 @@
-name = "PS4 Controller"
-type = "Unknown"
-
-[[button]]
-code = 1
-event = "ActionB"
+name = 'PS4 Controller'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
+
+[[button]]
+code = 1
+event = 'ActionB'
+
+[[button]]
+code = 2
+event = 'ActionV'
+
+[[button]]
+code = 3
+event = 'ActionH'
+
+[[button]]
+code = 4
+event = 'BumperL'
 
 [[button]]
 code = 5
-event = "BumperR"
+event = 'BumperR'
 
 [[button]]
 code = 8
-event = "Prev"
-
-[[button]]
-code = 12
-event = "CamPush"
-
-[[button]]
-code = 11
-event = "JoyPush"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 4
-event = "BumperL"
+event = 'Prev'
 
 [[button]]
 code = 9
-event = "Next"
+event = 'Next'
 
 [[button]]
 code = 10
-event = "Home"
+event = 'Home'
 
 [[button]]
-code = 2
-event = "ActionV"
+code = 11
+event = 'JoyPush'
+
+[[button]]
+code = 12
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
-
-[[axis]]
-code = 4
-event = "CamY"
-
-[[axis]]
-code = 3
-event = "CamX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
+
+[[axis]]
+code = 3
+event = 'CamX'
+
+[[axis]]
+code = 4
+event = 'CamY'
 
 [[trigger]]
 code = 2
-event = "TriggerL"
+event = 'TriggerL'
 
 [[trigger]]
 code = 5
-event = "TriggerR"
+event = 'TriggerR'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
 
 [[three_way]]
 code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+neg = 'DpadUp'
+pos = 'DpadDown'

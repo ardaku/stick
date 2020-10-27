@@ -1,44 +1,44 @@
-name = "Retrolink SNES Controller"
-type = "Unknown"
-
-[[button]]
-code = 9
-event = "Next"
+name = 'Retrolink SNES Controller'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionV"
+event = 'ActionV'
 
 [[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 5
-event = "BumperR"
+code = 1
+event = 'ActionB'
 
 [[button]]
 code = 2
-event = "ActionA"
-
-[[button]]
-code = 4
-event = "BumperL"
+event = 'ActionA'
 
 [[button]]
 code = 3
-event = "ActionH"
+event = 'ActionH'
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 4
+event = 'BumperL'
 
-[[three_way]]
-code = 1
-neg = "DpadUp"
-pos = "DpadDown"
+[[button]]
+code = 5
+event = 'BumperR'
+
+[[button]]
+code = 8
+event = 'Prev'
+
+[[button]]
+code = 9
+event = 'Next'
 
 [[three_way]]
 code = 0
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
+
+[[three_way]]
+code = 1
+neg = 'DpadUp'
+pos = 'DpadDown'

@@ -1,80 +1,80 @@
-name = "Steam Virtual Gamepad"
-type = "Unknown"
-
-[[button]]
-code = 8
-event = "Home"
-
-[[button]]
-code = 5
-event = "BumperR"
+name = 'Steam Virtual Gamepad'
+type = 'Unknown'
 
 [[button]]
 code = 0
-event = "ActionA"
+event = 'ActionA'
+
+[[button]]
+code = 1
+event = 'ActionB'
+
+[[button]]
+code = 2
+event = 'ActionH'
+
+[[button]]
+code = 3
+event = 'ActionV'
+
+[[button]]
+code = 4
+event = 'BumperL'
+
+[[button]]
+code = 5
+event = 'BumperR'
 
 [[button]]
 code = 6
-event = "Prev"
-
-[[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 10
-event = "CamPush"
-
-[[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
-code = 4
-event = "BumperL"
+event = 'Prev'
 
 [[button]]
 code = 7
-event = "Next"
+event = 'Next'
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 8
+event = 'Home'
 
-[[axis]]
-code = 3
-event = "CamX"
+[[button]]
+code = 9
+event = 'JoyPush'
 
-[[axis]]
-code = 4
-event = "CamY"
+[[button]]
+code = 10
+event = 'CamPush'
 
 [[axis]]
 code = 0
-event = "JoyX"
+event = 'JoyX'
 
 [[axis]]
 code = 1
-event = "JoyY"
+event = 'JoyY'
+
+[[axis]]
+code = 3
+event = 'CamX'
+
+[[axis]]
+code = 4
+event = 'CamY'
 
 [[trigger]]
 code = 2
-event = "TriggerL"
+event = 'TriggerL'
 
 [[trigger]]
 code = 5
-event = "TriggerR"
+event = 'TriggerR'
 
 [[three_way]]
 code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+neg = 'DpadLeft'
+pos = 'DpadRight'
 
 [[three_way]]
 code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+neg = 'DpadUp'
+pos = 'DpadDown'
