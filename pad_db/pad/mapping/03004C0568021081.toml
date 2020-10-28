@@ -1,94 +1,94 @@
-name = 'Shanwan PlayStation3 Gamepad'
-type = 'PlayStation'
+name = "Shanwan PlayStation3 Gamepad"
+type = "PlayStation"
 
 [[button]]
 code = 16
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 17
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 19
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 20
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 22
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 23
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 24
-event = 'Nil'
+event = "Nil"
 
 [[button]]
 code = 25
-event = 'Nil'
+event = "Nil"
 
 [[button]]
 code = 26
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 27
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 28
-event = 'Home'
+event = "Home"
 
 [[button]]
 code = 29
-event = 'JoyPush'
+event = "JoyPush"
 
 [[button]]
 code = 30
-event = 'CamPush'
+event = "CamPush"
 
 [[button]]
 code = 256
-event = 'DpadUp'
+event = "DpadUp"
 
 [[button]]
 code = 257
-event = 'DpadDown'
+event = "DpadDown"
 
 [[button]]
 code = 258
-event = 'DpadLeft'
+event = "DpadLeft"
 
 [[button]]
 code = 259
-event = 'DpadRight'
+event = "DpadRight"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"
 
 [[axis]]
 code = 3
-event = 'CamX'
+event = "CamX"
 
 [[axis]]
 code = 4
-event = 'CamY'
+event = "CamY"
 
 [[trigger]]
 code = 2
-event = 'TriggerL'
+event = "TriggerL"
 
 [[trigger]]
 code = 5
-event = 'TriggerR'
+event = "TriggerR"

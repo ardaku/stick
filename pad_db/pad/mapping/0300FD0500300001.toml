@@ -1,42 +1,42 @@
-name = 'InterAct GoPad I-73000 (Fighting Game Layout)'
-type = 'Unknown'
+name = "InterAct GoPad I-73000 (Fighting Game Layout)"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 1
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 2
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 3
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 4
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 5
-event = 'TriggerR'
+event = "TriggerR"
 
 [[button]]
 code = 6
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 7
-event = 'Next'
+event = "Next"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"

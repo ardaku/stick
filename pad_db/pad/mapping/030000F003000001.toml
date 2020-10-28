@@ -1,42 +1,42 @@
-name = 'RetroPad'
-type = 'Unknown'
+name = "RetroPad"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 1
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 2
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 3
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 4
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 5
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 6
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 7
-event = 'BumperR'
+event = "BumperR"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"

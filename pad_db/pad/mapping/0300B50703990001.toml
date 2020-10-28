@@ -1,58 +1,58 @@
-name = 'Thrustmaster Firestorm Digital 2'
-type = 'Unknown'
+name = "Thrustmaster Firestorm Digital 2"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'CamPush'
+event = "CamPush"
 
 [[button]]
 code = 1
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 2
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 3
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 4
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 5
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 6
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 7
-event = 'TriggerL'
+event = "TriggerL"
 
 [[button]]
 code = 8
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 9
-event = 'TriggerR'
+event = "TriggerR"
 
 [[button]]
 code = 10
-event = 'JoyPush'
+event = "JoyPush"
 
 [[button]]
 code = 11
-event = 'Prev'
+event = "Prev"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"

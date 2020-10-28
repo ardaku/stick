@@ -1,36 +1,36 @@
-name = 'IMS PCU#0 Gamepad Interface'
-type = 'Unknown'
+name = "IMS PCU#0 Gamepad Interface"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 1
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 2
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 3
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 4
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 5
-event = 'Next'
+event = "Next"
 
 [[three_way]]
 code = 0
-neg = 'DpadLeft'
-pos = 'DpadRight'
+neg = "DpadLeft"
+pos = "DpadRight"
 
 [[three_way]]
 code = 1
-neg = 'DpadUp'
-pos = 'DpadDown'
+neg = "DpadUp"
+pos = "DpadDown"

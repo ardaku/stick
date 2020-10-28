@@ -1,80 +1,80 @@
-name = 'XiaoMi Game Controller'
-type = 'Unknown'
+name = "XiaoMi Game Controller"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 1
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 3
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 4
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 6
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 7
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 10
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 11
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 13
-event = 'JoyPush'
+event = "JoyPush"
 
 [[button]]
 code = 14
-event = 'CamPush'
+event = "CamPush"
 
 [[button]]
 code = 20
-event = 'Home'
+event = "Home"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"
 
 [[axis]]
 code = 2
-event = 'CamX'
+event = "CamX"
 
 [[axis]]
 code = 5
-event = 'CamY'
+event = "CamY"
 
 [[trigger]]
 code = 6
-event = 'TriggerR'
+event = "TriggerR"
 
 [[trigger]]
 code = 7
-event = 'TriggerL'
+event = "TriggerL"
 
 [[three_way]]
 code = 16
-neg = 'DpadLeft'
-pos = 'DpadRight'
+neg = "DpadLeft"
+pos = "DpadRight"
 
 [[three_way]]
 code = 17
-neg = 'DpadUp'
-pos = 'DpadDown'
+neg = "DpadUp"
+pos = "DpadDown"

@@ -1,66 +1,66 @@
-name = 'GameCube {HuiJia USB box}'
-type = 'Unknown'
+name = "GameCube {HuiJia USB box}"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 1
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 2
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 3
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 7
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 9
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 12
-event = 'DpadUp'
+event = "DpadUp"
 
 [[button]]
 code = 13
-event = 'DpadRight'
+event = "DpadRight"
 
 [[button]]
 code = 14
-event = 'DpadDown'
+event = "DpadDown"
 
 [[button]]
 code = 15
-event = 'DpadLeft'
+event = "DpadLeft"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"
 
 [[axis]]
 code = 2
-event = 'CamY'
+event = "CamY"
 
 [[axis]]
 code = 5
-event = 'CamX'
+event = "CamX"
 
 [[trigger]]
 code = 3
-event = 'TriggerL'
+event = "TriggerL"
 
 [[trigger]]
 code = 4
-event = 'TriggerR'
+event = "TriggerR"

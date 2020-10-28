@@ -1,50 +1,50 @@
-name = '8BitDo SNES30 Gamepad'
-type = 'NES'
+name = "8BitDo SNES30 Gamepad"
+type = "NES"
 
 [[button]]
 code = 0
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 1
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 3
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 4
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 6
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 7
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 10
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 11
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 117
-event = 'DpadUp'
+event = "DpadUp"
 
 [[button]]
 code = 119
-event = 'DpadLeft'
+event = "DpadLeft"
 
 [[button]]
 code = 120
-event = 'DpadRight'
+event = "DpadRight"
 
 [[button]]
 code = 122
-event = 'DpadDown'
+event = "DpadDown"

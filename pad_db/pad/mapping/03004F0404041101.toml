@@ -1,152 +1,152 @@
-name = 'Thrustmaster Warthog Throttle'
-type = 'Flight'
+name = "Thrustmaster Warthog Throttle"
+type = "Flight"
 
 [[button]]
 code = 0
-event = 'MousePush'
+event = "MousePush"
 
 [[button]]
 code = 1
-event = 'MicPush'
+event = "MicPush"
 
 [[button]]
 code = 2
-event = 'MicUp'
+event = "MicUp"
 
 [[button]]
 code = 3
-event = 'MicLeft'
+event = "MicLeft"
 
 [[button]]
 code = 4
-event = 'MicDown'
+event = "MicDown"
 
 [[button]]
 code = 5
-event = 'MicRight'
+event = "MicRight"
 
 [[button]]
 code = 6
-event = 'SpeedbrakeForward'
+event = "SpeedbrakeForward"
 
 [[button]]
 code = 7
-event = 'SpeedbrakeBackward'
+event = "SpeedbrakeBackward"
 
 [[button]]
 code = 8
-event = 'BoatForward'
+event = "BoatForward"
 
 [[button]]
 code = 9
-event = 'BoatBackward'
+event = "BoatBackward"
 
 [[button]]
 code = 10
-event = 'ChinaForward'
+event = "ChinaForward"
 
 [[button]]
 code = 11
-event = 'ChinaBackward'
+event = "ChinaBackward"
 
 [[button]]
 code = 12
-event = 'PinkyForward'
+event = "PinkyForward"
 
 [[button]]
 code = 13
-event = 'PinkyBackward'
+event = "PinkyBackward"
 
 [[button]]
 code = 14
-event = 'ThrottleButtonL'
+event = "ThrottleButtonL"
 
 [[button]]
 code = 15
-event = 'EngineFuelFlowL'
+event = "EngineFuelFlowL"
 
 [[button]]
 code = 416
-event = 'EngineFuelFlowR'
+event = "EngineFuelFlowR"
 
 [[button]]
 code = 417
-event = 'EngineLMotor'
+event = "EngineLMotor"
 
 [[button]]
 code = 418
-event = 'EngineRMotor'
+event = "EngineRMotor"
 
 [[button]]
 code = 419
-event = 'Apu'
+event = "Apu"
 
 [[button]]
 code = 420
-event = 'LandingGearSilence'
+event = "LandingGearSilence"
 
 [[button]]
 code = 421
-event = 'FlapsUp'
+event = "FlapsUp"
 
 [[button]]
 code = 422
-event = 'FlapsDown'
+event = "FlapsDown"
 
 [[button]]
 code = 423
-event = 'Eac'
+event = "Eac"
 
 [[button]]
 code = 424
-event = 'RadarAltimeter'
+event = "RadarAltimeter"
 
 [[button]]
 code = 425
-event = 'AutopilotToggle'
+event = "AutopilotToggle"
 
 [[button]]
 code = 426
-event = 'AutopilotPath'
+event = "AutopilotPath"
 
 [[button]]
 code = 427
-event = 'AutopilotAlt'
+event = "AutopilotAlt"
 
 [[button]]
 code = 430
-event = 'EngineLIgnition'
+event = "EngineLIgnition"
 
 [[button]]
 code = 431
-event = 'EngineRIgnition'
+event = "EngineRIgnition"
 
 [[axis]]
 code = 6
-event = 'Slew'
+event = "Slew"
 
 [[trigger]]
 code = 0
-event = 'MouseX'
+event = "MouseX"
 
 [[trigger]]
 code = 1
-event = 'MouseY'
+event = "MouseY"
 
 [[trigger]]
 code = 2
-event = 'ThrottleR'
+event = "ThrottleR"
 
 [[trigger]]
 code = 5
-event = 'ThrottleL'
+event = "ThrottleL"
 
 [[three_way]]
 code = 16
-neg = 'PovLeft'
-pos = 'PovRight'
+neg = "PovLeft"
+pos = "PovRight"
 
 [[three_way]]
 code = 17
-neg = 'PovUp'
-pos = 'PovDown'
+neg = "PovUp"
+pos = "PovDown"

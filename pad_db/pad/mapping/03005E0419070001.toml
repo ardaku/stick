@@ -1,86 +1,86 @@
-name = 'X360 Wireless Controller'
-type = 'Unknown'
+name = "X360 Wireless Controller"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 1
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 2
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 3
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 4
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 5
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 6
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 7
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 8
-event = 'Home'
+event = "Home"
 
 [[button]]
 code = 9
-event = 'JoyPush'
+event = "JoyPush"
 
 [[button]]
 code = 10
-event = 'CamPush'
+event = "CamPush"
 
 [[button]]
 code = 11
-event = 'DpadLeft'
+event = "DpadLeft"
 
 [[button]]
 code = 12
-event = 'DpadRight'
+event = "DpadRight"
 
 [[button]]
 code = 13
-event = 'DpadUp'
+event = "DpadUp"
 
 [[button]]
 code = 14
-event = 'DpadDown'
+event = "DpadDown"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"
 
 [[axis]]
 code = 3
-event = 'CamX'
+event = "CamX"
 
 [[axis]]
 code = 4
-event = 'CamY'
+event = "CamY"
 
 [[trigger]]
 code = 2
-event = 'TriggerL'
+event = "TriggerL"
 
 [[trigger]]
 code = 5
-event = 'TriggerR'
+event = "TriggerR"

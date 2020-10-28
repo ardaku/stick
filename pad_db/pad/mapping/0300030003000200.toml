@@ -1,42 +1,42 @@
-name = 'Miroof'
-type = 'Unknown'
+name = "Miroof"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 1
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 2
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 3
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 4
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 5
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 6
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 7
-event = 'Next'
+event = "Next"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"

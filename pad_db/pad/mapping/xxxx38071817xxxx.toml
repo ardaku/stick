@@ -1,38 +1,38 @@
-name = 'Mad Catz R.A.T. Pro X mouse'
-type = 'MOUSE'
+name = "Mad Catz R.A.T. Pro X mouse"
+type = "MOUSE"
 
 [[button]]
 code = 1
-event = 'MouseMenu'
+event = "MouseMenu"
 
 [[button]]
 code = 2
-event = 'WheelPush'
+event = "WheelPush"
 
 [[button]]
 code = 3
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 4
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 5
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 6
-event = 'Dpi'
+event = "Dpi"
 
 [[axis]]
 code = 0
-event = 'MouseX'
+event = "MouseX"
 
 [[axis]]
 code = 1
-event = 'MouseY'
+event = "MouseY"
 
 [[axis]]
 code = 5
-event = 'WheelX'
+event = "WheelX"

@@ -1,104 +1,104 @@
-name = 'Thrustmaster T-16000M Flight Stick'
-type = 'Flightstick'
+name = "Thrustmaster T-16000M Flight Stick"
+type = "Flightstick"
 
 [[button]]
 code = 0
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 1
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 2
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 3
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 4
-event = 'Action0'
+event = "Action0"
 
 [[button]]
 code = 5
-event = 'Action1'
+event = "Action1"
 
 [[button]]
 code = 6
-event = 'Action2'
+event = "Action2"
 
 [[button]]
 code = 7
-event = 'Action3'
+event = "Action3"
 
 [[button]]
 code = 8
-event = 'Action4'
+event = "Action4"
 
 [[button]]
 code = 9
-event = 'Action5'
+event = "Action5"
 
 [[button]]
 code = 10
-event = 'Action6'
+event = "Action6"
 
 [[button]]
 code = 11
-event = 'Action7'
+event = "Action7"
 
 [[button]]
 code = 12
-event = 'Action8'
+event = "Action8"
 
 [[button]]
 code = 13
-event = 'Action9'
+event = "Action9"
 
 [[button]]
 code = 14
-event = 'Action10'
+event = "Action10"
 
 [[button]]
 code = 15
-event = 'Action11'
+event = "Action11"
 
 [[button]]
 code = 256
-event = 'DpadUp'
+event = "DpadUp"
 
 [[button]]
 code = 257
-event = 'DpadDown'
+event = "DpadDown"
 
 [[button]]
 code = 258
-event = 'DpadLeft'
+event = "DpadLeft"
 
 [[button]]
 code = 259
-event = 'DpadRight'
+event = "DpadRight"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"
 
 [[axis]]
 code = 5
-event = 'JoyZ'
+event = "JoyZ"
 
 [[three_way]]
 code = 16
-neg = 'DpadLeft'
-pos = 'DpadRight'
+neg = "DpadLeft"
+pos = "DpadRight"
 
 [[three_way]]
 code = 17
-neg = 'DpadUp'
-pos = 'DpadDown'
+neg = "DpadUp"
+pos = "DpadDown"

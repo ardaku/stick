@@ -1,72 +1,72 @@
-name = 'Logitech WingMan Cordless RumblePad'
-type = 'Unknown'
+name = "Logitech WingMan Cordless RumblePad"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 1
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 2
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 3
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 4
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 5
-event = 'Home'
+event = "Home"
 
 [[button]]
 code = 6
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 7
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 8
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 9
-event = 'TriggerL'
+event = "TriggerL"
 
 [[button]]
 code = 10
-event = 'TriggerR'
+event = "TriggerR"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"
 
 [[axis]]
 code = 3
-event = 'CamX'
+event = "CamX"
 
 [[axis]]
 code = 4
-event = 'CamY'
+event = "CamY"
 
 [[three_way]]
 code = 16
-neg = 'DpadLeft'
-pos = 'DpadRight'
+neg = "DpadLeft"
+pos = "DpadRight"
 
 [[three_way]]
 code = 17
-neg = 'DpadUp'
-pos = 'DpadDown'
+neg = "DpadUp"
+pos = "DpadDown"

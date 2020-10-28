@@ -1,66 +1,66 @@
-name = 'Raphnet Technologies GC/N64 to USB v3.6'
-type = 'Unknown'
+name = "Raphnet Technologies GC/N64 to USB v3.6"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 1
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 2
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 3
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 4
-event = 'TriggerL'
+event = "TriggerL"
 
 [[button]]
 code = 5
-event = 'TriggerR'
+event = "TriggerR"
 
 [[button]]
 code = 7
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 8
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 10
-event = 'DpadUp'
+event = "DpadUp"
 
 [[button]]
 code = 11
-event = 'DpadDown'
+event = "DpadDown"
 
 [[button]]
 code = 12
-event = 'DpadLeft'
+event = "DpadLeft"
 
 [[button]]
 code = 13
-event = 'DpadRight'
+event = "DpadRight"
 
 [[axis]]
 code = 0
-event = 'JoyX'
+event = "JoyX"
 
 [[axis]]
 code = 1
-event = 'JoyY'
+event = "JoyY"
 
 [[axis]]
 code = 3
-event = 'CamX'
+event = "CamX"
 
 [[axis]]
 code = 4
-event = 'CamY'
+event = "CamY"

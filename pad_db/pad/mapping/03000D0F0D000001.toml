@@ -1,56 +1,56 @@
-name = 'hori'
-type = 'Unknown'
+name = "hori"
+type = "Unknown"
 
 [[button]]
 code = 0
-event = 'ActionA'
+event = "ActionA"
 
 [[button]]
 code = 1
-event = 'ActionH'
+event = "ActionH"
 
 [[button]]
 code = 2
-event = 'ActionV'
+event = "ActionV"
 
 [[button]]
 code = 3
-event = 'BumperL'
+event = "BumperL"
 
 [[button]]
 code = 4
-event = 'JoyX'
+event = "JoyX"
 
 [[button]]
 code = 5
-event = 'JoyY'
+event = "JoyY"
 
 [[button]]
 code = 6
-event = 'ActionB'
+event = "ActionB"
 
 [[button]]
 code = 7
-event = 'BumperR'
+event = "BumperR"
 
 [[button]]
 code = 8
-event = 'Prev'
+event = "Prev"
 
 [[button]]
 code = 9
-event = 'Next'
+event = "Next"
 
 [[button]]
 code = 10
-event = 'Home'
+event = "Home"
 
 [[three_way]]
 code = 16
-neg = 'DpadLeft'
-pos = 'DpadRight'
+neg = "DpadLeft"
+pos = "DpadRight"
 
 [[three_way]]
 code = 17
-neg = 'DpadUp'
-pos = 'DpadDown'
+neg = "DpadUp"
+pos = "DpadDown"
