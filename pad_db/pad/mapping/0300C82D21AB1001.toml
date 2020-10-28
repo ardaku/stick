@@ -2,24 +2,16 @@ name = "8BitDo SFC30"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionB"
+code = 6
+event = "BumperL"
 
 [[button]]
-code = 1
-event = "ActionA"
-
-[[button]]
-code = 3
-event = "ActionV"
+code = 11
+event = "Next"
 
 [[button]]
 code = 4
 event = "ActionH"
-
-[[button]]
-code = 6
-event = "BumperL"
 
 [[button]]
 code = 7
@@ -30,13 +22,21 @@ code = 10
 event = "Prev"
 
 [[button]]
-code = 11
-event = "Next"
+code = 1
+event = "ActionA"
 
-[[axis]]
+[[button]]
 code = 0
-event = "JoyX"
+event = "ActionB"
+
+[[button]]
+code = 3
+event = "ActionV"
 
 [[axis]]
 code = 1
 event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"

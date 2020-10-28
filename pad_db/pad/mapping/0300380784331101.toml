@@ -2,56 +2,64 @@ name = "Mad Catz FightStick TE S+ (PS3)"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionH"
-
-[[button]]
-code = 1
-event = "ActionA"
-
-[[button]]
-code = 2
-event = "ActionB"
+code = 9
+event = "Next"
 
 [[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
+code = 12
+event = "Home"
+
+[[button]]
 code = 4
 event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 9
-event = "Next"
 
 [[button]]
 code = 10
 event = "JoyPush"
 
 [[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 2
+event = "ActionB"
+
+[[button]]
 code = 11
 event = "CamPush"
 
 [[button]]
-code = 12
-event = "Home"
+code = 0
+event = "ActionH"
+
+[[button]]
+code = 7
+event = "TriggerR"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 1
+event = "ActionA"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[axis]]
+code = 3
+event = "CamY"
+
+[[axis]]
+code = 2
+event = "CamX"
 
 [[axis]]
 code = 0
@@ -61,20 +69,12 @@ event = "JoyX"
 code = 1
 event = "JoyY"
 
-[[axis]]
-code = 2
-event = "CamX"
-
-[[axis]]
-code = 3
-event = "CamY"
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
-
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"

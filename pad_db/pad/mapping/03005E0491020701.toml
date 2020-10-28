@@ -2,16 +2,36 @@ name = "X360 Wireless Controller"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 13
+event = "DpadUp"
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 8
+event = "Home"
 
 [[button]]
-code = 2
-event = "ActionH"
+code = 7
+event = "Next"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 12
+event = "DpadRight"
+
+[[button]]
+code = 14
+event = "DpadDown"
+
+[[button]]
+code = 11
+event = "DpadLeft"
+
+[[button]]
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 3
@@ -22,22 +42,6 @@ code = 4
 event = "BumperL"
 
 [[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 6
-event = "Prev"
-
-[[button]]
-code = 7
-event = "Next"
-
-[[button]]
-code = 8
-event = "Home"
-
-[[button]]
 code = 9
 event = "JoyPush"
 
@@ -46,24 +50,16 @@ code = 10
 event = "CamPush"
 
 [[button]]
-code = 11
-event = "DpadLeft"
+code = 1
+event = "ActionB"
 
 [[button]]
-code = 12
-event = "DpadRight"
+code = 2
+event = "ActionH"
 
 [[button]]
-code = 13
-event = "DpadUp"
-
-[[button]]
-code = 14
-event = "DpadDown"
-
-[[axis]]
 code = 0
-event = "JoyX"
+event = "ActionA"
 
 [[axis]]
 code = 1
@@ -76,6 +72,10 @@ event = "CamX"
 [[axis]]
 code = 4
 event = "CamY"
+
+[[axis]]
+code = 0
+event = "JoyX"
 
 [[trigger]]
 code = 2

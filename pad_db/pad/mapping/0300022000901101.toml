@@ -2,28 +2,12 @@ name = "8BitDo NES30 Pro"
 type = "NES"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 3
-event = "ActionV"
+code = 11
+event = "Next"
 
 [[button]]
 code = 4
 event = "ActionH"
-
-[[button]]
-code = 6
-event = "BumperL"
-
-[[button]]
-code = 7
-event = "BumperR"
 
 [[button]]
 code = 8
@@ -34,24 +18,36 @@ code = 9
 event = "TriggerR"
 
 [[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
 code = 10
 event = "Prev"
 
 [[button]]
-code = 11
-event = "Next"
+code = 6
+event = "BumperL"
+
+[[button]]
+code = 14
+event = "CamPush"
 
 [[button]]
 code = 13
 event = "JoyPush"
 
 [[button]]
-code = 14
-event = "CamPush"
+code = 1
+event = "ActionB"
 
-[[axis]]
-code = 0
-event = "JoyX"
+[[button]]
+code = 7
+event = "BumperR"
 
 [[axis]]
 code = 1
@@ -64,6 +60,10 @@ event = "CamX"
 [[axis]]
 code = 3
 event = "CamY"
+
+[[axis]]
+code = 0
+event = "JoyX"
 
 [[three_way]]
 code = 16

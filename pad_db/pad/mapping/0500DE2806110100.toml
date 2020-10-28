@@ -2,28 +2,44 @@ name = "Steam Controller"
 type = "Unknown"
 
 [[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 14
+event = "DpadDown"
+
+[[button]]
+code = 15
+event = "DpadLeft"
+
+[[button]]
 code = 0
 event = "ActionA"
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 12
+event = "DpadUp"
+
+[[button]]
+code = 8
+event = "Home"
 
 [[button]]
 code = 2
 event = "ActionH"
 
 [[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
+code = 9
+event = "JoyPush"
 
 [[button]]
 code = 6
@@ -34,36 +50,20 @@ code = 7
 event = "Next"
 
 [[button]]
-code = 8
-event = "Home"
-
-[[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 12
-event = "DpadUp"
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 13
 event = "DpadRight"
 
-[[button]]
-code = 14
-event = "DpadDown"
-
-[[button]]
-code = 15
-event = "DpadLeft"
+[[axis]]
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 0
 event = "JoyX"
-
-[[axis]]
-code = 1
-event = "JoyY"
 
 [[trigger]]
 code = 2

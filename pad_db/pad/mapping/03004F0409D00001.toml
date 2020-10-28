@@ -2,40 +2,8 @@ name = "Thrustmaster Run N Drive Wireless PS3"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionH"
-
-[[button]]
-code = 1
-event = "ActionA"
-
-[[button]]
-code = 2
-event = "ActionB"
-
-[[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
 code = 7
 event = "TriggerR"
-
-[[button]]
-code = 8
-event = "Prev"
 
 [[button]]
 code = 9
@@ -46,12 +14,48 @@ code = 10
 event = "JoyPush"
 
 [[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 0
+event = "ActionH"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
 code = 11
 event = "CamPush"
 
 [[button]]
+code = 2
+event = "ActionB"
+
+[[button]]
+code = 1
+event = "ActionA"
+
+[[button]]
 code = 12
 event = "Home"
+
+[[axis]]
+code = 3
+event = "CamY"
 
 [[axis]]
 code = 0
@@ -64,10 +68,6 @@ event = "JoyY"
 [[axis]]
 code = 2
 event = "CamX"
-
-[[axis]]
-code = 3
-event = "CamY"
 
 [[three_way]]
 code = 16

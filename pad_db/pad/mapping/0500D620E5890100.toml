@@ -2,48 +2,44 @@ name = "Moga 2 HID"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
-code = 3
-event = "ActionV"
+code = 6
+event = "Next"
 
 [[button]]
 code = 4
 event = "BumperL"
 
 [[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 9
+event = "Prev"
+
+[[button]]
 code = 5
 event = "BumperR"
 
 [[button]]
-code = 6
-event = "Next"
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 7
 event = "JoyPush"
 
 [[button]]
-code = 8
-event = "CamPush"
+code = 2
+event = "ActionH"
 
 [[button]]
-code = 9
-event = "Prev"
-
-[[axis]]
-code = 0
-event = "JoyX"
+code = 8
+event = "CamPush"
 
 [[axis]]
 code = 1
@@ -57,20 +53,24 @@ event = "CamX"
 code = 3
 event = "CamY"
 
-[[trigger]]
-code = 4
-event = "TriggerR"
+[[axis]]
+code = 0
+event = "JoyX"
 
 [[trigger]]
 code = 5
 event = "TriggerL"
 
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+[[trigger]]
+code = 4
+event = "TriggerR"
 
 [[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"

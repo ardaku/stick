@@ -2,36 +2,36 @@ name = "iBuffalo SNES Controller"
 type = "NES"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 5
+event = "BumperR"
 
 [[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 2
-event = "ActionV"
+code = 7
+event = "Next"
 
 [[button]]
 code = 3
 event = "ActionH"
 
 [[button]]
-code = 4
-event = "BumperL"
+code = 0
+event = "ActionA"
 
 [[button]]
-code = 5
-event = "BumperR"
+code = 2
+event = "ActionV"
+
+[[button]]
+code = 1
+event = "ActionB"
 
 [[button]]
 code = 6
 event = "Prev"
 
 [[button]]
-code = 7
-event = "Next"
+code = 4
+event = "BumperL"
 
 [[three_way]]
 code = 0

@@ -2,6 +2,18 @@ name = "Saitek Saitek P150"
 type = "Unknown"
 
 [[button]]
+code = 7
+event = "BumperL"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 5
+event = "TriggerR"
+
+[[button]]
 code = 0
 event = "ActionA"
 
@@ -20,18 +32,6 @@ event = "ActionH"
 [[button]]
 code = 4
 event = "ActionV"
-
-[[button]]
-code = 5
-event = "TriggerR"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 7
-event = "BumperL"
 
 [[three_way]]
 code = 0

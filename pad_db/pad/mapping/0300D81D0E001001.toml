@@ -2,20 +2,20 @@ name = "Savior"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 2
-event = "BumperR"
+code = 0
+event = "ActionA"
 
 [[button]]
-code = 3
-event = "TriggerR"
+code = 11
+event = "CamPush"
+
+[[button]]
+code = 8
+event = "Prev"
 
 [[button]]
 code = 4
@@ -26,28 +26,28 @@ code = 5
 event = "ActionV"
 
 [[button]]
+code = 3
+event = "TriggerR"
+
+[[button]]
 code = 6
 event = "BumperL"
-
-[[button]]
-code = 7
-event = "TriggerL"
-
-[[button]]
-code = 8
-event = "Prev"
 
 [[button]]
 code = 9
 event = "Next"
 
 [[button]]
-code = 10
-event = "JoyPush"
+code = 7
+event = "TriggerL"
 
 [[button]]
-code = 11
-event = "CamPush"
+code = 2
+event = "BumperR"
+
+[[button]]
+code = 10
+event = "JoyPush"
 
 [[axis]]
 code = 0

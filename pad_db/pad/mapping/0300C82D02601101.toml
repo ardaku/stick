@@ -2,32 +2,28 @@ name = "8BitDo SN30 Pro+"
 type = "NES"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 2
-event = "Home"
+code = 14
+event = "CamPush"
+
+[[button]]
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
-code = 4
-event = "ActionH"
+code = 10
+event = "Prev"
 
 [[button]]
 code = 6
 event = "BumperL"
-
-[[button]]
-code = 7
-event = "BumperR"
 
 [[button]]
 code = 8
@@ -38,20 +34,24 @@ code = 9
 event = "TriggerR"
 
 [[button]]
-code = 10
-event = "Prev"
-
-[[button]]
 code = 11
 event = "Next"
+
+[[button]]
+code = 2
+event = "Home"
+
+[[button]]
+code = 4
+event = "ActionH"
 
 [[button]]
 code = 13
 event = "JoyPush"
 
 [[button]]
-code = 14
-event = "CamPush"
+code = 7
+event = "BumperR"
 
 [[axis]]
 code = 0
@@ -70,11 +70,11 @@ code = 3
 event = "CamY"
 
 [[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
-
-[[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"

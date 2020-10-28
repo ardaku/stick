@@ -2,56 +2,60 @@ name = "DragonRise Inc. Generic USB Joystick"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionV"
-
-[[button]]
 code = 1
 event = "ActionB"
-
-[[button]]
-code = 2
-event = "ActionA"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 9
-event = "Next"
 
 [[button]]
 code = 10
 event = "JoyPush"
 
 [[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
 code = 11
 event = "CamPush"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionV"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 7
+event = "TriggerR"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 2
+event = "ActionA"
 
 [[axis]]
 code = 0
 event = "JoyX"
+
+[[axis]]
+code = 4
+event = "CamY"
 
 [[axis]]
 code = 1
@@ -60,10 +64,6 @@ event = "JoyY"
 [[axis]]
 code = 3
 event = "CamX"
-
-[[axis]]
-code = 4
-event = "CamY"
 
 [[three_way]]
 code = 16

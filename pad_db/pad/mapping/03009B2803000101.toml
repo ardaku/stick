@@ -18,10 +18,6 @@ code = 3
 event = "Next"
 
 [[button]]
-code = 4
-event = "ActionB"
-
-[[button]]
 code = 5
 event = "ActionV"
 
@@ -30,13 +26,17 @@ code = 6
 event = "BumperL"
 
 [[button]]
+code = 4
+event = "ActionB"
+
+[[button]]
 code = 7
 event = "BumperR"
 
 [[axis]]
-code = 0
-event = "JoyX"
-
-[[axis]]
 code = 1
 event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"

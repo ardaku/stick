@@ -2,28 +2,32 @@ name = "Super Joy Box 5 Pro"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionV"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 2
-event = "ActionA"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
 code = 4
 event = "TriggerL"
 
 [[button]]
+code = 13
+event = "DpadRight"
+
+[[button]]
+code = 12
+event = "DpadUp"
+
+[[button]]
 code = 5
 event = "TriggerR"
+
+[[button]]
+code = 8
+event = "Next"
+
+[[button]]
+code = 15
+event = "DpadLeft"
+
+[[button]]
+code = 2
+event = "ActionA"
 
 [[button]]
 code = 6
@@ -34,8 +38,12 @@ code = 7
 event = "BumperR"
 
 [[button]]
-code = 8
-event = "Next"
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionV"
 
 [[button]]
 code = 9
@@ -46,28 +54,16 @@ code = 10
 event = "JoyPush"
 
 [[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
 code = 11
 event = "CamPush"
 
 [[button]]
-code = 12
-event = "DpadUp"
-
-[[button]]
-code = 13
-event = "DpadRight"
-
-[[button]]
 code = 14
 event = "DpadDown"
-
-[[button]]
-code = 15
-event = "DpadLeft"
-
-[[axis]]
-code = 0
-event = "JoyX"
 
 [[axis]]
 code = 1
@@ -76,6 +72,10 @@ event = "JoyY"
 [[axis]]
 code = 2
 event = "CamX"
+
+[[axis]]
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 3

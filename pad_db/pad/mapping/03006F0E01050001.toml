@@ -1,6 +1,8 @@
 name = "PDP Wired Gamepad for Xbox 360"
 type = "XBox"
 
+deadzone = 0.070
+
 [[button]]
 code = 16
 event = "ActionA"
@@ -54,20 +56,20 @@ code = 30
 event = "CamPush"
 
 [[axis]]
-code = 0
-event = "JoyX"
-
-[[axis]]
 code = 1
 event = "JoyY"
 
 [[axis]]
-code = 3
-event = "CamX"
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 4
 event = "CamY"
+
+[[axis]]
+code = 3
+event = "CamX"
 
 [[trigger]]
 code = 2
