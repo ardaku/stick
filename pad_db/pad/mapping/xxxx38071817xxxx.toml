@@ -36,7 +36,3 @@ event = "MouseY"
 [[axis]]
 code = 5
 event = "WheelX"
-
-[[wheel]]
-code = 8
-event = "WheelY"

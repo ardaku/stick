@@ -2,20 +2,12 @@ name = "Xbox One Wireless Controller"
 type = "Unknown"
 
 [[button]]
-code = 4
-event = "BumperL"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 1
 event = "ActionB"
-
-[[button]]
-code = 8
-event = "Home"
-
-[[button]]
-code = 5
-event = "BumperR"
 
 [[button]]
 code = 2
@@ -26,8 +18,24 @@ code = 3
 event = "ActionV"
 
 [[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
 code = 6
 event = "Prev"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 8
+event = "Home"
 
 [[button]]
 code = 9
@@ -37,44 +45,36 @@ event = "JoyPush"
 code = 10
 event = "CamPush"
 
-[[button]]
+[[axis]]
 code = 0
-event = "ActionA"
-
-[[button]]
-code = 7
-event = "Next"
+event = "JoyX"
 
 [[axis]]
 code = 1
 event = "JoyY"
 
 [[axis]]
-code = 0
-event = "JoyX"
+code = 3
+event = "CamX"
 
 [[axis]]
 code = 4
 event = "CamY"
 
-[[axis]]
-code = 3
-event = "CamX"
+[[trigger]]
+code = 2
+event = "TriggerL"
 
 [[trigger]]
 code = 5
 event = "TriggerR"
 
-[[trigger]]
-code = 2
-event = "TriggerL"
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
 
 [[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
-
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"

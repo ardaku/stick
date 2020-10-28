@@ -2,10 +2,6 @@ name = "HORI CO. LTD. FIGHTING STICK 3"
 type = "Unknown"
 
 [[button]]
-code = 8
-event = "Prev"
-
-[[button]]
 code = 0
 event = "ActionH"
 
@@ -14,12 +10,12 @@ code = 1
 event = "ActionA"
 
 [[button]]
-code = 3
-event = "ActionV"
+code = 2
+event = "ActionB"
 
 [[button]]
-code = 9
-event = "Next"
+code = 3
+event = "ActionV"
 
 [[button]]
 code = 4
@@ -30,27 +26,31 @@ code = 5
 event = "BumperR"
 
 [[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
 code = 7
 event = "TriggerR"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 9
+event = "Next"
 
 [[button]]
 code = 12
 event = "Home"
 
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 2
-event = "ActionB"
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
 
 [[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
-
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"

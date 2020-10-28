@@ -6,37 +6,37 @@ code = 0
 event = "ActionB"
 
 [[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 6
-event = "Prev"
+code = 1
+event = "ActionA"
 
 [[button]]
 code = 2
 event = "ActionV"
 
 [[button]]
-code = 4
-event = "BumperL"
+code = 3
+event = "ActionH"
 
 [[button]]
-code = 7
-event = "Next"
+code = 4
+event = "BumperL"
 
 [[button]]
 code = 5
 event = "BumperR"
 
 [[button]]
-code = 1
-event = "ActionA"
+code = 6
+event = "Prev"
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 7
+event = "Next"
 
 [[axis]]
 code = 0
 event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"

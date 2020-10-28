@@ -2,32 +2,40 @@ name = "Cyborg V.3 Rumble Pad"
 type = "Unknown"
 
 [[button]]
+code = 0
+event = "ActionH"
+
+[[button]]
 code = 1
 event = "ActionA"
+
+[[button]]
+code = 2
+event = "ActionB"
 
 [[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
-code = 0
-event = "ActionH"
-
-[[button]]
 code = 4
 event = "BumperL"
-
-[[button]]
-code = 8
-event = "Prev"
 
 [[button]]
 code = 5
 event = "BumperR"
 
 [[button]]
+code = 8
+event = "Prev"
+
+[[button]]
 code = 9
 event = "Next"
+
+[[button]]
+code = 10
+event = "JoyPush"
 
 [[button]]
 code = 11
@@ -37,25 +45,17 @@ event = "CamPush"
 code = 12
 event = "Home"
 
-[[button]]
-code = 10
-event = "JoyPush"
-
-[[button]]
-code = 2
-event = "ActionB"
-
 [[axis]]
-code = 2
-event = "CamX"
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 1
 event = "JoyY"
 
 [[axis]]
-code = 0
-event = "JoyX"
+code = 2
+event = "CamX"
 
 [[axis]]
 code = 4
@@ -67,11 +67,11 @@ neg = "TriggerR"
 pos = "TriggerL"
 
 [[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
-
-[[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

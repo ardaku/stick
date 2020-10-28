@@ -2,16 +2,12 @@ name = "8BitDo Wireless Adapter"
 type = "Unknown"
 
 [[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
 code = 1
 event = "ActionB"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 7
-event = "Next"
 
 [[button]]
 code = 2
@@ -26,44 +22,48 @@ code = 4
 event = "BumperL"
 
 [[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 0
-event = "ActionA"
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 6
 event = "Prev"
 
 [[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 9
+event = "JoyPush"
+
+[[button]]
 code = 10
 event = "CamPush"
 
 [[axis]]
-code = 3
-event = "CamX"
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 1
 event = "JoyY"
 
 [[axis]]
-code = 4
-event = "CamY"
+code = 3
+event = "CamX"
 
 [[axis]]
-code = 0
-event = "JoyX"
-
-[[trigger]]
-code = 5
-event = "TriggerR"
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2
 event = "TriggerL"
+
+[[trigger]]
+code = 5
+event = "TriggerR"
 
 [[three_way]]
 code = 16

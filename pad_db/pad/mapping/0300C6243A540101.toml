@@ -2,6 +2,18 @@ name = "PowerA 1428124-01"
 type = "Unknown"
 
 [[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
 code = 3
 event = "ActionV"
 
@@ -10,12 +22,8 @@ code = 4
 event = "BumperL"
 
 [[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 1
-event = "ActionB"
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 6
@@ -26,28 +34,16 @@ code = 7
 event = "Next"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
 code = 8
 event = "Home"
 
 [[button]]
-code = 5
-event = "BumperR"
+code = 9
+event = "JoyPush"
 
 [[button]]
 code = 10
 event = "CamPush"
-
-[[button]]
-code = 2
-event = "ActionH"
-
-[[axis]]
-code = 4
-event = "CamY"
 
 [[axis]]
 code = 0
@@ -61,6 +57,10 @@ event = "JoyY"
 code = 3
 event = "CamX"
 
+[[axis]]
+code = 4
+event = "CamY"
+
 [[trigger]]
 code = 2
 event = "TriggerL"
@@ -70,11 +70,11 @@ code = 5
 event = "TriggerR"
 
 [[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
-
-[[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

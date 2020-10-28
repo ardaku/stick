@@ -2,28 +2,16 @@ name = "Gravis Eliminator GamePad Pro"
 type = "Unknown"
 
 [[button]]
-code = 2
-event = "ActionB"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 9
-event = "Next"
-
-[[button]]
 code = 0
 event = "ActionH"
 
 [[button]]
 code = 1
 event = "ActionA"
+
+[[button]]
+code = 2
+event = "ActionB"
 
 [[button]]
 code = 3
@@ -34,12 +22,24 @@ code = 4
 event = "BumperL"
 
 [[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
 code = 7
 event = "TriggerR"
 
 [[button]]
 code = 8
 event = "Prev"
+
+[[button]]
+code = 9
+event = "Next"
 
 [[axis]]
 code = 0

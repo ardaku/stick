@@ -2,14 +2,6 @@ name = "GameSir G3w"
 type = "Unknown"
 
 [[button]]
-code = 13
-event = "JoyPush"
-
-[[button]]
-code = 10
-event = "Prev"
-
-[[button]]
 code = 0
 event = "ActionA"
 
@@ -18,12 +10,8 @@ code = 1
 event = "ActionB"
 
 [[button]]
-code = 7
-event = "BumperR"
-
-[[button]]
-code = 11
-event = "Next"
+code = 3
+event = "ActionH"
 
 [[button]]
 code = 4
@@ -34,12 +22,32 @@ code = 6
 event = "BumperL"
 
 [[button]]
+code = 7
+event = "BumperR"
+
+[[button]]
+code = 10
+event = "Prev"
+
+[[button]]
+code = 11
+event = "Next"
+
+[[button]]
+code = 13
+event = "JoyPush"
+
+[[button]]
 code = 14
 event = "CamPush"
 
-[[button]]
-code = 3
-event = "ActionH"
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 2
@@ -48,14 +56,6 @@ event = "CamX"
 [[axis]]
 code = 3
 event = "CamY"
-
-[[axis]]
-code = 1
-event = "JoyY"
-
-[[axis]]
-code = 0
-event = "JoyX"
 
 [[trigger]]
 code = 4

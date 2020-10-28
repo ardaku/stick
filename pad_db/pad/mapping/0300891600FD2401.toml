@@ -2,10 +2,6 @@ name = "Razer Onza Tournament Edition"
 type = "Unknown"
 
 [[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
 code = 0
 event = "ActionA"
 
@@ -14,24 +10,36 @@ code = 1
 event = "ActionB"
 
 [[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
 code = 4
 event = "BumperL"
 
 [[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 12
-event = "DpadRight"
-
-[[button]]
-code = 14
-event = "DpadDown"
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 6
 event = "Prev"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 8
+event = "Home"
+
+[[button]]
+code = 9
+event = "JoyPush"
 
 [[button]]
 code = 10
@@ -42,40 +50,32 @@ code = 11
 event = "DpadLeft"
 
 [[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 3
-event = "ActionV"
+code = 12
+event = "DpadRight"
 
 [[button]]
 code = 13
 event = "DpadUp"
 
 [[button]]
-code = 7
-event = "Next"
-
-[[button]]
-code = 8
-event = "Home"
-
-[[axis]]
-code = 1
-event = "JoyY"
-
-[[axis]]
-code = 4
-event = "CamY"
+code = 14
+event = "DpadDown"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
 code = 3
 event = "CamX"
+
+[[axis]]
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2

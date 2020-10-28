@@ -2,24 +2,20 @@ name = "HJC Game GAMEPAD"
 type = "Unknown"
 
 [[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
-code = 10
-event = "JoyPush"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 7
-event = "TriggerR"
+code = 2
+event = "ActionH"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 3
+event = "ActionV"
 
 [[button]]
 code = 4
@@ -30,12 +26,12 @@ code = 5
 event = "BumperR"
 
 [[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
 code = 6
 event = "TriggerL"
+
+[[button]]
+code = 7
+event = "TriggerR"
 
 [[button]]
 code = 8
@@ -44,6 +40,10 @@ event = "Prev"
 [[button]]
 code = 9
 event = "Next"
+
+[[button]]
+code = 10
+event = "JoyPush"
 
 [[button]]
 code = 11

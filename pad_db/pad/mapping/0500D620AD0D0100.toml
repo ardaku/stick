@@ -2,44 +2,40 @@ name = "Moga Pro"
 type = "Unknown"
 
 [[button]]
-code = 8
-event = "CamPush"
-
-[[button]]
-code = 4
-event = "BumperL"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 6
-event = "Next"
-
-[[button]]
 code = 2
 event = "ActionH"
-
-[[button]]
-code = 7
-event = "JoyPush"
-
-[[button]]
-code = 0
-event = "ActionA"
 
 [[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
 code = 5
 event = "BumperR"
 
-[[axis]]
-code = 3
-event = "CamY"
+[[button]]
+code = 6
+event = "Next"
+
+[[button]]
+code = 7
+event = "JoyPush"
+
+[[button]]
+code = 8
+event = "CamPush"
 
 [[axis]]
 code = 0
@@ -53,20 +49,24 @@ event = "JoyY"
 code = 2
 event = "CamX"
 
-[[trigger]]
-code = 5
-event = "TriggerL"
+[[axis]]
+code = 3
+event = "CamY"
 
 [[trigger]]
 code = 4
 event = "TriggerR"
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[trigger]]
+code = 5
+event = "TriggerL"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"
