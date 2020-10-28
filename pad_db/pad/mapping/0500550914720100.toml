@@ -2,52 +2,48 @@ name = "NVIDIA Controller v01.04"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 8
+event = "CamPush"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 6
-event = "Next"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 7
 event = "JoyPush"
 
 [[button]]
-code = 8
-event = "CamPush"
+code = 5
+event = "BumperR"
 
 [[button]]
-code = 14
-event = "Prev"
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 4
+event = "BumperL"
 
 [[button]]
 code = 16
 event = "Home"
 
-[[axis]]
-code = 0
-event = "JoyX"
+[[button]]
+code = 6
+event = "Next"
+
+[[button]]
+code = 14
+event = "Prev"
 
 [[axis]]
 code = 1
@@ -58,23 +54,27 @@ code = 2
 event = "CamX"
 
 [[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
 code = 5
 event = "CamY"
-
-[[trigger]]
-code = 3
-event = "TriggerL"
 
 [[trigger]]
 code = 4
 event = "TriggerR"
 
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
+[[trigger]]
+code = 3
+event = "TriggerL"
 
 [[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"

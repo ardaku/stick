@@ -6,44 +6,44 @@ code = 0
 event = "ActionA"
 
 [[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
-code = 3
-event = "ActionV"
+code = 6
+event = "Next"
 
 [[button]]
 code = 4
 event = "BumperL"
 
 [[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 6
-event = "Next"
+code = 1
+event = "ActionB"
 
 [[button]]
 code = 7
 event = "JoyPush"
 
 [[button]]
+code = 9
+event = "Prev"
+
+[[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
 code = 8
 event = "CamPush"
 
 [[button]]
-code = 9
-event = "Prev"
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 5
+event = "BumperR"
 
 [[axis]]
-code = 0
-event = "JoyX"
+code = 3
+event = "CamY"
 
 [[axis]]
 code = 1
@@ -54,16 +54,16 @@ code = 2
 event = "CamX"
 
 [[axis]]
-code = 3
-event = "CamY"
-
-[[trigger]]
-code = 4
-event = "TriggerR"
+code = 0
+event = "JoyX"
 
 [[trigger]]
 code = 5
 event = "TriggerL"
+
+[[trigger]]
+code = 4
+event = "TriggerR"
 
 [[three_way]]
 code = 16

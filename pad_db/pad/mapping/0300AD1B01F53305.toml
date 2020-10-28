@@ -2,20 +2,20 @@ name = "Hori Pad EX Turbo 2"
 type = "Unknown"
 
 [[button]]
+code = 10
+event = "CamPush"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
 code = 0
 event = "ActionA"
 
 [[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
 code = 2
 event = "ActionH"
-
-[[button]]
-code = 3
-event = "ActionV"
 
 [[button]]
 code = 4
@@ -26,24 +26,28 @@ code = 5
 event = "BumperR"
 
 [[button]]
-code = 6
-event = "Prev"
-
-[[button]]
 code = 7
 event = "Next"
 
 [[button]]
-code = 8
-event = "Home"
+code = 1
+event = "ActionB"
 
 [[button]]
 code = 9
 event = "JoyPush"
 
 [[button]]
-code = 10
-event = "CamPush"
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 8
+event = "Home"
+
+[[axis]]
+code = 4
+event = "CamY"
 
 [[axis]]
 code = 0
@@ -56,10 +60,6 @@ event = "JoyY"
 [[axis]]
 code = 3
 event = "CamX"
-
-[[axis]]
-code = 4
-event = "CamY"
 
 [[trigger]]
 code = 2

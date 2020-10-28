@@ -2,8 +2,32 @@ name = "Chinese-made Xbox Controller"
 type = "Unknown"
 
 [[button]]
+code = 8
+event = "JoyPush"
+
+[[button]]
+code = 9
+event = "CamPush"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 5
+event = "BumperL"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
 code = 0
 event = "ActionA"
+
+[[button]]
+code = 4
+event = "ActionV"
 
 [[button]]
 code = 1
@@ -14,44 +38,20 @@ code = 2
 event = "BumperR"
 
 [[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 4
-event = "ActionV"
-
-[[button]]
-code = 5
-event = "BumperL"
-
-[[button]]
-code = 6
-event = "Prev"
-
-[[button]]
 code = 7
 event = "Next"
 
-[[button]]
-code = 8
-event = "JoyPush"
-
-[[button]]
-code = 9
-event = "CamPush"
-
 [[axis]]
-code = 0
-event = "JoyX"
+code = 3
+event = "CamX"
 
 [[axis]]
 code = 1
 event = "JoyY"
 
 [[axis]]
-code = 3
-event = "CamX"
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 4

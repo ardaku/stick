@@ -2,40 +2,36 @@ name = "Thrustmaster Dual Analog 4"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 5
+event = "TriggerL"
 
 [[button]]
-code = 1
-event = "ActionH"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 2
 event = "ActionB"
 
 [[button]]
-code = 3
-event = "ActionV"
+code = 1
+event = "ActionH"
 
 [[button]]
 code = 4
 event = "BumperL"
 
 [[button]]
-code = 5
-event = "TriggerL"
+code = 8
+event = "Prev"
 
 [[button]]
 code = 6
 event = "BumperR"
 
 [[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 8
-event = "Prev"
+code = 11
+event = "CamPush"
 
 [[button]]
 code = 9
@@ -46,12 +42,12 @@ code = 10
 event = "JoyPush"
 
 [[button]]
-code = 11
-event = "CamPush"
+code = 3
+event = "ActionV"
 
-[[axis]]
-code = 0
-event = "JoyX"
+[[button]]
+code = 7
+event = "TriggerR"
 
 [[axis]]
 code = 1
@@ -62,15 +58,19 @@ code = 2
 event = "CamX"
 
 [[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
 code = 3
 event = "CamY"
-
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
 
 [[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"

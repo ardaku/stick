@@ -2,8 +2,16 @@ name = "Razer Serval"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 8
+event = "Home"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 1
@@ -18,36 +26,24 @@ code = 3
 event = "ActionV"
 
 [[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
 code = 6
 event = "Prev"
-
-[[button]]
-code = 7
-event = "Next"
-
-[[button]]
-code = 8
-event = "Home"
 
 [[button]]
 code = 9
 event = "JoyPush"
 
 [[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
 code = 10
 event = "CamPush"
-
-[[axis]]
-code = 0
-event = "JoyX"
 
 [[axis]]
 code = 1
@@ -61,13 +57,17 @@ event = "CamX"
 code = 3
 event = "CamY"
 
-[[trigger]]
-code = 4
-event = "TriggerR"
+[[axis]]
+code = 0
+event = "JoyX"
 
 [[trigger]]
 code = 5
 event = "TriggerL"
+
+[[trigger]]
+code = 4
+event = "TriggerR"
 
 [[three_way]]
 code = 16

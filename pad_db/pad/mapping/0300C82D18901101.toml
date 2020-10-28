@@ -2,16 +2,24 @@ name = "8BitDo Zero 2"
 type = "NES"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 10
+event = "Prev"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 3
-event = "ActionH"
+code = 11
+event = "Next"
+
+[[button]]
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 4
@@ -24,14 +32,6 @@ event = "BumperL"
 [[button]]
 code = 7
 event = "BumperR"
-
-[[button]]
-code = 10
-event = "Prev"
-
-[[button]]
-code = 11
-event = "Next"
 
 [[axis]]
 code = 0

@@ -2,6 +2,14 @@ name = "Toodles 2008 Chimp PC/PS3"
 type = "Unknown"
 
 [[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
 code = 0
 event = "ActionA"
 
@@ -10,20 +18,20 @@ code = 1
 event = "ActionB"
 
 [[button]]
-code = 2
-event = "ActionV"
-
-[[button]]
 code = 3
 event = "ActionH"
 
 [[button]]
-code = 4
-event = "BumperL"
+code = 9
+event = "Next"
 
 [[button]]
-code = 5
-event = "BumperR"
+code = 2
+event = "ActionV"
+
+[[button]]
+code = 4
+event = "BumperL"
 
 [[button]]
 code = 6
@@ -33,18 +41,10 @@ event = "TriggerL"
 code = 7
 event = "TriggerR"
 
-[[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 9
-event = "Next"
+[[axis]]
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 0
 event = "JoyX"
-
-[[axis]]
-code = 1
-event = "JoyY"

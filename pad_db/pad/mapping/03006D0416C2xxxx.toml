@@ -49,6 +49,8 @@ event = "JoyPush"
 code = 11
 event = "CamPush"
 
+# Some buttons may also appear in same order with offset of 16
+
 [[button]]
 code = 16
 event = "ActionH"
@@ -104,6 +106,7 @@ event = "CamY"
 [[axis]]
 code = 5
 event = "CamX"
+max = 0.67
 
 [[three_way]]
 code = 16

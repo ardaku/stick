@@ -2,32 +2,20 @@ name = "Logitech Inc. WingMan RumblePad"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 2
-event = "TriggerR"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
 code = 4
 event = "ActionV"
+
+[[button]]
+code = 6
+event = "BumperL"
 
 [[button]]
 code = 5
 event = "TriggerL"
 
 [[button]]
-code = 6
-event = "BumperL"
+code = 1
+event = "ActionB"
 
 [[button]]
 code = 7
@@ -37,28 +25,40 @@ event = "BumperR"
 code = 8
 event = "Prev"
 
+[[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 2
+event = "TriggerR"
+
+[[button]]
+code = 3
+event = "ActionH"
+
 [[axis]]
 code = 0
 event = "JoyX"
-
-[[axis]]
-code = 1
-event = "JoyY"
 
 [[axis]]
 code = 3
 event = "CamX"
 
 [[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
 code = 4
 event = "CamY"
-
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
 
 [[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"

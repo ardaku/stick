@@ -2,60 +2,56 @@ name = "Nostromo n45 Dual Analog Gamepad"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
-code = 3
-event = "ActionV"
+code = 9
+event = "Home"
 
 [[button]]
 code = 4
 event = "BumperL"
 
 [[button]]
-code = 5
-event = "TriggerL"
+code = 11
+event = "CamPush"
 
 [[button]]
-code = 6
-event = "BumperR"
+code = 5
+event = "TriggerL"
 
 [[button]]
 code = 7
 event = "TriggerR"
 
 [[button]]
-code = 8
-event = "Prev"
+code = 1
+event = "ActionB"
 
 [[button]]
-code = 9
-event = "Home"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 10
 event = "Next"
 
 [[button]]
-code = 11
-event = "CamPush"
+code = 6
+event = "BumperR"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
+code = 2
+event = "ActionH"
 
 [[button]]
 code = 12
 event = "JoyPush"
-
-[[axis]]
-code = 0
-event = "JoyX"
 
 [[axis]]
 code = 1
@@ -66,15 +62,19 @@ code = 2
 event = "CamY"
 
 [[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
 code = 3
 event = "CamX"
-
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
 
 [[three_way]]
 code = 17
 neg = "DpadUp"
 pos = "DpadDown"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"

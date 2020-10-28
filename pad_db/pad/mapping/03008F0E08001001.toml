@@ -2,68 +2,68 @@ name = "Gasia Co. Ltd PS(R) Gamepad"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionV"
-
-[[button]]
 code = 1
 event = "ActionB"
-
-[[button]]
-code = 2
-event = "ActionA"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
 
 [[button]]
 code = 6
 event = "TriggerL"
 
 [[button]]
-code = 7
-event = "TriggerR"
+code = 2
+event = "ActionA"
+
+[[button]]
+code = 11
+event = "CamPush"
 
 [[button]]
 code = 8
 event = "Prev"
 
 [[button]]
-code = 9
-event = "Next"
-
-[[button]]
 code = 10
 event = "JoyPush"
 
 [[button]]
-code = 11
-event = "CamPush"
+code = 9
+event = "Next"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 0
+event = "ActionV"
+
+[[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
+code = 7
+event = "TriggerR"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
-code = 1
-event = "JoyY"
+code = 3
+event = "CamY"
 
 [[axis]]
 code = 2
 event = "CamX"
 
 [[axis]]
-code = 3
-event = "CamY"
+code = 1
+event = "JoyY"
 
 [[three_way]]
 code = 16

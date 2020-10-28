@@ -2,36 +2,36 @@ name = "Nintendo GameCube Controller"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionH"
-
-[[button]]
 code = 1
 event = "ActionA"
-
-[[button]]
-code = 2
-event = "ActionB"
 
 [[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 13
+event = "DpadRight"
+
+[[button]]
 code = 7
 event = "BumperR"
 
 [[button]]
-code = 9
-event = "Next"
+code = 0
+event = "ActionH"
 
 [[button]]
 code = 12
 event = "DpadUp"
 
 [[button]]
-code = 13
-event = "DpadRight"
+code = 2
+event = "ActionB"
 
 [[button]]
 code = 14
@@ -46,16 +46,16 @@ code = 0
 event = "JoyX"
 
 [[axis]]
-code = 1
-event = "JoyY"
+code = 5
+event = "CamX"
 
 [[axis]]
 code = 2
 event = "CamY"
 
 [[axis]]
-code = 5
-event = "CamX"
+code = 1
+event = "JoyY"
 
 [[trigger]]
 code = 3

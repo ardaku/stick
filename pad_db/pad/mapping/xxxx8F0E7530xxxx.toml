@@ -2,22 +2,6 @@ name = "Speedlink PlayStation3 Gamepad"
 type = "PlayStation"
 
 [[button]]
-code = 12
-event = "DpadUp"
-
-[[button]]
-code = 13
-event = "DpadRight"
-
-[[button]]
-code = 14
-event = "DpadDown"
-
-[[button]]
-code = 15
-event = "DpadLeft"
-
-[[button]]
 code = 16
 event = "ActionV"
 
@@ -69,21 +53,40 @@ event = "CamPush"
 code = 28
 event = "Home"
 
+# FIXME: What are the actual events for dpad input (covering all possible)?
+[[button]]
+code = 12
+event = "DpadUp"
 [[button]]
 code = 256
 event = "DpadUp"
-
+[[button]]
+code = 14
+event = "DpadDown"
 [[button]]
 code = 257
 event = "DpadDown"
-
+[[button]]
+code = 15
+event = "DpadLeft"
 [[button]]
 code = 258
 event = "DpadLeft"
-
+[[button]]
+code = 13
+event = "DpadRight"
 [[button]]
 code = 259
 event = "DpadRight"
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"
+# End Guess (fixme)
 
 [[axis]]
 code = 0
@@ -108,13 +111,3 @@ event = "TriggerL"
 [[trigger]]
 code = 4
 event = "TriggerR"
-
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
-
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"

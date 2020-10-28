@@ -2,48 +2,48 @@ name = "Logitech Logitech Extreme 3D"
 type = "Unknown"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
-code = 2
-event = "ActionH"
-
-[[button]]
 code = 4
 event = "ActionB"
+
+[[button]]
+code = 10
+event = "BumperR"
 
 [[button]]
 code = 5
 event = "ActionV"
 
 [[button]]
-code = 6
-event = "Prev"
+code = 9
+event = "BumperL"
 
 [[button]]
-code = 7
-event = "Next"
+code = 0
+event = "ActionA"
+
+[[button]]
+code = 6
+event = "Prev"
 
 [[button]]
 code = 8
 event = "Home"
 
 [[button]]
-code = 9
-event = "BumperL"
+code = 7
+event = "Next"
 
 [[button]]
-code = 10
-event = "BumperR"
-
-[[axis]]
-code = 0
-event = "JoyX"
+code = 2
+event = "ActionH"
 
 [[axis]]
 code = 1
 event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"
 
 [[three_way]]
 code = 16

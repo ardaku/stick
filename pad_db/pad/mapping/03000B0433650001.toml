@@ -6,10 +6,6 @@ code = 0
 event = "ActionA"
 
 [[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
 code = 2
 event = "Prev"
 
@@ -17,10 +13,14 @@ event = "Prev"
 code = 3
 event = "Next"
 
-[[axis]]
-code = 0
-event = "JoyX"
+[[button]]
+code = 1
+event = "ActionB"
 
 [[axis]]
 code = 1
 event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"

@@ -70,20 +70,20 @@ code = 259
 event = "DpadRight"
 
 [[axis]]
-code = 0
-event = "JoyX"
-
-[[axis]]
 code = 1
 event = "JoyY"
 
 [[axis]]
-code = 3
-event = "CamX"
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 4
 event = "CamY"
+
+[[axis]]
+code = 3
+event = "CamX"
 
 [[trigger]]
 code = 2

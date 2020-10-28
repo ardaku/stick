@@ -2,20 +2,20 @@ name = "8BitDo SFC30 Gamepad"
 type = "NES"
 
 [[button]]
+code = 4
+event = "ActionH"
+
+[[button]]
 code = 0
 event = "ActionA"
 
 [[button]]
+code = 10
+event = "Prev"
+
+[[button]]
 code = 1
 event = "ActionB"
-
-[[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
-code = 4
-event = "ActionH"
 
 [[button]]
 code = 6
@@ -26,17 +26,17 @@ code = 7
 event = "BumperR"
 
 [[button]]
-code = 10
-event = "Prev"
+code = 3
+event = "ActionV"
 
 [[button]]
 code = 11
 event = "Next"
 
 [[axis]]
-code = 0
-event = "JoyX"
-
-[[axis]]
 code = 1
 event = "JoyY"
+
+[[axis]]
+code = 0
+event = "JoyX"
