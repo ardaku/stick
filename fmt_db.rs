@@ -1,4 +1,4 @@
-// cargo-deps: toml="*", serde = "*"
+// cargo-deps: toml="0.5", serde = "1.0"
 
 use std::fmt;
 use std::io;
