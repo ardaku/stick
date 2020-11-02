@@ -1,3 +1,5 @@
+use serde::{Serialize, Deserialize};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(super) struct Button {
     pub(super) code: u16,
@@ -33,7 +35,9 @@ pub(super) struct Wheel {
     pub(super) event: String,
 }
 
-/// A mapping for a specific pad
+/// A mapping for a specific pad.
+///
+/// Some fields are optional because not every controller has every input type.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(super) struct PadMapping {
     // Name of the controller.
