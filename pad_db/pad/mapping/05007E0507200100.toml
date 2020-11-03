@@ -2,20 +2,12 @@ name = "Joy-Con (R)"
 type = "Unknown"
 
 [[button]]
-code = 12
-event = "Prev"
-
-[[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
 code = 0
 event = "ActionA"
 
 [[button]]
-code = 11
-event = "JoyPush"
+code = 1
+event = "ActionB"
 
 [[button]]
 code = 2
@@ -26,6 +18,10 @@ code = 3
 event = "ActionV"
 
 [[button]]
+code = 4
+event = "BumperL"
+
+[[button]]
 code = 5
 event = "BumperR"
 
@@ -34,13 +30,17 @@ code = 9
 event = "Next"
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 11
+event = "JoyPush"
 
-[[axis]]
-code = 17
-event = "JoyY"
+[[button]]
+code = 12
+event = "Prev"
 
 [[axis]]
 code = 16
 event = "JoyX"
+
+[[axis]]
+code = 17
+event = "JoyY"

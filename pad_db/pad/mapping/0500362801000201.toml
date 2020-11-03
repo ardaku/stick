@@ -2,12 +2,12 @@ name = "OUYA Game Controller"
 type = "Unknown"
 
 [[button]]
-code = 9
-event = "DpadDown"
-
-[[button]]
 code = 0
 event = "ActionA"
+
+[[button]]
+code = 1
+event = "ActionH"
 
 [[button]]
 code = 2
@@ -18,20 +18,32 @@ code = 3
 event = "ActionB"
 
 [[button]]
-code = 8
-event = "DpadUp"
+code = 4
+event = "BumperL"
 
 [[button]]
-code = 1
-event = "ActionH"
-
-[[button]]
-code = 10
-event = "DpadLeft"
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 6
 event = "JoyPush"
+
+[[button]]
+code = 7
+event = "CamPush"
+
+[[button]]
+code = 8
+event = "DpadUp"
+
+[[button]]
+code = 9
+event = "DpadDown"
+
+[[button]]
+code = 10
+event = "DpadLeft"
 
 [[button]]
 code = 11
@@ -41,38 +53,26 @@ event = "DpadRight"
 code = 14
 event = "Home"
 
-[[button]]
-code = 7
-event = "CamPush"
-
-[[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[axis]]
-code = 4
-event = "CamY"
-
 [[axis]]
 code = 0
 event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 3
 event = "CamX"
 
 [[axis]]
-code = 1
-event = "JoyY"
-
-[[trigger]]
-code = 5
-event = "TriggerR"
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2
 event = "TriggerL"
+
+[[trigger]]
+code = 5
+event = "TriggerR"

@@ -121,31 +121,31 @@ event = "EngineLIgnition"
 code = 431
 event = "EngineRIgnition"
 
+[[axis]]
+code = 6
+event = "Slew"
+
 [[trigger]]
 code = 0
 event = "MouseX"
-max = 1024
+max = 1024.0
 
 [[trigger]]
 code = 1
 event = "MouseY"
-max = 1024
+max = 1024.0
 
 [[trigger]]
 code = 2
 event = "ThrottleR"
-max = 16_339
+max = 16339.0
 invert = true
 
 [[trigger]]
 code = 5
 event = "ThrottleL"
-max = 16_339
+max = 16339.0
 invert = true
-
-[[axis]]
-code = 6
-event = "Slew"
 
 [[three_way]]
 code = 16

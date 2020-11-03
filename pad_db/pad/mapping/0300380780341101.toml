@@ -2,8 +2,8 @@ name = "Mad Catz fightstick (PS3)"
 type = "Unknown"
 
 [[button]]
-code = 9
-event = "Next"
+code = 0
+event = "ActionH"
 
 [[button]]
 code = 1
@@ -18,12 +18,8 @@ code = 3
 event = "ActionV"
 
 [[button]]
-code = 12
-event = "Home"
-
-[[button]]
-code = 8
-event = "Prev"
+code = 4
+event = "BumperL"
 
 [[button]]
 code = 5
@@ -34,20 +30,20 @@ code = 6
 event = "TriggerL"
 
 [[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 0
-event = "ActionH"
-
-[[button]]
 code = 7
 event = "TriggerR"
 
-[[axis]]
-code = 3
-event = "CamY"
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 12
+event = "Home"
 
 [[axis]]
 code = 0
@@ -60,6 +56,10 @@ event = "JoyY"
 [[axis]]
 code = 2
 event = "CamX"
+
+[[axis]]
+code = 3
+event = "CamY"
 
 [[three_way]]
 code = 16

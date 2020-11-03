@@ -2,56 +2,56 @@ name = "Xin-Mo Xin-Mo Dual Arcade"
 type = "Unknown"
 
 [[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 11
-event = "DpadUp"
-
-[[button]]
-code = 9
-event = "Home"
-
-[[button]]
-code = 13
-event = "DpadLeft"
-
-[[button]]
-code = 6
-event = "Prev"
-
-[[button]]
-code = 2
-event = "BumperL"
-
-[[button]]
-code = 7
-event = "Next"
+code = 0
+event = "ActionV"
 
 [[button]]
 code = 1
 event = "ActionH"
 
 [[button]]
-code = 0
-event = "ActionV"
-
-[[button]]
-code = 14
-event = "DpadRight"
-
-[[button]]
-code = 4
-event = "ActionA"
+code = 2
+event = "BumperL"
 
 [[button]]
 code = 3
 event = "ActionB"
 
 [[button]]
+code = 4
+event = "ActionA"
+
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 9
+event = "Home"
+
+[[button]]
+code = 11
+event = "DpadUp"
+
+[[button]]
 code = 12
 event = "DpadDown"
+
+[[button]]
+code = 13
+event = "DpadLeft"
+
+[[button]]
+code = 14
+event = "DpadRight"
 
 [[axis]]
 code = 0

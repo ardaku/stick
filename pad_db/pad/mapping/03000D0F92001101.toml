@@ -2,51 +2,51 @@ name = "Hori Pokken Tournament DX Pro Pad"
 type = "Unknown"
 
 [[button]]
+code = 0
+event = "ActionH"
+
+[[button]]
 code = 1
 event = "ActionA"
-
-[[button]]
-code = 4
-event = "BumperL"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 9
-event = "Next"
-
-[[button]]
-code = 8
-event = "Prev"
 
 [[button]]
 code = 2
 event = "ActionB"
 
 [[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
 code = 3
 event = "ActionV"
 
 [[button]]
-code = 0
-event = "ActionH"
+code = 4
+event = "BumperL"
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 7
+event = "TriggerR"
+
+[[button]]
+code = 8
+event = "Prev"
+
+[[button]]
+code = 9
+event = "Next"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

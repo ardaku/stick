@@ -2,52 +2,56 @@ name = "Jess Tech GGE909 PC Recoil Pad"
 type = "Unknown"
 
 [[button]]
-code = 1
-event = "ActionB"
-
-[[button]]
 code = 0
 event = "ActionV"
 
 [[button]]
-code = 6
-event = "TriggerL"
-
-[[button]]
-code = 3
-event = "ActionH"
+code = 1
+event = "ActionB"
 
 [[button]]
 code = 2
 event = "ActionA"
 
 [[button]]
-code = 10
-event = "JoyPush"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 9
-event = "Next"
+code = 3
+event = "ActionH"
 
 [[button]]
 code = 4
 event = "BumperL"
 
 [[button]]
-code = 11
-event = "CamPush"
-
-[[button]]
 code = 5
 event = "BumperR"
 
 [[button]]
+code = 6
+event = "TriggerL"
+
+[[button]]
+code = 7
+event = "TriggerR"
+
+[[button]]
 code = 8
 event = "Prev"
+
+[[button]]
+code = 9
+event = "Next"
+
+[[button]]
+code = 10
+event = "JoyPush"
+
+[[button]]
+code = 11
+event = "CamPush"
+
+[[axis]]
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 1
@@ -58,19 +62,15 @@ code = 2
 event = "CamY"
 
 [[axis]]
-code = 0
-event = "JoyX"
-
-[[axis]]
 code = 3
 event = "CamX"
-
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

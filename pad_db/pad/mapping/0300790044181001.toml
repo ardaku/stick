@@ -70,13 +70,13 @@ event = "CamX"
 max = 0.67
 
 [[trigger]]
-code = 4
-event = "TriggerR"
+code = 3
+event = "TriggerL"
 deadzone = 0.125
 
 [[trigger]]
-code = 3
-event = "TriggerL"
+code = 4
+event = "TriggerR"
 deadzone = 0.125
 
 [[three_way]]

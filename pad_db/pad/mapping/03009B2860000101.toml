@@ -2,20 +2,32 @@ name = "Raphnet Technologies GC/N64 to USB v3.6"
 type = "Unknown"
 
 [[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
 code = 1
 event = "ActionH"
+
+[[button]]
+code = 2
+event = "BumperR"
 
 [[button]]
 code = 3
 event = "Next"
 
 [[button]]
-code = 7
-event = "ActionB"
+code = 4
+event = "TriggerL"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 5
+event = "TriggerR"
+
+[[button]]
+code = 7
+event = "ActionB"
 
 [[button]]
 code = 8
@@ -26,28 +38,24 @@ code = 10
 event = "DpadUp"
 
 [[button]]
-code = 12
-event = "DpadLeft"
-
-[[button]]
-code = 2
-event = "BumperR"
-
-[[button]]
-code = 5
-event = "TriggerR"
-
-[[button]]
 code = 11
 event = "DpadDown"
+
+[[button]]
+code = 12
+event = "DpadLeft"
 
 [[button]]
 code = 13
 event = "DpadRight"
 
-[[button]]
-code = 4
-event = "TriggerL"
+[[axis]]
+code = 0
+event = "JoyX"
+
+[[axis]]
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 3
@@ -56,11 +64,3 @@ event = "CamX"
 [[axis]]
 code = 4
 event = "CamY"
-
-[[axis]]
-code = 1
-event = "JoyY"
-
-[[axis]]
-code = 0
-event = "JoyX"

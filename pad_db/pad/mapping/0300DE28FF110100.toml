@@ -2,28 +2,12 @@ name = "Steam Virtual Gamepad"
 type = "Unknown"
 
 [[button]]
-code = 8
-event = "Home"
-
-[[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
 code = 0
 event = "ActionA"
 
 [[button]]
-code = 6
-event = "Prev"
-
-[[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 10
-event = "CamPush"
+code = 1
+event = "ActionB"
 
 [[button]]
 code = 2
@@ -38,20 +22,28 @@ code = 4
 event = "BumperL"
 
 [[button]]
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
 code = 7
 event = "Next"
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 8
+event = "Home"
 
-[[axis]]
-code = 3
-event = "CamX"
+[[button]]
+code = 9
+event = "JoyPush"
 
-[[axis]]
-code = 4
-event = "CamY"
+[[button]]
+code = 10
+event = "CamPush"
 
 [[axis]]
 code = 0
@@ -60,6 +52,14 @@ event = "JoyX"
 [[axis]]
 code = 1
 event = "JoyY"
+
+[[axis]]
+code = 3
+event = "CamX"
+
+[[axis]]
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2

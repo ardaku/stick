@@ -2,36 +2,28 @@ name = "boom PSX to PC Converter"
 type = "Unknown"
 
 [[button]]
-code = 15
-event = "DpadLeft"
-
-[[button]]
-code = 10
-event = "CamPush"
-
-[[button]]
-code = 3
-event = "ActionH"
-
-[[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 5
-event = "TriggerR"
-
-[[button]]
-code = 13
-event = "DpadRight"
+code = 0
+event = "ActionV"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 14
-event = "DpadDown"
+code = 2
+event = "ActionA"
+
+[[button]]
+code = 3
+event = "ActionH"
+
+[[button]]
+code = 4
+event = "TriggerL"
+
+[[button]]
+code = 5
+event = "TriggerR"
 
 [[button]]
 code = 6
@@ -46,24 +38,36 @@ code = 8
 event = "Prev"
 
 [[button]]
-code = 2
-event = "ActionA"
+code = 9
+event = "JoyPush"
 
 [[button]]
-code = 12
-event = "DpadUp"
+code = 10
+event = "CamPush"
 
 [[button]]
 code = 11
 event = "Next"
 
 [[button]]
-code = 4
-event = "TriggerL"
+code = 12
+event = "DpadUp"
 
 [[button]]
+code = 13
+event = "DpadRight"
+
+[[button]]
+code = 14
+event = "DpadDown"
+
+[[button]]
+code = 15
+event = "DpadLeft"
+
+[[axis]]
 code = 0
-event = "ActionV"
+event = "JoyX"
 
 [[axis]]
 code = 1
@@ -72,10 +76,6 @@ event = "JoyY"
 [[axis]]
 code = 2
 event = "CamX"
-
-[[axis]]
-code = 0
-event = "JoyX"
 
 [[axis]]
 code = 3

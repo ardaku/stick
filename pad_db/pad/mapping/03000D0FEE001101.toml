@@ -2,20 +2,32 @@ name = "HORIPAD mini4"
 type = "Unknown"
 
 [[button]]
-code = 12
-event = "Home"
+code = 0
+event = "ActionH"
 
 [[button]]
-code = 5
-event = "BumperR"
+code = 1
+event = "ActionA"
+
+[[button]]
+code = 2
+event = "ActionB"
+
+[[button]]
+code = 3
+event = "ActionV"
 
 [[button]]
 code = 4
 event = "BumperL"
 
 [[button]]
-code = 10
-event = "JoyPush"
+code = 5
+event = "BumperR"
+
+[[button]]
+code = 6
+event = "TriggerL"
 
 [[button]]
 code = 7
@@ -26,36 +38,20 @@ code = 8
 event = "Prev"
 
 [[button]]
-code = 11
-event = "CamPush"
-
-[[button]]
 code = 9
 event = "Next"
 
 [[button]]
-code = 1
-event = "ActionA"
+code = 10
+event = "JoyPush"
 
 [[button]]
-code = 6
-event = "TriggerL"
+code = 11
+event = "CamPush"
 
 [[button]]
-code = 0
-event = "ActionH"
-
-[[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
-code = 2
-event = "ActionB"
-
-[[axis]]
-code = 5
-event = "CamY"
+code = 12
+event = "Home"
 
 [[axis]]
 code = 0
@@ -69,12 +65,16 @@ event = "JoyY"
 code = 2
 event = "CamX"
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[axis]]
+code = 5
+event = "CamY"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

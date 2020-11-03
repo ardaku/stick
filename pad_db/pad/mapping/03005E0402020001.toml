@@ -2,32 +2,28 @@ name = "Old Xbox pad"
 type = "Unknown"
 
 [[button]]
-code = 5
-event = "BumperL"
-
-[[button]]
-code = 8
-event = "JoyPush"
-
-[[button]]
 code = 0
 event = "ActionA"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "BumperR"
 
 [[button]]
 code = 3
 event = "ActionH"
 
 [[button]]
-code = 9
-event = "CamPush"
-
-[[button]]
 code = 4
 event = "ActionV"
 
 [[button]]
-code = 2
-event = "BumperR"
+code = 5
+event = "BumperL"
 
 [[button]]
 code = 6
@@ -38,39 +34,43 @@ code = 7
 event = "Next"
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 8
+event = "JoyPush"
 
-[[axis]]
-code = 3
-event = "CamX"
-
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 9
+event = "CamPush"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
+code = 3
+event = "CamX"
+
+[[axis]]
 code = 4
 event = "CamY"
-
-[[trigger]]
-code = 5
-event = "TriggerR"
 
 [[trigger]]
 code = 2
 event = "TriggerL"
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[trigger]]
+code = 5
+event = "TriggerR"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

@@ -2,64 +2,64 @@ name = "PS4 Controller"
 type = "Unknown"
 
 [[button]]
-code = 9
-event = "Next"
-
-[[button]]
-code = 11
-event = "JoyPush"
-
-[[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 4
-event = "BumperL"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 5
-event = "BumperR"
+code = 2
+event = "ActionV"
 
 [[button]]
 code = 3
 event = "ActionH"
 
 [[button]]
-code = 2
-event = "ActionV"
+code = 4
+event = "BumperL"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 5
+event = "BumperR"
 
 [[button]]
-code = 12
-event = "CamPush"
+code = 8
+event = "Prev"
+
+[[button]]
+code = 9
+event = "Next"
 
 [[button]]
 code = 10
 event = "Home"
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 11
+event = "JoyPush"
 
-[[axis]]
-code = 4
-event = "CamY"
+[[button]]
+code = 12
+event = "CamPush"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
+code = 1
+event = "JoyY"
+
+[[axis]]
 code = 3
 event = "CamX"
+
+[[axis]]
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2

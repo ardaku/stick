@@ -2,19 +2,19 @@ name = "Thrustmaster Flightstick"
 type = "Flight"
 
 [[button]]
-code = 0 # Trigger
+code = 0
 event = "ActionA"
 
 [[button]]
-code = 1 # Center, Lower Button
+code = 1
 event = "ActionV"
 
 [[button]]
-code = 2 # Right Button
+code = 2
 event = "ActionB"
 
 [[button]]
-code = 3 # Left Button
+code = 3
 event = "ActionH"
 
 [[axis]]

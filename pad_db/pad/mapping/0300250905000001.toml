@@ -2,16 +2,24 @@ name = "Sony PS2 pad with SmartJoy adapter"
 type = "Unknown"
 
 [[button]]
-code = 8
-event = "Next"
+code = 0
+event = "ActionV"
+
+[[button]]
+code = 1
+event = "ActionB"
+
+[[button]]
+code = 2
+event = "ActionA"
 
 [[button]]
 code = 3
 event = "ActionH"
 
 [[button]]
-code = 1
-event = "ActionB"
+code = 4
+event = "TriggerL"
 
 [[button]]
 code = 5
@@ -22,48 +30,40 @@ code = 6
 event = "BumperL"
 
 [[button]]
-code = 4
-event = "TriggerL"
+code = 7
+event = "BumperR"
 
 [[button]]
-code = 2
-event = "ActionA"
-
-[[button]]
-code = 0
-event = "ActionV"
+code = 8
+event = "Next"
 
 [[button]]
 code = 9
 event = "Prev"
 
 [[button]]
-code = 11
-event = "CamPush"
-
-[[button]]
-code = 7
-event = "BumperR"
-
-[[button]]
 code = 10
 event = "JoyPush"
+
+[[button]]
+code = 11
+event = "CamPush"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
-code = 3
-event = "CamY"
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 2
 event = "CamX"
 
 [[axis]]
-code = 1
-event = "JoyY"
+code = 3
+event = "CamY"
 
 [[three_way]]
 code = 16

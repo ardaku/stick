@@ -2,40 +2,20 @@ name = "Xbox 360 Wireless Receiver (XBOX)"
 type = "Unknown"
 
 [[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 13
-event = "DpadUp"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 7
-event = "Next"
+code = 2
+event = "ActionH"
 
 [[button]]
 code = 3
 event = "ActionV"
-
-[[button]]
-code = 8
-event = "Home"
-
-[[button]]
-code = 11
-event = "DpadLeft"
-
-[[button]]
-code = 14
-event = "DpadDown"
-
-[[button]]
-code = 12
-event = "DpadRight"
 
 [[button]]
 code = 4
@@ -46,36 +26,56 @@ code = 5
 event = "BumperR"
 
 [[button]]
-code = 0
-event = "ActionA"
-
-[[button]]
 code = 6
 event = "Prev"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 8
+event = "Home"
+
+[[button]]
+code = 9
+event = "JoyPush"
 
 [[button]]
 code = 10
 event = "CamPush"
 
 [[button]]
-code = 2
-event = "ActionH"
+code = 11
+event = "DpadLeft"
+
+[[button]]
+code = 12
+event = "DpadRight"
+
+[[button]]
+code = 13
+event = "DpadUp"
+
+[[button]]
+code = 14
+event = "DpadDown"
 
 [[axis]]
-code = 4
-event = "CamY"
-
-[[axis]]
-code = 3
-event = "CamX"
+code = 0
+event = "JoyX"
 
 [[axis]]
 code = 1
 event = "JoyY"
 
 [[axis]]
-code = 0
-event = "JoyX"
+code = 3
+event = "CamX"
+
+[[axis]]
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2

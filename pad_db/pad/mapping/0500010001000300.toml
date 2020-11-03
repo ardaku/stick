@@ -2,79 +2,79 @@ name = "Nintendo Wiimote"
 type = "Unknown"
 
 [[button]]
-code = 10
-event = "Home"
-
-[[button]]
-code = 8
-event = "Prev"
-
-[[button]]
-code = 5
-event = "BumperR"
+code = 0
+event = "ActionA"
 
 [[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
+code = 2
+event = "ActionH"
+
+[[button]]
+code = 3
+event = "ActionV"
+
+[[button]]
 code = 4
 event = "BumperL"
+
+[[button]]
+code = 5
+event = "BumperR"
 
 [[button]]
 code = 6
 event = "TriggerL"
 
 [[button]]
-code = 11
-event = "JoyPush"
+code = 7
+event = "TriggerR"
+
+[[button]]
+code = 8
+event = "Prev"
 
 [[button]]
 code = 9
 event = "Next"
 
 [[button]]
-code = 2
-event = "ActionH"
+code = 10
+event = "Home"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 11
+event = "JoyPush"
 
 [[button]]
 code = 12
 event = "CamPush"
-
-[[button]]
-code = 7
-event = "TriggerR"
-
-[[button]]
-code = 3
-event = "ActionV"
-
-[[axis]]
-code = 1
-event = "JoyY"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
-code = 3
-event = "CamY"
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 2
 event = "CamX"
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[axis]]
+code = 3
+event = "CamY"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

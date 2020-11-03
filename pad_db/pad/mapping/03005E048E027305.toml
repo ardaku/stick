@@ -2,24 +2,20 @@ name = "Speedlink TORID Wireless Gamepad"
 type = "Unknown"
 
 [[button]]
+code = 0
+event = "ActionA"
+
+[[button]]
 code = 1
 event = "ActionB"
 
 [[button]]
-code = 3
-event = "ActionV"
-
-[[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 10
-event = "CamPush"
-
-[[button]]
 code = 2
 event = "ActionH"
+
+[[button]]
+code = 3
+event = "ActionV"
 
 [[button]]
 code = 4
@@ -42,24 +38,28 @@ code = 8
 event = "Home"
 
 [[button]]
-code = 0
-event = "ActionA"
+code = 9
+event = "JoyPush"
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 10
+event = "CamPush"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
-code = 4
-event = "CamY"
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 3
 event = "CamX"
+
+[[axis]]
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2

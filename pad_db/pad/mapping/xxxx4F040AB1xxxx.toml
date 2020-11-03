@@ -2,19 +2,19 @@ name = "Thrustmaster T-16000M Flight Stick"
 type = "Flightstick"
 
 [[button]]
-code = 0 # Trigger
+code = 0
 event = "ActionA"
 
 [[button]]
-code = 1 # Center, Lower Button
+code = 1
 event = "ActionV"
 
 [[button]]
-code = 2 # Left Button
+code = 2
 event = "ActionH"
 
 [[button]]
-code = 3 # Right Button
+code = 3
 event = "ActionB"
 
 [[button]]
@@ -65,28 +65,21 @@ event = "Action10"
 code = 15
 event = "Action11"
 
-# FIXME: What are the actual events for dpad input (covering all possible)?
 [[button]]
 code = 256
 event = "DpadUp"
+
 [[button]]
 code = 257
 event = "DpadDown"
+
 [[button]]
 code = 258
 event = "DpadLeft"
+
 [[button]]
 code = 259
 event = "DpadRight"
-[[three_way]]
-code = 16
-neg = "DpadLeft"
-pos = "DpadRight"
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
-# End Guess (fixme)
 
 [[axis]]
 code = 0
@@ -103,3 +96,13 @@ event = "JoyZ"
 [[axis]]
 code = 6
 event = "Throttle"
+
+[[three_way]]
+code = 16
+neg = "DpadLeft"
+pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

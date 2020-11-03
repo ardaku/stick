@@ -90,8 +90,8 @@ code = 30
 event = "CamPush"
 
 [[axis]]
-code = 4
-event = "CamY"
+code = 0
+event = "JoyX"
 max = 0.992
 
 [[axis]]
@@ -105,24 +105,24 @@ event = "CamX"
 max = 0.992
 
 [[axis]]
-code = 0
-event = "JoyX"
+code = 4
+event = "CamY"
 max = 0.992
-
-[[trigger]]
-code = 5
-event = "TriggerR"
 
 [[trigger]]
 code = 2
 event = "TriggerL"
 
-[[three_way]]
-code = 17
-neg = "DpadUp"
-pos = "DpadDown"
+[[trigger]]
+code = 5
+event = "TriggerR"
 
 [[three_way]]
 code = 16
 neg = "DpadLeft"
 pos = "DpadRight"
+
+[[three_way]]
+code = 17
+neg = "DpadUp"
+pos = "DpadDown"

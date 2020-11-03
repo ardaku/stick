@@ -2,37 +2,37 @@ name = "USB Gamepad1"
 type = "Unknown"
 
 [[button]]
-code = 8
-event = "Prev"
-
-[[button]]
 code = 1
 event = "ActionB"
-
-[[button]]
-code = 9
-event = "Next"
 
 [[button]]
 code = 2
 event = "ActionA"
 
-[[three_way]]
-code = 4
-pos = "DpadUp"
-neg = "DpadUp"
+[[button]]
+code = 8
+event = "Prev"
 
-[[three_way]]
-code = 1
-pos = "DpadLeft"
-neg = "DpadLeft"
+[[button]]
+code = 9
+event = "Next"
 
 [[three_way]]
 code = 0
-pos = "DpadDown"
 neg = "DpadDown"
+pos = "DpadDown"
+
+[[three_way]]
+code = 1
+neg = "DpadLeft"
+pos = "DpadLeft"
 
 [[three_way]]
 code = 2
-pos = "DpadRight"
 neg = "DpadRight"
+pos = "DpadRight"
+
+[[three_way]]
+code = 4
+neg = "DpadUp"
+pos = "DpadUp"

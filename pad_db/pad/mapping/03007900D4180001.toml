@@ -2,14 +2,6 @@ name = "GPD Win 2 Controller"
 type = "Unknown"
 
 [[button]]
-code = 5
-event = "BumperR"
-
-[[button]]
-code = 8
-event = "Home"
-
-[[button]]
 code = 0
 event = "ActionA"
 
@@ -18,20 +10,8 @@ code = 1
 event = "ActionB"
 
 [[button]]
-code = 7
-event = "Next"
-
-[[button]]
-code = 6
-event = "Prev"
-
-[[button]]
-code = 9
-event = "JoyPush"
-
-[[button]]
-code = 10
-event = "CamPush"
+code = 2
+event = "ActionH"
 
 [[button]]
 code = 3
@@ -42,32 +22,52 @@ code = 4
 event = "BumperL"
 
 [[button]]
-code = 2
-event = "ActionH"
+code = 5
+event = "BumperR"
 
-[[axis]]
-code = 1
-event = "JoyY"
+[[button]]
+code = 6
+event = "Prev"
+
+[[button]]
+code = 7
+event = "Next"
+
+[[button]]
+code = 8
+event = "Home"
+
+[[button]]
+code = 9
+event = "JoyPush"
+
+[[button]]
+code = 10
+event = "CamPush"
 
 [[axis]]
 code = 0
 event = "JoyX"
 
 [[axis]]
-code = 4
-event = "CamY"
+code = 1
+event = "JoyY"
 
 [[axis]]
 code = 3
 event = "CamX"
 
-[[trigger]]
-code = 5
-event = "TriggerR"
+[[axis]]
+code = 4
+event = "CamY"
 
 [[trigger]]
 code = 2
 event = "TriggerL"
+
+[[trigger]]
+code = 5
+event = "TriggerR"
 
 [[three_way]]
 code = 16

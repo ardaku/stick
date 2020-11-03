@@ -49,8 +49,6 @@ event = "JoyPush"
 code = 11
 event = "CamPush"
 
-# Some buttons may also appear in same order with offset of 16
-
 [[button]]
 code = 16
 event = "ActionH"
