@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate serde_derive;
-
 use std::{env, fs, path::Path};
 
 #[path = "./pad_db/format.rs"]
