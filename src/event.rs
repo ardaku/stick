@@ -104,7 +104,7 @@ pub enum Event {
     /*
      * Special XBox/Steam Controllers Extra Buttons
      */
-    
+
     /* Paddles */
     /// Back right grip button (upper if there are two)
     PaddleRight(bool),
@@ -234,11 +234,11 @@ pub enum Event {
     /*
      * Mice-like controllers extra buttons, scroll wheel
      */
-     
+
     /* Extra Mouse buttons */
     /// DPI Switch
     Dpi(bool),
-    
+
     /* Mouse Main */
     /// Range(-1.0, 1.0) - Mouse delta position horizontal
     MouseX(f64),
@@ -248,7 +248,7 @@ pub enum Event {
     MousePush(bool),
     /// Right click (secondary click, push button 2)
     MouseMenu(bool),
-    
+
     /* Mouse Wheel */
     /// Range(-1.0, 1.0) - Scroll wheel horizontal
     WheelX(f64),
@@ -260,7 +260,7 @@ pub enum Event {
     /*
      * Ignore Events
      */
-     
+
     /* */
     #[doc(hidden)]
     Nil(bool),
