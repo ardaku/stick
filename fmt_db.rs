@@ -10,7 +10,7 @@ use std::{
 };
 
 mod format {
-    include!(concat!(env!("PWD"), "/pad_db/format.rs"));
+    include!(concat!(env!("RUST_SCRIPT_BASE_PATH"), "/pad_db/format.rs"));
 }
 
 fn main() -> io::Result<()> {
