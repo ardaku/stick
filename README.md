@@ -58,7 +58,7 @@ Add the following to your `Cargo.toml`.
 
 ```toml
 [dependencies]
-pasts = "0.4"
+pasts = "0.5"
 stick = "0.10"
 ```
 
@@ -66,7 +66,9 @@ stick = "0.10"
 This example can be used to test joystick input and haptic feedback.
 
 ```rust,no_run
-use pasts::{prelude::*, CvarExec};
+// Example from the README.
+
+use pasts::prelude::*;
 use stick::{Event, Hub, Pad};
 
 async fn event_loop() {
@@ -111,9 +113,7 @@ async fn event_loop() {
 }
 
 fn main() {
-    static EXECUTOR: CvarExec = CvarExec::new();
-
-    EXECUTOR.block_on(event_loop())
+    pasts::spawn(event_loop);
 }
 ```
 

@@ -1,6 +1,6 @@
 // Example from the README.
 
-use pasts::{prelude::*, CvarExec};
+use pasts::prelude::*;
 use stick::{Event, Hub, Pad};
 
 async fn event_loop() {
@@ -45,7 +45,5 @@ async fn event_loop() {
 }
 
 fn main() {
-    static EXECUTOR: CvarExec = CvarExec::new();
-
-    EXECUTOR.block_on(event_loop())
+    pasts::spawn(event_loop);
 }
