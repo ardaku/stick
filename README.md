@@ -66,8 +66,6 @@ stick = "0.10"
 This example can be used to test joystick input and haptic feedback.
 
 ```rust,no_run
-// Example from the README.
-
 use pasts::prelude::*;
 use stick::{Event, Hub, Pad};
 
@@ -75,7 +73,7 @@ async fn event_loop() {
     let mut hub = Hub::new();
     let mut pads = Vec::<Pad>::new();
     'e: loop {
-        match [hub.fut(), pads.select().fut()].select().await.1 {
+        match poll![hub, poll!(pads)].await.1 {
             (_, Event::Connect(pad)) => {
                 println!(
                     "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
@@ -113,7 +111,7 @@ async fn event_loop() {
 }
 
 fn main() {
-    pasts::spawn(event_loop);
+    exec!(event_loop());
 }
 ```
 

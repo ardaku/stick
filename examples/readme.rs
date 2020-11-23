@@ -7,7 +7,7 @@ async fn event_loop() {
     let mut hub = Hub::new();
     let mut pads = Vec::<Pad>::new();
     'e: loop {
-        match [hub.fut(), pads.select().fut()].select().await.1 {
+        match poll![hub, poll!(pads)].await.1 {
             (_, Event::Connect(pad)) => {
                 println!(
                     "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
@@ -45,5 +45,5 @@ async fn event_loop() {
 }
 
 fn main() {
-    pasts::spawn(event_loop);
+    exec!(event_loop());
 }
