@@ -744,7 +744,9 @@ impl Future for Hub {
                         this.connected.insert(file);
                         return Poll::Ready((
                             std::usize::MAX,
-                            Event::Connect(Box::new(crate::Controller(Pad::new(fd)))),
+                            Event::Connect(Box::new(crate::Controller(
+                                Pad::new(fd),
+                            ))),
                         ));
                     }
                 }

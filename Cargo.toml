@@ -9,9 +9,9 @@
 
 [package]
 name = "stick"
-version = "0.10.2"
+version = "0.11.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
-license = "Apache-2.0 OR Zlib"
+license = "Apache-2.0/Zlib"
 
 description = "Platform-agnostic asynchronous gamepad library for Rust"
 repository = "https://github.com/libcala/stick"
@@ -23,12 +23,6 @@ categories = ["hardware-support", "asynchronous", "game-development"]
 keywords = ["ux", "joystick", "gamepad", "platform-agnostic", "controller"]
 readme = "README.md"
 edition = "2018"
-
-[badges]
-travis-ci = { repository = "libcala/stick" }
-is-it-maintained-issue-resolution = { repository = "libcala/stick" }
-is-it-maintained-open-issues = { repository = "libcala/stick" }
-maintenance = { status = "actively-developed" }
 
 [target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
 smelling_salts = "0.1"
@@ -47,4 +41,3 @@ default-target = "x86_64-unknown-linux-gnu"
 [features]
 default = []
 padfont = []
-docs-rs = []

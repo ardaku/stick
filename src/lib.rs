@@ -8,23 +8,22 @@
 // copied, modified, or distributed except according to those terms.
 //
 //! ## Getting Started
-//! Add the following to your `Cargo.toml`.
+//! Add the following to your *Cargo.toml*:
 //!
 //! ```toml
 //! [dependencies]
 //! pasts = "0.6"
-//! stick = "0.10"
+//! stick = "0.11"
 //! ```
 //!
 //! ### Example
 //! This example demonstrates getting joystick input and sending haptic
-//! feedback.  This is the same as the "examples/haptic.rs" in the stick source
-//! code repository.
+//! feedback (copied from *examples/haptic.rs*):
 //!
 //! ```rust,no_run
 //! use pasts::prelude::*;
-//! use stick::{Event, Controller};
-//! 
+//! use stick::{Controller, Event};
+//!
 //! async fn event_loop() {
 //!     let mut listener = Controller::listener();
 //!     let mut controllers = Vec::<Controller>::new();
@@ -57,11 +56,7 @@
 //!                         controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
 //!                     }
 //!                     Event::ActionB(pressed) => {
-//!                         controllers[id].rumble(if pressed {
-//!                             0.25
-//!                         } else {
-//!                             0.0
-//!                         });
+//!                         controllers[id].rumble(if pressed { 0.3 } else { 0.0 });
 //!                     }
 //!                     _ => {}
 //!                 }
@@ -69,7 +64,7 @@
 //!         }
 //!     }
 //! }
-//! 
+//!
 //! fn main() {
 //!     exec!(event_loop());
 //! }

@@ -1,7 +1,7 @@
 //! This is the example from the lib.rs documentation.
 
 use pasts::prelude::*;
-use stick::{Event, Controller};
+use stick::{Controller, Event};
 
 async fn event_loop() {
     let mut listener = Controller::listener();
@@ -35,11 +35,7 @@ async fn event_loop() {
                         controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
                     }
                     Event::ActionB(pressed) => {
-                        controllers[id].rumble(if pressed {
-                            0.25
-                        } else {
-                            0.0
-                        });
+                        controllers[id].rumble(if pressed { 0.3 } else { 0.0 });
                     }
                     _ => {}
                 }

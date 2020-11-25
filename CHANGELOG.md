@@ -4,6 +4,20 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.11.0] - Unreleased
+### Added
+ - `Controller::listener()` to replace `Hub`.
+
+### Changed
+ - `Pad` renamed to `Controller`.
+
+### Removed
+ - `Hub` type, use `Controller::listener()` instead.
+
+### Fixed
+ - The controller database is now sorted (thanks to
+   [iRaiko](https://github.com/iRaiko)!)
+
 ## [0.10.2] - 2020-09-20
 ### Fixed
  - Incorrect mapping for Xbox One wired controller
