@@ -15,15 +15,20 @@ use std::task::{Context, Poll};
 use crate::Event;
 
 /// A gamepad, flightstick, or other controller.
-pub struct Pad(pub(crate) crate::ffi::Pad);
+pub struct Controller(pub(crate) crate::ffi::Ctlr);
 
-impl Debug for Pad {
+impl Debug for Controller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Pad(\"{}\")", self.name())
     }
 }
 
-impl Pad {
+impl Controller {
+    /// Get a future that returns an event when a new controller is plugged in.
+    pub fn listener() -> impl Future<Output = (usize, Event)> {
+        crate::ffi::Hub::new()
+    }
+
     /// Get a unique identifier for the specific model of gamepad.
     pub fn id(&self) -> [u16; 4] {
         self.0.id()
@@ -41,7 +46,7 @@ impl Pad {
     }
 }
 
-impl Future for Pad {
+impl Future for Controller {
     type Output = Event;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {

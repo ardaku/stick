@@ -1,28 +1,28 @@
-// Example from the README.
+//! This is the example from the lib.rs documentation.
 
 use pasts::prelude::*;
-use stick::{Event, Hub, Pad};
+use stick::{Controller, Event};
 
 async fn event_loop() {
-    let mut hub = Hub::new();
-    let mut pads = Vec::<Pad>::new();
+    let mut listener = Controller::listener();
+    let mut ctlrs = Vec::<Controller>::new();
     'e: loop {
-        match poll![hub, poll!(pads)].await.1 {
-            (_, Event::Connect(pad)) => {
+        match poll![listener, poll!(ctlrs)].await.1 {
+            (_, Event::Connect(new)) => {
                 println!(
                     "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
-                    pads.len() + 1,
-                    pad.id()[0],
-                    pad.id()[1],
-                    pad.id()[2],
-                    pad.id()[3],
-                    pad.name(),
+                    ctlrs.len() + 1,
+                    new.id()[0],
+                    new.id()[1],
+                    new.id()[2],
+                    new.id()[3],
+                    new.name(),
                 );
-                pads.push(*pad);
+                ctlrs.push(*new);
             }
             (id, Event::Disconnect) => {
                 println!("Disconnected p{}", id + 1);
-                pads.swap_remove(id);
+                ctlrs.swap_remove(id);
             }
             (id, Event::Home(true)) => {
                 println!("p{} ended the session", id + 1);
@@ -32,10 +32,10 @@ async fn event_loop() {
                 println!("p{}: {}", id + 1, event);
                 match event {
                     Event::ActionA(pressed) => {
-                        pads[id].rumble(if pressed { 1.0 } else { 0.0 });
+                        ctlrs[id].rumble(if pressed { 1.0 } else { 0.0 });
                     }
                     Event::ActionB(pressed) => {
-                        pads[id].rumble(if pressed { 0.25 } else { 0.0 });
+                        ctlrs[id].rumble(if pressed { 0.3 } else { 0.0 });
                     }
                     _ => {}
                 }

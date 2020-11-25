@@ -1,4 +1,4 @@
-# Pads
+# Controllers
 
 ## Find and Replace (Renaming Event variants)
 This shouldn't need to be done too often, but so I don't forget:

@@ -10,15 +10,15 @@ use std::{
 };
 
 mod format {
-    include!(concat!(env!("RUST_SCRIPT_BASE_PATH"), "/pad_db/format.rs"));
+    include!(concat!(env!("RUST_SCRIPT_BASE_PATH"), "/ctlr_db/format.rs"));
 }
 
 fn main() -> io::Result<()> {
     // Get path to this script's directory from the enviroment
     let mut dir = PathBuf::from(env::var("RUST_SCRIPT_BASE_PATH").unwrap());
     // Add the folder structure to base path
-    dir.push("pad_db");
-    dir.push("pad");
+    dir.push("ctlr_db");
+    dir.push("ctlr");
     dir.push("mapping");
     // Printing for clarity
     println!("The directory is: {:?}", dir);
@@ -45,14 +45,14 @@ fn order_dir(dir: &Path) -> io::Result<()> {
 fn order_file(file_path: &Path) -> io::Result<()> {
     println!("{:?}", file_path);
     let content = fs::read_to_string(file_path)?;
-    let mut pad: format::PadMapping =
+    let mut pad: format::CtlrMapping =
         toml::from_str(&content).expect("Error parsing file");
     sort_by_code(&mut pad);
     let toml = toml::to_string(&pad).expect("Error serializing file");
     fs::write(file_path, &toml)
 }
 
-fn sort_by_code(pad: &mut format::PadMapping) {
+fn sort_by_code(pad: &mut format::CtlrMapping) {
     sort_by_code_button(pad);
     sort_by_code_axis(pad);
     sort_by_code_trigger(pad);
@@ -60,31 +60,31 @@ fn sort_by_code(pad: &mut format::PadMapping) {
     sort_by_code_wheel(pad);
 }
 
-fn sort_by_code_button(pad: &mut format::PadMapping) {
+fn sort_by_code_button(pad: &mut format::CtlrMapping) {
     if let Some(ref mut v) = pad.button {
         v.sort_by(|a, b| a.code.cmp(&b.code));
     }
 }
 
-fn sort_by_code_axis(pad: &mut format::PadMapping) {
+fn sort_by_code_axis(pad: &mut format::CtlrMapping) {
     if let Some(ref mut v) = pad.axis {
         v.sort_by(|a, b| a.code.cmp(&b.code));
     }
 }
 
-fn sort_by_code_trigger(pad: &mut format::PadMapping) {
+fn sort_by_code_trigger(pad: &mut format::CtlrMapping) {
     if let Some(ref mut v) = pad.trigger {
         v.sort_by(|a, b| a.code.cmp(&b.code));
     }
 }
 
-fn sort_by_code_three_way(pad: &mut format::PadMapping) {
+fn sort_by_code_three_way(pad: &mut format::CtlrMapping) {
     if let Some(ref mut v) = pad.three_way {
         v.sort_by(|a, b| a.code.cmp(&b.code));
     }
 }
 
-fn sort_by_code_wheel(pad: &mut format::PadMapping) {
+fn sort_by_code_wheel(pad: &mut format::CtlrMapping) {
     if let Some(ref mut v) = pad.wheel {
         v.sort_by(|a, b| a.code.cmp(&b.code));
     }

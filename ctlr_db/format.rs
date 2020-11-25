@@ -39,7 +39,7 @@ pub(super) struct Wheel {
 ///
 /// Some fields are optional because not every controller has every input type.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(super) struct PadMapping {
+pub(super) struct CtlrMapping {
     // Name of the controller.
     pub(super) name: String,
     // Type of the controller.

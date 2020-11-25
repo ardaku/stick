@@ -1,16 +1,16 @@
 use std::{env, fs, path::Path};
 
-#[path = "./pad_db/format.rs"]
+#[path = "./ctlr_db/format.rs"]
 mod format;
 
 fn generate_from_database() -> String {
     let mut ret = String::new();
-    ret.push_str("pub(super) fn pad_desc(\n");
+    ret.push_str("pub(super) fn ctlr_desc(\n");
     ret.push_str("    bus: u16, vendor: u16, product: u16, ver: u16\n");
-    ret.push_str(") -> &'static PadDescriptor\n");
+    ret.push_str(") -> &'static CtlrDescriptor\n");
     ret.push_str("{\n");
     ret.push_str("    match (bus, vendor, product, ver) {\n");
-    let path = "./pad_db/pad/mapping";
+    let path = "./ctlr_db/ctlr/mapping";
     let mut dirs = vec![];
     for dir_entry in fs::read_dir(path).unwrap() {
         let dir_entry = dir_entry.unwrap();
@@ -54,8 +54,8 @@ fn generate_from_database() -> String {
             ret.push_str("0x");
             ret.push_str(ver);
         }
-        ret.push_str(") => &PadDescriptor {\n");
-        let map: format::PadMapping =
+        ret.push_str(") => &CtlrDescriptor {\n");
+        let map: format::CtlrMapping =
             toml::from_slice(&fs::read(entry).unwrap()).unwrap();
         ret.push_str("            name: \"");
         ret.push_str(&map.name);
@@ -244,7 +244,7 @@ fn stop_needless_reruns(path: &str) {
 }
 
 fn main() {
-    stop_needless_reruns("./pad_db/");
+    stop_needless_reruns("./ctlr_db/");
     let output = generate_from_database();
 
     let out_dir = env::var_os("OUT_DIR").unwrap();

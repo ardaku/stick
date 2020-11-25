@@ -7,7 +7,7 @@
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-/// An event from a `Pad`.
+/// An event from a [`Controller`](crate::Controller).
 ///
 /// # Gamepad Types
 /// ## Standard Gamepad
@@ -24,9 +24,9 @@ pub enum Event {
      */
 
     /*  */
-    /// A new pad has just been plugged in.
-    Connect(Box<crate::Pad>),
-    /// Pad unplugged.
+    /// A new controller has just been plugged in.
+    Connect(Box<crate::Controller>),
+    /// Controller unplugged.
     Disconnect,
 
     /*

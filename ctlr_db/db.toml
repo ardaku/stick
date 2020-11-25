@@ -1,6 +1,6 @@
 version = "0.1.0"
 
-# Types of pads
+# Types of controllers
 types = [
     "Gamepad",
     "Joystick",
@@ -8,9 +8,9 @@ types = [
     "Remote",
 ]
 
-# All names for possible controls on a device.  Names must be in this file in
-# order to use them in device specification files.  8-bit and vector artwork and
-# animations for each control should also be included in the database.
+# All names for possible controls on a controller.  Names must be in this file
+# in order to use them in device specification files.  8-bit and vector artwork
+# and animations for each control should also be included in the database.
 controls = [
     "Circle Button",
     "Cross Button",
