@@ -92,8 +92,8 @@
     variant_size_differences
 )]
 
-mod event;
 mod ctlr;
+mod event;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(
@@ -121,5 +121,5 @@ mod ctlr;
 #[allow(unsafe_code)]
 mod ffi;
 
-pub use event::Event;
 pub use ctlr::Controller;
+pub use event::Event;

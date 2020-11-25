@@ -71,7 +71,8 @@ struct CtlrState {
     queued: Option<Event>,
 }
 
-type CtlrDescriptorAxes = (&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>);
+type CtlrDescriptorAxes =
+    (&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>);
 type CtlrDescriptorButtons = (&'static dyn Fn(bool) -> Event, c_ushort);
 type CtlrDescriptorTrigButtons = (&'static dyn Fn(f64) -> Event, c_ushort);
 type CtlrDescriptorTriggers = (
@@ -865,20 +866,8 @@ impl Ctlr {
                 }
                 neg
             },
-            dead: {
-                let mut dead = vec![];
-                for _ in desc.axes {
-                    dead.push(true);
-                }
-                dead
-            },
-            dead_trig: {
-                let mut dead = vec![];
-                for _ in desc.triggers {
-                    dead.push(true);
-                }
-                dead
-            },
+            dead: vec![true; desc.axes.len()],
+            dead_trig: vec![true; desc.triggers.len()],
             norm,
             zero,
             flat,
