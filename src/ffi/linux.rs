@@ -7,7 +7,7 @@
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-use smelling_salts::{Device as AsyncDevice, Watcher};
+use smelling_salts::{Device, Watcher};
 
 use std::{
     collections::HashSet,
@@ -35,7 +35,7 @@ const LINUX_SPECIFIC_BTN_OFFSET: c_ushort = 0x120;
 /// State of a hat or dpad in order to remove duplicated events, because
 /// sometimes evdev produces both an axis and button event for hats and dpads.
 #[derive(Default)]
-struct PadStateHat {
+struct CtlrStateHat {
     up: bool,
     down: bool,
     left: bool,
@@ -44,7 +44,7 @@ struct PadStateHat {
 
 /// Data associated with the state of the pad.  Used to produce the correct
 /// platform-agnostic events.
-struct PadState {
+struct CtlrState {
     // Trigger state
     trigger_l: f64,
     trigger_l_held: bool,
@@ -59,9 +59,9 @@ struct PadState {
     dead: Vec<bool>,
     dead_trig: Vec<bool>,
     //
-    dpad: PadStateHat,
-    mic: PadStateHat,
-    pov: PadStateHat,
+    dpad: CtlrStateHat,
+    mic: CtlrStateHat,
+    pov: CtlrStateHat,
     // Zero point
     zero: f64,
     // Normalization (-1.0, 1.0)
@@ -71,45 +71,45 @@ struct PadState {
     queued: Option<Event>,
 }
 
-type PadDescriptorAxes = (&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>);
-type PadDescriptorButtons = (&'static dyn Fn(bool) -> Event, c_ushort);
-type PadDescriptorTrigButtons = (&'static dyn Fn(f64) -> Event, c_ushort);
-type PadDescriptorTriggers = (
+type CtlrDescriptorAxes = (&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>);
+type CtlrDescriptorButtons = (&'static dyn Fn(bool) -> Event, c_ushort);
+type CtlrDescriptorTrigButtons = (&'static dyn Fn(f64) -> Event, c_ushort);
+type CtlrDescriptorTriggers = (
     &'static dyn Fn(f64) -> Event,
     c_ushort,
     Option<c_int>,
     Option<f64>,
 );
-type PadDescriptorThreeWays = (&'static dyn Fn(bool, bool) -> Event, c_ushort);
-type PadDescriptorThreeAxes = (&'static dyn Fn(bool, f64) -> Event, c_ushort);
-type PadDescriptorWheels = (&'static dyn Fn(f64) -> Event, c_ushort);
+type CtlrDescriptorThreeWays = (&'static dyn Fn(bool, bool) -> Event, c_ushort);
+type CtlrDescriptorThreeAxes = (&'static dyn Fn(bool, f64) -> Event, c_ushort);
+type CtlrDescriptorWheels = (&'static dyn Fn(f64) -> Event, c_ushort);
 
 /// Describes some hardware joystick mapping
-struct PadDescriptor {
-    // Pad name
+struct CtlrDescriptor {
+    // Controller name
     name: &'static str,
     // Deadzone override
     deadzone: Option<f64>,
 
     // (Axis) value = Full range min to max axis
-    axes: &'static [PadDescriptorAxes],
+    axes: &'static [CtlrDescriptorAxes],
     // (Button) value = Boolean 1 or 0
-    buttons: &'static [PadDescriptorButtons],
+    buttons: &'static [CtlrDescriptorButtons],
     // (Button) value = 0.0f64 or 1.0f64
-    trigbtns: &'static [PadDescriptorTrigButtons],
+    trigbtns: &'static [CtlrDescriptorTrigButtons],
     // (Axis) value = 0 thru 255
-    triggers: &'static [PadDescriptorTriggers],
+    triggers: &'static [CtlrDescriptorTriggers],
     // (Axis) value = -1, 0, or 1
-    three_ways: &'static [PadDescriptorThreeWays],
+    three_ways: &'static [CtlrDescriptorThreeWays],
     // (Axis) value = -1.0f64, 0, or 1.0f64
-    three_axes: &'static [PadDescriptorThreeAxes],
+    three_axes: &'static [CtlrDescriptorThreeAxes],
     // (RelativeAxis) value = Full range min to max axis
-    wheels: &'static [PadDescriptorWheels],
+    wheels: &'static [CtlrDescriptorWheels],
 }
 
-impl PadDescriptor {
+impl CtlrDescriptor {
     // Convert evdev event into Stick event.
-    fn event_from(&self, ev: EvdevEv, state: &mut PadState) -> Option<Event> {
+    fn event_from(&self, ev: EvdevEv, state: &mut CtlrState) -> Option<Event> {
         fn check_held(value: c_int) -> Option<bool> {
             match value {
                 0 => Some(false),
@@ -125,7 +125,7 @@ impl PadDescriptor {
                 }
             }
         }
-        fn joyaxis_float(x: c_int, max: f64, state: &mut PadState) -> f64 {
+        fn joyaxis_float(x: c_int, max: f64, state: &mut CtlrState) -> f64 {
             let v = (x as f64 - state.zero) * state.norm / max;
             if v.abs() <= state.flat {
                 0.0
@@ -588,7 +588,7 @@ extern "C" {
 }
 
 struct HubTimer {
-    device: AsyncDevice,
+    device: Device,
 }
 
 impl HubTimer {
@@ -620,7 +620,7 @@ impl HubTimer {
             );
         }
         // Create timer device, watching for input events.
-        let device = AsyncDevice::new(timerfd, Watcher::new().input());
+        let device = Device::new(timerfd, Watcher::new().input());
         // Wake up Future when timer goes off.
         device.register_waker(cx.waker());
 
@@ -638,7 +638,7 @@ impl Drop for HubTimer {
 }
 
 pub(crate) struct Hub {
-    device: AsyncDevice,
+    device: Device,
     connected: HashSet<String>,
     timer: Option<HubTimer>,
 }
@@ -665,7 +665,7 @@ impl Hub {
 
         // Create watcher, and register with fd as a "device".
         let watcher = Watcher::new().input();
-        let device = AsyncDevice::new(inotify, watcher);
+        let device = Device::new(inotify, watcher);
 
         // Start off with an empty hash set of connected devices.
         let connected = HashSet::new();
@@ -745,7 +745,7 @@ impl Future for Hub {
                         return Poll::Ready((
                             std::usize::MAX,
                             Event::Connect(Box::new(crate::Controller(
-                                Pad::new(fd),
+                                Ctlr::new(fd),
                             ))),
                         ));
                     }
@@ -793,18 +793,18 @@ impl Drop for Hub {
 }
 
 /// Gamepad / Other HID
-pub(crate) struct Pad {
+pub(crate) struct Ctlr {
     // Async device handle
-    device: AsyncDevice,
+    device: Device,
     // Hexadecimal controller type ID
     hardware_id: [u16; 4],
     // Userspace driver data
-    state: PadState,
+    state: CtlrState,
     rumble: i16,
-    desc: &'static PadDescriptor,
+    desc: &'static CtlrDescriptor,
 }
 
-impl Pad {
+impl Ctlr {
     fn new(file: File) -> Self {
         let fd = file.into_raw_fd();
 
@@ -825,8 +825,8 @@ impl Pad {
         let version = a.version.to_be();
         let hardware_id = [bustype, vendor, product, version];
 
-        // Get the pad's descriptor
-        let desc = gen::pad_desc(bustype, vendor, product, version);
+        // Get the controller's descriptor
+        let desc = gen::ctlr_desc(bustype, vendor, product, version);
 
         // Get the min and max absolute values for axis.
         let mut a = MaybeUninit::<AbsInfo>::uninit();
@@ -846,7 +846,7 @@ impl Pad {
         let norm = norm.recip();
 
         // Initialize driver state
-        let state = PadState {
+        let state = CtlrState {
             trigger_l: 0.0,
             trigger_r: 0.0,
             trigger_l_held: false,
@@ -883,17 +883,17 @@ impl Pad {
             zero,
             flat,
             queued: None,
-            dpad: PadStateHat::default(),
-            mic: PadStateHat::default(),
-            pov: PadStateHat::default(),
+            dpad: CtlrStateHat::default(),
+            mic: CtlrStateHat::default(),
+            pov: CtlrStateHat::default(),
         };
 
         // Query the controller for haptic support.
         let rumble = joystick_haptic(fd, -1, 0.0);
         // Construct device from fd, looking for input events.
-        Pad {
+        Self {
             hardware_id,
-            device: AsyncDevice::new(fd, Watcher::new().input()),
+            device: Device::new(fd, Watcher::new().input()),
             rumble,
             state,
             desc,
@@ -962,7 +962,7 @@ impl Pad {
     }
 }
 
-impl Drop for Pad {
+impl Drop for Ctlr {
     fn drop(&mut self) {
         let fd = self.device.fd();
         self.device.old();

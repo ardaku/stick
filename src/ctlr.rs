@@ -15,7 +15,7 @@ use std::task::{Context, Poll};
 use crate::Event;
 
 /// A gamepad, flightstick, or other controller.
-pub struct Controller(pub(crate) crate::ffi::Pad);
+pub struct Controller(pub(crate) crate::ffi::Ctlr);
 
 impl Debug for Controller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

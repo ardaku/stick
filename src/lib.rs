@@ -93,7 +93,7 @@
 )]
 
 mod event;
-mod pad;
+mod ctlr;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(
@@ -122,4 +122,4 @@ mod pad;
 mod ffi;
 
 pub use event::Event;
-pub use pad::Controller;
+pub use ctlr::Controller;
