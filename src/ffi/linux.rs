@@ -13,6 +13,7 @@ use std::{
     collections::HashSet,
     convert::TryInto,
     fs::{self, File, OpenOptions},
+    future::Future,
     io::ErrorKind,
     mem::MaybeUninit,
     num::FpCategory,
@@ -20,6 +21,7 @@ use std::{
         raw::{c_char, c_int, c_long, c_ulong, c_ushort, c_void},
         unix::io::{IntoRawFd, RawFd},
     },
+    pin::Pin,
     task::{Context, Poll},
 };
 
@@ -678,13 +680,18 @@ impl Hub {
             timer,
         }
     }
+}
 
-    pub(super) fn poll(
-        &mut self,
+impl Future for Hub {
+    type Output = (usize, Event);
+
+    fn poll(
+        mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<(usize, Event)> {
+    ) -> Poll<Self::Output> {
+        let mut this = self.as_mut();
         // Timeout after joystick doesn't give up permissions for 1 second.
-        if let Some(ref timer) = self.timer {
+        if let Some(ref timer) = this.timer {
             let mut num = MaybeUninit::<u64>::uninit();
             if unsafe {
                 read(
@@ -695,7 +702,7 @@ impl Hub {
             } == std::mem::size_of::<u64>() as isize
                 && unsafe { num.assume_init() } >= 100
             {
-                self.timer = None;
+                this.timer = None;
             }
         }
 
@@ -703,7 +710,7 @@ impl Hub {
         let mut ev = MaybeUninit::<InotifyEv>::uninit();
         let ev = unsafe {
             if read(
-                self.device.fd(),
+                this.device.fd(),
                 ev.as_mut_ptr().cast(),
                 std::mem::size_of::<InotifyEv>(),
             ) <= 0
@@ -714,7 +721,7 @@ impl Hub {
                     let file = file.unwrap().file_name().into_string().unwrap();
                     if file.ends_with("-event-joystick") {
                         // Found an evdev gamepad
-                        if self.connected.contains(&file) {
+                        if this.connected.contains(&file) {
                             // Already connected.
                             continue 'fds;
                         }
@@ -734,19 +741,19 @@ impl Hub {
                                 continue 'fds;
                             }
                         };
-                        self.connected.insert(file);
+                        this.connected.insert(file);
                         return Poll::Ready((
                             std::usize::MAX,
-                            Event::Connect(Box::new(crate::Pad(Pad::new(fd)))),
+                            Event::Connect(Box::new(crate::Controller(Pad::new(fd)))),
                         ));
                     }
                 }
                 // If all gamepads are openned, disable timer.
-                if all_open && self.timer.is_some() {
-                    self.timer = None;
+                if all_open && this.timer.is_some() {
+                    this.timer = None;
                 }
                 // Register waker for this device
-                self.device.register_waker(cx.waker());
+                this.device.register_waker(cx.waker());
                 // If no new controllers found, return pending.
                 return Poll::Pending;
             }
@@ -761,17 +768,17 @@ impl Hub {
             if file.ends_with("-event-joystick") {
                 // Remove it if it exists, sometimes gamepads get "removed"
                 // twice because adds are condensed in innotify (not 100% sure).
-                let _ = self.connected.remove(&file);
+                let _ = this.connected.remove(&file);
             }
         }
         // Add flag is set, wait for permissions (unfortunately, can't rely on
         // epoll events for this, so check every 10 milliseconds).
-        if (ev.mask & 0x0000_0100) != 0 && self.timer.is_none() {
-            self.timer = Some(HubTimer::new(cx));
+        if (ev.mask & 0x0000_0100) != 0 && this.timer.is_none() {
+            this.timer = Some(HubTimer::new(cx));
         }
         // Check for more events, Search for new controllers again, and return
         // Pending if neither have anything to process.
-        self.poll(cx)
+        this.poll(cx)
     }
 }
 

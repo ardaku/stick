@@ -7,7 +7,6 @@
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
@@ -20,7 +19,7 @@ pub struct Hub(crate::ffi::Hub);
 impl Hub {
     /// Create a future to start looking for new connections to gamepads.
     pub fn new() -> Self {
-        Hub(crate::ffi::Hub::new())
+        Hub()
     }
 }
 

@@ -24,8 +24,8 @@ pub enum Event {
      */
 
     /*  */
-    /// A new pad has just been plugged in.
-    Connect(Box<crate::Pad>),
+    /// A new controller has just been plugged in.
+    Connect(Box<crate::Controller>),
     /// Pad unplugged.
     Disconnect,
 

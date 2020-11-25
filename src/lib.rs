@@ -6,10 +6,75 @@
 // https://apache.org/licenses/LICENSE-2.0>, or the Zlib License, <LICENSE-ZLIB
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
+//
+//! ## Getting Started
+//! Add the following to your `Cargo.toml`.
+//!
+//! ```toml
+//! [dependencies]
+//! pasts = "0.6"
+//! stick = "0.10"
+//! ```
+//!
+//! ### Example
+//! This example demonstrates getting joystick input and sending haptic
+//! feedback.  This is the same as the "examples/haptic.rs" in the stick source
+//! code repository.
+//!
+//! ```rust,no_run
+//! use pasts::prelude::*;
+//! use stick::{Event, Controller};
+//! 
+//! async fn event_loop() {
+//!     let mut listener = Controller::listener();
+//!     let mut controllers = Vec::<Controller>::new();
+//!     'e: loop {
+//!         match poll![listener, poll!(controllers)].await.1 {
+//!             (_, Event::Connect(new)) => {
+//!                 println!(
+//!                     "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
+//!                     controllers.len() + 1,
+//!                     new.id()[0],
+//!                     new.id()[1],
+//!                     new.id()[2],
+//!                     new.id()[3],
+//!                     new.name(),
+//!                 );
+//!                 controllers.push(*new);
+//!             }
+//!             (id, Event::Disconnect) => {
+//!                 println!("Disconnected p{}", id + 1);
+//!                 controllers.swap_remove(id);
+//!             }
+//!             (id, Event::Home(true)) => {
+//!                 println!("p{} ended the session", id + 1);
+//!                 break 'e;
+//!             }
+//!             (id, event) => {
+//!                 println!("p{}: {}", id + 1, event);
+//!                 match event {
+//!                     Event::ActionA(pressed) => {
+//!                         controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
+//!                     }
+//!                     Event::ActionB(pressed) => {
+//!                         controllers[id].rumble(if pressed {
+//!                             0.25
+//!                         } else {
+//!                             0.0
+//!                         });
+//!                     }
+//!                     _ => {}
+//!                 }
+//!             }
+//!         }
+//!     }
+//! }
+//! 
+//! fn main() {
+//!     exec!(event_loop());
+//! }
+//! ```
 
-#![cfg_attr(feature = "docs-rs", feature(external_doc))]
-#![cfg_attr(feature = "docs-rs", doc(include = "../README.md"))]
-#![doc = ""]
 #![doc(
     html_logo_url = "https://libcala.github.io/logo.svg",
     html_favicon_url = "https://libcala.github.io/icon.svg",
@@ -33,7 +98,6 @@
 )]
 
 mod event;
-mod hub;
 mod pad;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
@@ -63,5 +127,4 @@ mod pad;
 mod ffi;
 
 pub use event::Event;
-pub use hub::Hub;
-pub use pad::Pad;
+pub use pad::Controller;
