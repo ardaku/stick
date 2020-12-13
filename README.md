@@ -2,7 +2,7 @@
 
 #### Platform-agnostic asynchronous gamepad/joystick library for Rust
 
-[![Build Status](https://api.travis-ci.org/libcala/stick.svg?branch=master)](https://travis-ci.org/libcala/stick)
+[![tests](https://github.com/libcala/stick/workflows/tests/badge.svg)](https://github.com/libcala/stick/actions?query=workflow%3Atests)
 [![Docs](https://docs.rs/stick/badge.svg)](https://docs.rs/stick)
 [![crates.io](https://img.shields.io/crates/v/stick.svg)](https://crates.io/crates/stick)
 

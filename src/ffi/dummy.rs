@@ -7,7 +7,7 @@
 // or http://opensource.org/licenses/Zlib>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-use std::task::{Context, Poll};
+use std::{future::Future, task::{Context, Poll}, pin::Pin};
 
 use crate::Event;
 
@@ -17,25 +17,29 @@ impl Hub {
     pub(super) fn new() -> Self {
         Hub {}
     }
+}
 
-    pub(super) fn poll(
-        &mut self,
+impl Future for Hub {
+    type Output = (usize, Event);
+
+    fn poll(
+        self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<(usize, Event)> {
+    ) -> Poll<Self::Output> {
         let _ = cx;
 
         Poll::Pending
     }
 }
 
-pub(crate) struct Pad {}
+pub(crate) struct Ctlr {}
 
-impl Pad {
+impl Ctlr {
     #[allow(unused)]
     fn new(device: ()) -> Self {
         let _ = device;
 
-        Pad {}
+        Self {}
     }
 
     pub(super) fn id(&self) -> [u16; 4] {

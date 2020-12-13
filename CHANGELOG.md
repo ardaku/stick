@@ -4,6 +4,11 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.11.1] - 2020-12-13
+### Fixed
+ - Dummy implementation not compiling (started using GitHub Actions so hopefully
+   this won't happen again).
+
 ## [0.11.0] - 2020-11-25
 ### Added
  - `Controller::listener()` to replace `Hub`.
