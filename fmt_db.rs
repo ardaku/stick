@@ -19,7 +19,7 @@ fn main() -> io::Result<()> {
     // Add the folder structure to base path
     dir.push("ctlr_db");
     dir.push("ctlr");
-    dir.push("mapping");
+    dir.push("list");
     // Printing for clarity
     println!("The directory is: {:?}", dir);
     if dir.is_dir() {

@@ -10,7 +10,7 @@ fn generate_from_database() -> String {
     ret.push_str(") -> &'static CtlrDescriptor\n");
     ret.push_str("{\n");
     ret.push_str("    match (bus, vendor, product, ver) {\n");
-    let path = "./ctlr_db/ctlr/mapping";
+    let path = "./ctlr_db/ctlr/list";
     let mut dirs = vec![];
     for dir_entry in fs::read_dir(path).unwrap() {
         let dir_entry = dir_entry.unwrap();
