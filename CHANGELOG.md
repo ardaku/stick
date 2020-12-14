@@ -4,6 +4,25 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.12.0] - Unreleased
+### Added
+ - You can now import your own mappings at runtime **WIP**
+ - Support For WASM **WIP**
+ - Default evdev id guessing **WIP**
+
+### Changed
+ - Database now stored as data rather than control flow in resulting binary
+   (lowering bloat) - **WIP**
+ - Use faster-compiling dependency than serde for controller mappings **WIP**
+
+### Removed
+ - Controllers from sdl controller db (it assumes everything is a gamepad, which
+   not all controllers are - stick will only include semantically correct
+   mappings from now on).
+
+### Fixed
+ - Cleaned up database (fixing inconsistencies).
+
 ## [0.11.1] - 2020-12-13
 ### Fixed
  - Dummy implementation not compiling (started using GitHub Actions so hopefully
