@@ -1,5 +1,5 @@
-name = "PDP Wired Gamepad for Xbox 360"
-type = "XBox"
+name = "PDP Wired Xbox 360 Gamepad"
+type = "Xbox"
 deadzone = 0.07
 
 [[button]]

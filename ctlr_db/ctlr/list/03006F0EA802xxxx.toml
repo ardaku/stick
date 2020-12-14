@@ -1,5 +1,5 @@
-name = "PDP Wired Controller for Xbox One"
-type = "XBOX"
+name = "PDP Wired Xbox One Controller"
+type = "Xbox"
 
 [[button]]
 code = 0

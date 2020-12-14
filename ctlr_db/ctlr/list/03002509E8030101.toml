@@ -1,5 +1,5 @@
-name = "Mayflash Wii Classic Controller"
-type = "Unknown"
+name = "Wii Remote - Mayflash Adapter"
+type = "WiiRemote"
 
 [[button]]
 code = 0

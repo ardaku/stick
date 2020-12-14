@@ -1,5 +1,5 @@
 name = "Steam Controller"
-type = "Unknown"
+type = "Steam"
 
 [[button]]
 code = 0

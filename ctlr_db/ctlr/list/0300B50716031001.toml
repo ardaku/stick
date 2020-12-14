@@ -1,5 +1,5 @@
 name = "Thrustmaster Flightstick"
-type = "Flight"
+type = "Thrustmaster"
 
 [[button]]
 code = 0

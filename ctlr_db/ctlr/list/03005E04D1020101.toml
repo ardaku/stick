@@ -1,5 +1,5 @@
-name = "Microsoft X-Box One pad"
-type = "Unknown"
+name = "Microsoft Xbox One Controller"
+type = "Xbox"
 
 [[button]]
 code = 6

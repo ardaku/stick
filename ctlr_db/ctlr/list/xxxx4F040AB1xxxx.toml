@@ -1,5 +1,5 @@
-name = "Thrustmaster T-16000M Flight Stick"
-type = "Flightstick"
+name = "Thrustmaster T-16000M Flightstick"
+type = "Thrustmaster"
 
 [[button]]
 code = 0

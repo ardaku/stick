@@ -1,5 +1,5 @@
 name = "Mad Catz R.A.T. Pro X mouse"
-type = "MOUSE"
+type = "Mouse"
 
 [[button]]
 code = 1
