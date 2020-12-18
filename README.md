@@ -66,10 +66,10 @@ to facilitate upgrading this crate as a dependency.
 ## License
 Licensed under either of
  - Apache License, Version 2.0
-   ([LICENSE-APACHE](https://github.com/libcala/stick/blob/master/LICENSE-APACHE) or
+   ([LICENSE_APACHE_2_0.txt](https://github.com/libcala/stick/blob/master/LICENSE_APACHE_2_0.txt) or
    [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
  - Boost License, Version 1.0
-   ([LICENSE-BOOST](https://github.com/libcala/stick/blob/master/LICENSE-BOOST) or
+   ([LICENSE_BOOST_1_0.txt](https://github.com/libcala/stick/blob/master/LICENSE_BOOST_1_0.txt) or
    [https://www.boost.org/LICENSE_1_0.txt](https://www.boost.org/LICENSE_1_0.txt))
 
 at your option.
