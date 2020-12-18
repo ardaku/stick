@@ -60,16 +60,16 @@ There are no optional features.
 
 ## Upgrade
 You can use the
-[changelog](https://github.com/libcala/stick/blob/master/CHANGELOG.md)
+[changelog](https://github.com/libcala/stick/blob/main/CHANGELOG.md)
 to facilitate upgrading this crate as a dependency.
 
 ## License
 Licensed under either of
  - Apache License, Version 2.0
-   ([LICENSE_APACHE_2_0.txt](https://github.com/libcala/stick/blob/master/LICENSE_APACHE_2_0.txt) or
+   ([LICENSE_APACHE_2_0.txt](https://github.com/libcala/stick/blob/main/LICENSE_APACHE_2_0.txt) or
    [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
  - Boost License, Version 1.0
-   ([LICENSE_BOOST_1_0.txt](https://github.com/libcala/stick/blob/master/LICENSE_BOOST_1_0.txt) or
+   ([LICENSE_BOOST_1_0.txt](https://github.com/libcala/stick/blob/main/LICENSE_BOOST_1_0.txt) or
    [https://www.boost.org/LICENSE_1_0.txt](https://www.boost.org/LICENSE_1_0.txt))
 
 at your option.
@@ -98,4 +98,4 @@ you can email me at [jeronlau@plopgrizzly.com](mailto:jeronlau@plopgrizzly.com).
 Otherwise,
 [here's a link to the issues on GitHub](https://github.com/libcala/stick/issues),
 and, as always, make sure to read and follow the
-[Code of Conduct](https://github.com/libcala/stick/blob/master/CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/libcala/stick/blob/main/CODE_OF_CONDUCT.md).

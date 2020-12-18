@@ -23,4 +23,4 @@ you can email me at [jeronlau@plopgrizzly.com](mailto:jeronlau@plopgrizzly.com).
 Otherwise,
 [here's a link to the issues on GitHub](https://github.com/libcala/stick/issues),
 and, as always, make sure to read and follow the
-[Code of Conduct](https://github.com/libcala/stick/blob/master/CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/libcala/stick/blob/main/CODE_OF_CONDUCT.md).
