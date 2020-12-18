@@ -20,13 +20,13 @@ Now, I think there are many other reasons for stick to exist despite gilrs:
  - Meaningful Event Names (`ActionA` and `ActionB` instead of `South` and
    `East`)
  - Minimal dependencies
- - Dual licensed with the Zlib license (permission to use without attribution in
-   the binary's UI) - making it great for game development.
+ - Dual licensed with the Boost license (permission to use without attribution
+   in the binary's UI) - making it great for game development.
  - Not game-specific, doesn't depend on a "standard gamepad" model (which
    doesn't work due to the variety of controllers in existence) - therefore can
    also be used in robotics, control centers, advanced flight simulations, etc.
- - Support more gamepads/joysticks than gilrs, and (WIP) unified support across
-   platforms.
+ - Support more types of gamepads/joysticks than gilrs, and (WIP) unified
+   support across platforms.
 
 ### Platform Support
 - Linux
@@ -65,12 +65,12 @@ to facilitate upgrading this crate as a dependency.
 
 ## License
 Licensed under either of
- - Apache License, Version 2.0,
+ - Apache License, Version 2.0
    ([LICENSE-APACHE](https://github.com/libcala/stick/blob/master/LICENSE-APACHE) or
    [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
- - Zlib License,
-   ([LICENSE-ZLIB](https://github.com/libcala/stick/blob/master/LICENSE-ZLIB) or
-   [https://opensource.org/licenses/Zlib](https://opensource.org/licenses/Zlib))
+ - Boost License, Version 1.0
+   ([LICENSE-BOOST](https://github.com/libcala/stick/blob/master/LICENSE-BOOST) or
+   [https://www.boost.org/LICENSE_1_0.txt](https://www.boost.org/LICENSE_1_0.txt))
 
 at your option.
 
@@ -79,16 +79,23 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
-Contributors are always welcome (thank you for being interested!), whether it
-be a bug report, bug fix, feature request, feature implementation or whatever.
-Don't be shy about getting involved.  I always make time to fix bugs, so usually
+Anyone is more than welcome to contribute!  Don't be shy about getting involved,
+whether with a question, idea, bug report, bug fix, feature request, feature
+implementation, or other enhancement.  Other projects have strict contributing
+guidelines, but this project accepts any and all formats for pull requests and
+issues.  For ongoing code contributions, if you wish to ensure your code is
+used, open a draft PR so that I know not to write the same code.  If a feature
+needs to be bumped in importance, I may merge an unfinished draft PR into it's
+own branch and finish it (after a week's deadline for the person who openned
+it).  Contributors will always be notified in this situation, and given a choice
+to merge early.  All pull request contributors will have their username added in
+the contributors section of the release notes of the next version after the
+merge, with a message thanking them.  I always make time to fix bugs, so usually
 a patched version of the library will be out a few days after a report.
 Features requests will not complete as fast.  If you have any questions, design
 critques, or want me to find you something to work on based on your skill level,
 you can email me at [jeronlau@plopgrizzly.com](mailto:jeronlau@plopgrizzly.com).
 Otherwise,
-[here's a link to the issues on GitHub](https://github.com/libcala/stick/issues).
-Before contributing, check out the
-[contribution guidelines](https://github.com/libcala/stick/blob/master/CONTRIBUTING.md),
-and, as always, make sure to follow the
-[code of conduct](https://github.com/libcala/stick/blob/master/CODE_OF_CONDUCT.md).
+[here's a link to the issues on GitHub](https://github.com/libcala/stick/issues),
+and, as always, make sure to read and follow the
+[Code of Conduct](https://github.com/libcala/stick/blob/master/CODE_OF_CONDUCT.md).
