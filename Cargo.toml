@@ -26,7 +26,7 @@ readme = "README.md"
 edition = "2018"
 
 [target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
-smelling_salts = "0.1"
+smelling_salts = "0.2"
 
 [build-dependencies]
 toml = "0.5"
