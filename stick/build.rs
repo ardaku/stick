@@ -10,7 +10,7 @@
 
 use std::{env, fs, path::Path};
 
-#[path = "./ctlr_db/format.rs"]
+#[path = "../stick_db/format.rs"]
 mod format;
 
 fn generate_from_database() -> String {
@@ -20,7 +20,7 @@ fn generate_from_database() -> String {
     ret.push_str(") -> &'static CtlrDescriptor\n");
     ret.push_str("{\n");
     ret.push_str("    match (bus, vendor, product, ver) {\n");
-    let path = "./ctlr_db/ctlr/list";
+    let path = "../stick_db/ctlr/list";
     let mut dirs = vec![];
     for dir_entry in fs::read_dir(path).unwrap() {
         let dir_entry = dir_entry.unwrap();
@@ -254,7 +254,7 @@ fn stop_needless_reruns(path: &str) {
 }
 
 fn main() {
-    stop_needless_reruns("./ctlr_db/");
+    stop_needless_reruns("../stick_db/");
     let output = generate_from_database();
 
     let out_dir = env::var_os("OUT_DIR").unwrap();

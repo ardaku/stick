@@ -1,9 +1,3 @@
-//! ```cargo
-//! [dependencies]
-//! toml = "0.5"
-//! serde = { version = "1.0", features = ["derive"] }
-//! ```
-
 // Copyright Jeron Aldaron Lau 2017 - 2020.
 // Distributed under either the Apache License, Version 2.0
 //    (See accompanying file LICENSE_APACHE_2_0.txt or copy at
@@ -20,7 +14,7 @@ use std::{
 };
 
 mod format {
-    include!(concat!(env!("RUST_SCRIPT_BASE_PATH"), "/ctlr_db/format.rs"));
+    include!("../../stick_db/format.rs");
 }
 
 fn main() -> io::Result<()> {

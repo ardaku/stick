@@ -1,0 +1,44 @@
+# Copyright Jeron Aldaron Lau 2017 - 2020.
+# Distributed under either the Apache License, Version 2.0
+#    (See accompanying file LICENSE_APACHE_2_0.txt or copy at
+#          https://apache.org/licenses/LICENSE-2.0),
+# or the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_BOOST_1_0.txt or copy at
+#          https://www.boost.org/LICENSE_1_0.txt)
+# at your option. This file may not be copied, modified, or distributed except
+# according to those terms.
+
+[package]
+name = "stick"
+version = "0.11.1"
+authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
+license = "Apache-2.0 OR BSL-1.0"
+
+description = "Platform-agnostic asynchronous gamepad library for Rust"
+repository = "https://github.com/libcala/stick"
+documentation = "https://docs.rs/stick"
+homepage = "https://github.com/libcala/stick/blob/main/CHANGELOG.md"
+include = ["ctlr_db/", "build.rs", "Cargo.toml", "README.md", "LICENSE-ZLIB",
+    "LICENSE-APACHE", "src/"]
+categories = ["hardware-support", "asynchronous", "game-development"]
+keywords = ["ux", "joystick", "gamepad", "platform-agnostic", "controller"]
+readme = "README.md"
+edition = "2018"
+
+[target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
+smelling_salts = "0.1"
+
+[build-dependencies]
+toml = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+pasts = "0.6"
+
+[package.metadata.docs.rs]
+all-features = true
+default-target = "x86_64-unknown-linux-gnu"
+
+[features]
+default = []
+padfont = []
