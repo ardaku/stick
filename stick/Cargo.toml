@@ -11,9 +11,9 @@
 
 [package]
 name = "stick"
-version = "0.11.1"
+version = "0.12.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
-license = "Apache-2.0 OR BSL-1.0"
+license = "Apache-2.0 OR MIT OR BSL-1.0"
 
 description = "Platform-agnostic asynchronous gamepad library for Rust"
 repository = "https://github.com/libcala/stick"
@@ -27,14 +27,14 @@ readme = "README.md"
 edition = "2018"
 
 [target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
-smelling_salts = "0.1"
+smelling_salts = "0.2"
 
 [build-dependencies]
 toml = "0.5"
 serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
-pasts = "0.6"
+pasts = "0.7"
 
 [package.metadata.docs.rs]
 all-features = true

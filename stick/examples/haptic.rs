@@ -1,13 +1,14 @@
 //! This is the example from the lib.rs documentation.
 
-use pasts::prelude::*;
 use stick::{Controller, Event};
+use pasts::{race, wait};
 
 async fn event_loop() {
     let mut listener = Controller::listener();
     let mut ctlrs = Vec::<Controller>::new();
     'e: loop {
-        match poll![listener, poll!(ctlrs)].await.1 {
+        let event = wait![(&mut listener).await, race!(ctlrs)];
+        match event {
             (_, Event::Connect(new)) => {
                 println!(
                     "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
@@ -45,5 +46,5 @@ async fn event_loop() {
 }
 
 fn main() {
-    exec!(event_loop());
+    pasts::block_on(event_loop());
 }

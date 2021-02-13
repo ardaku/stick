@@ -35,7 +35,7 @@ features.  All numbers are little endian.
  - `layout: u16`: Controller Layout
    - `0x0000`: Unknown Names
    - `0x0010`: W3C Standard Gamepad / Nintendo Names
-   - `0x0011`: GameCube (Subset of 0x01 buttons)
+   - `0x0011`: GameCube (Subset of W3C Standard Gamepad / Nintendo Names)
    - `0x0020`: W3C Standard Gamepad / NSEW Names
    - `0x0030`: W3C Standard Gamepad / XBox Names
    - `0x0040`: W3C Standard Gamepad / PlayStation Names

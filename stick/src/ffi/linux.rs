@@ -634,7 +634,7 @@ impl HubTimer {
 
 impl Drop for HubTimer {
     fn drop(&mut self) {
-        let fd = self.device.fd();
+        let fd = self.device.raw();
         self.device.old();
         assert_ne!(unsafe { close(fd) }, -1);
     }
@@ -698,7 +698,7 @@ impl Future for Hub {
             let mut num = MaybeUninit::<u64>::uninit();
             if unsafe {
                 read(
-                    timer.device.fd(),
+                    timer.device.raw(),
                     num.as_mut_ptr().cast(),
                     std::mem::size_of::<u64>(),
                 )
@@ -713,7 +713,7 @@ impl Future for Hub {
         let mut ev = MaybeUninit::<InotifyEv>::uninit();
         let ev = unsafe {
             if read(
-                this.device.fd(),
+                this.device.raw(),
                 ev.as_mut_ptr().cast(),
                 std::mem::size_of::<InotifyEv>(),
             ) <= 0
@@ -789,7 +789,7 @@ impl Future for Hub {
 
 impl Drop for Hub {
     fn drop(&mut self) {
-        let fd = self.device.fd();
+        let fd = self.device.raw();
         self.device.old();
         assert_ne!(unsafe { close(fd) }, -1);
     }
@@ -905,7 +905,7 @@ impl Ctlr {
         let ev = {
             let bytes = unsafe {
                 read(
-                    self.device.fd(),
+                    self.device.raw(),
                     ev.as_mut_ptr().cast(),
                     std::mem::size_of::<EvdevEv>(),
                 )
@@ -934,7 +934,7 @@ impl Ctlr {
     }
 
     pub(super) fn name(&self) -> String {
-        let fd = self.device.fd();
+        let fd = self.device.raw();
         let mut a = MaybeUninit::<[c_char; 256]>::uninit();
         assert_ne!(
             unsafe { ioctl(fd, 0x80FF_4506, a.as_mut_ptr().cast()) },
@@ -948,14 +948,14 @@ impl Ctlr {
 
     pub(super) fn rumble(&mut self, v: f32) {
         if self.rumble >= 0 {
-            joystick_ff(self.device.fd(), self.rumble, v);
+            joystick_ff(self.device.raw(), self.rumble, v);
         }
     }
 }
 
 impl Drop for Ctlr {
     fn drop(&mut self) {
-        let fd = self.device.fd();
+        let fd = self.device.raw();
         self.device.old();
         assert_ne!(unsafe { close(fd) }, -1);
     }

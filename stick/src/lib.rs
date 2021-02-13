@@ -14,8 +14,8 @@
 //!
 //! ```toml
 //! [dependencies]
-//! pasts = "0.6"
-//! stick = "0.11"
+//! pasts = "0.7"
+//! stick = "0.12"
 //! ```
 //!
 //! ### Example
@@ -23,14 +23,15 @@
 //! feedback (copied from *examples/haptic.rs*):
 //!
 //! ```rust,no_run
-//! use pasts::prelude::*;
 //! use stick::{Controller, Event};
-//!
+//! use pasts::{race, wait};
+//! 
 //! async fn event_loop() {
 //!     let mut listener = Controller::listener();
 //!     let mut ctlrs = Vec::<Controller>::new();
 //!     'e: loop {
-//!         match poll![listener, poll!(ctlrs)].await.1 {
+//!         let event = wait![(&mut listener).await, race!(ctlrs)];
+//!         match event {
 //!             (_, Event::Connect(new)) => {
 //!                 println!(
 //!                     "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
@@ -66,9 +67,9 @@
 //!         }
 //!     }
 //! }
-//!
+//! 
 //! fn main() {
-//!     exec!(event_loop());
+//!     pasts::block_on(event_loop());
 //! }
 //! ```
 
