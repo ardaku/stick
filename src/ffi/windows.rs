@@ -1,4 +1,4 @@
-// Copyright Jeron Aldaron Lau 2017 - 2020.
+// Copyright Daniel Parnell 2021.
 // Distributed under either the Apache License, Version 2.0
 //    (See accompanying file LICENSE_APACHE_2_0.txt or copy at
 //          https://apache.org/licenses/LICENSE-2.0),
@@ -8,17 +8,21 @@
 // at your option. This file may not be copied, modified, or distributed except
 // according to those terms.
 
-include!("dummy.rs");
 
-/*//use std::mem;
+use std::mem;
 
-use State;
+use std::{future::Future, task::{Context, Poll}, pin::Pin};
 
-/*type Tchar = i16;
+use crate::Event;
+use std::mem::MaybeUninit;
+use std::task::Waker;
+
+type Tchar = i16;
 const MAXPNAMELEN: usize = 32;
 const MAX_JOYSTICKOEMVXDNAME: usize = 260;
 
-#[derive(Copy, Clone)] #[repr(C)]
+#[repr(C)]
+#[derive(Copy, Clone)]
 struct JoyCaps {
     w_mid: u16,
     w_pid: u16,
@@ -46,8 +50,9 @@ struct JoyCaps {
     sz_oem_vxd: [Tchar; MAX_JOYSTICKOEMVXDNAME],
 }
 
-#[derive(Copy, Clone)] #[repr(C)]
-struct JoyInfo {
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+struct JoyInfoEx {
     size: u32,
     flags: u32,
     x_pos: u32,
@@ -63,11 +68,36 @@ struct JoyInfo {
     reserved_2: u32,
 }
 
-#[derive(Copy, Clone)]
-struct Device {
-    caps: JoyCaps,
-    info: JoyInfo,
+impl JoyInfoEx {
+    pub fn new() -> Self {
+        JoyInfoEx {
+            size: std::mem::size_of::<JoyInfoEx>() as u32,
+            flags: 0xffffffff - 0x100,
+            x_pos: 0,
+            y_pos: 0,
+            z_pos: 0,
+            r_pos: 0,
+            u_pos: 0,
+            v_pos: 0,
+            buttons: 0,
+            button_number: 0,
+            pov: 0,
+            reserved_1: 0,
+            reserved_2: 0
+        }
+    }
 }
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct Timecaps {
+    w_period_min: u32,
+    w_period_max: u32
+}
+
+type LPTIMECALLBACK = extern "C" fn(timer_id: u32, msg: u32, dw_user: usize, dw1: usize, dw2: usize);
+
+const TIME_ONESHOT: u32 = 0;
 
 // Link to the windows multimedia library.
 #[link(name = "winmm")]
@@ -77,170 +107,168 @@ extern "system" {
     //
     fn joyGetDevCapsW(joy_id: usize, caps: *mut JoyCaps, cbjc: u32) -> u32;
     //
-    fn joyGetPosEx(joy_id: u32, pji: *mut JoyInfo) -> u32;
-}*/
+    fn joyGetPosEx(joy_id: u32, pji: *mut JoyInfoEx) -> u32;
 
-pub struct NativeManager {/*joy_caps: Vec<Option<Device>>*/}
-impl NativeManager {
-    pub fn new() -> NativeManager {
-        /*		let supported = unsafe { joyGetNumDevs() } as usize;
-        let mut joy_caps = Vec::new();
+    // set a callback to be triggered after a given amout of time has passed
+    fn timeSetEvent(delay: u32, resolution: u32, lpTimeProc: LPTIMECALLBACK, dw_user: usize, fu_event: u32) -> u32;
+}
 
-        joy_caps.resize(supported, None);*/
+extern "C" fn waker_callback(_timer_id: u32, _msg: u32, dw_user: usize, _dw1: usize, _dw2: usize) {
+    unsafe {
+        let waker = std::mem::transmute::<usize, &Waker>(dw_user);
 
-        NativeManager { /*joy_caps*/ }
-    }
-
-    /// Do a search for controllers.  Returns number of controllers.
-    pub fn search(&mut self) -> (usize, usize) {
-        /*		for dev in 0..self.joy_caps.len() {
-            let mut pos = unsafe { mem::uninitialized() };
-
-            // If Can't connect to joystick
-            if unsafe { joyGetPosEx(dev as u32, &mut pos) } == 167 {
-                println!("WIN: unplugged");
-                self.disconnect(dev as i32);
-                continue;
-            }
-            // Can connect & is already recorded so
-            if !self.joy_caps[dev].is_none() {
-                self.joy_caps[dev].as_mut().unwrap().info = pos;
-            // If Can, but is recorded as unplugged
-            } else {
-                let mut joy_caps = unsafe { mem::uninitialized() };
-
-                unsafe {
-                    joyGetDevCapsW(0, &mut joy_caps,
-                        mem::size_of::<JoyCaps>() as u32);
-                }
-
-                panic!("WIN: New joystick {}", dev);
-
-                self.joy_caps[dev] = Some(Device {
-                    caps: joy_caps,
-                    info: pos,
-                });
-
-                return (self.joy_caps.len(), self.joy_caps.len());
-            }
-        }*/
-
-        (0 /*self.joy_caps.len()*/, ::std::usize::MAX)
-    }
-
-    //	pub fn num_plugged_in(&self) -> usize {
-    //		self.joy_caps.len()
-    //		0
-    //	}
-
-    pub fn disconnect(&mut self, _fd: i32) -> () {
-        //		self.joy_caps[fd as usize] = None;
-    }
-
-    pub fn get_fd(&self, id: usize) -> (i32, bool, bool) {
-        /*		if id >= self.joy_caps.len() {
-            (0, true, true)
-        } else {*/
-        (id as i32, false, false)
-        //		}
-    }
-
-    pub fn get_id(&self, _id: usize) -> (i32, bool) {
-        //		if id >= self.joy_caps.len() {
-        //			(0, true)
-        //		} else {
-        (-1, false)
-        //		}
-    }
-
-    pub fn get_abs(&self, _id: usize) -> (i32, i32, bool) {
-        //		if id >= self.joy_caps.len() {
-        (0, 0, true)
-        //		} else {
-        //			(self.joy_caps[id].unwrap().caps.x_min as i32,
-        //			 self.joy_caps[id].unwrap().caps.x_max as i32, false)
-        //		}
-    }
-
-    pub(crate) fn poll_event(&mut self, _i: usize, _state: &mut State) -> () {
-        //		println!("POLL_EVENT");
-        //		if self.joy_caps[i].is_none() {
-        //			println!("NONE {}", i);
-        //			{ let mut a = 0; a+=1; }
-        return;
-        /*		} else {
-            println!("SOME {}", i);
-        }
-
-        let info = self.joy_caps[i].unwrap().info;
-
-        println!("BT {}", info.buttons);
-
-        state.execute = (info.buttons |
-            0b_00000000_00000000_00000000_00000001) != 0;
-        state.accept = (info.buttons |
-            0b_00000000_00000000_00000000_00000010) != 0;
-        state.cancel = (info.buttons |
-            0b_00000000_00000000_00000000_00000100) != 0;
-        state.trigger = (info.buttons |
-            0b_00000000_00000000_00000000_00001000) != 0;
-        state.l[0] = (info.buttons |
-            0b_00000000_00000000_00000000_00010000) != 0;
-        state.r[0] = (info.buttons |
-            0b_00000000_00000000_00000000_00100000) != 0;
-        state.r[1] = (info.buttons |
-            0b_00000000_00000000_00000000_10000000) != 0;
-        state.menu = (info.buttons |
-            0b_00000000_00000000_00000010_00000000) != 0;
-
-        state.move_xy.0 = info.x_pos as f32 / 100.0;
-        state.move_xy.1 = info.y_pos as f32 / 100.0;
-        state.cam_xy.1 = info.z_pos as f32 / 100.0;
-        state.left_throttle = info.r_pos as f32 / 100.0;
-        state.right_throttle = info.u_pos as f32 / 100.0;
-        state.cam_xy.0 = info.v_pos as f32 / 100.0;
-
-        match info.pov as u16 {
-            ::std::u16::MAX => {
-                state.right = false;
-                state.left = false;
-                state.up = false;
-                state.down = false;
-            }
-            270_00 => {
-                state.right = false;
-                state.left = true;
-                state.up = false;
-                state.down = false;
-            }
-            90_00 => {
-                state.right = true;
-                state.left = false;
-                state.up = false;
-                state.down = false;
-            }
-            0 => {
-                state.right = false;
-                state.left = false;
-                state.up = true;
-                state.down = false;
-            }
-            180_00 => {
-                state.right = false;
-                state.left = false;
-                state.up = false;
-                state.down = true;
-            }
-            a => {
-                println!("unknown {}", a);
-            }
-        }*/
+        waker.wake_by_ref();
     }
 }
-impl Drop for NativeManager {
-    fn drop(&mut self) -> () {
-        //		if self.native != -1 {
-        //			destroy::joystick(self.native);
-        //		}
+
+fn register_wake_timeout(delay: u32, waker: &Waker) {
+    unsafe {
+        let waker = std::mem::transmute::<&Waker, usize>(waker);
+
+        timeSetEvent(delay, 0, waker_callback, waker, TIME_ONESHOT);
     }
-}*/
+}
+
+pub(crate) struct Hub {
+    supported: usize,
+    connected: u64
+}
+
+impl Hub {
+    pub(super) fn new() -> Self {
+        let supported = unsafe { joyGetNumDevs() } as usize;
+
+        Hub {
+            supported,
+            connected: 0
+        }
+    }
+}
+
+impl Future for Hub {
+    type Output = (usize, Event);
+
+    fn poll(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Self::Output> {
+        for i in 0..self.supported {
+            let mask = 1 << i;
+            let connected = (self.connected & mask) != 0;
+
+            let mut joy_caps = MaybeUninit::uninit();
+
+            let (error_code, joy_caps) = unsafe {
+                let result = joyGetDevCapsW(i, joy_caps.as_mut_ptr(), mem::size_of::<JoyCaps>() as u32);
+
+                (result, joy_caps.assume_init())
+            };
+
+            if error_code == 0 {
+                if connected {
+                    // do nothing
+                } else {
+                    // a new device has been connected
+                    self.connected = self.connected + mask;
+
+                    return Poll::Ready((
+                        usize::MAX,
+                        Event::Connect(Box::new(crate::Controller(
+                            Ctlr::new(i as usize, joy_caps),
+                        ))),
+                    ));
+                }
+            } else {
+                // device is not present
+                if connected {
+                    // it was disconnected
+                    println!("device {} disconnected", i);
+                    println!("connected before = {:#x}", self.connected);
+                    self.connected = self.connected - mask;
+                    println!("connected after = {:#x}", self.connected);
+                }
+            }
+        }
+
+        register_wake_timeout(100, cx.waker());
+
+        Poll::Pending
+    }
+}
+
+pub(crate) struct Ctlr {
+    device_id: usize,
+    caps: JoyCaps,
+    info: JoyInfoEx,
+    pending_events: Vec<Event>
+}
+
+impl Ctlr {
+    #[allow(unused)]
+    fn new(device_id: usize, caps: JoyCaps) -> Self {
+        Self {
+            device_id,
+            caps,
+            info: JoyInfoEx::new(),
+            pending_events: Vec::new()
+        }
+    }
+
+    pub(super) fn id(&self) -> [u16; 4] {
+        [0, 0, self.caps.w_mid, self.caps.w_pid]
+    }
+
+    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
+        if let Some(e) = self.pending_events.pop() {
+            return Poll::Ready(e);
+        }
+        let mut now = JoyInfoEx::new();
+        let error_code = unsafe { joyGetPosEx(self.device_id as u32, &mut now) };
+
+        if error_code == 0 {
+            // println!("{} now = {:?}", self.device_id, now);
+            if now.x_pos != self.info.x_pos {
+                self.pending_events.push(Event::JoyX(now.x_pos as f64 / self.caps.x_max as f64))
+            }
+            if now.y_pos != self.info.y_pos {
+                self.pending_events.push(Event::JoyY(now.y_pos as f64 / self.caps.y_max as f64))
+            }
+            if now.u_pos != self.info.u_pos {
+                self.pending_events.push(Event::CamX(now.u_pos as f64 / self.caps.u_max as f64))
+            }
+            if now.v_pos != self.info.v_pos {
+                self.pending_events.push(Event::CamY(now.v_pos as f64 / self.caps.v_max as f64))
+            }
+            if now.buttons != self.info.buttons {
+
+            }
+
+            // save off the state for next time
+            self.info = now;
+        } else {
+            // the device has been removed
+            return Poll::Ready(Event::Disconnect);
+        }
+
+        register_wake_timeout(10, cx.waker());
+
+        Poll::Pending
+    }
+
+    pub(super) fn name(&self) -> String {
+        let mut result = String::with_capacity(MAXPNAMELEN);
+        for i in 0..MAXPNAMELEN {
+            let ch = self.caps.sz_pname[i] as u8 as char;
+            if ch == '\0' {
+                break;
+            }
+            result.push(ch);
+        }
+
+        result
+    }
+
+    pub(super) fn rumble(&mut self, v: f32) {
+        let _ = v;
+    }
+}
