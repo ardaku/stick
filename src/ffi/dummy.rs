@@ -60,4 +60,8 @@ impl Ctlr {
     pub(super) fn rumble(&mut self, v: f32) {
         let _ = v;
     }
+
+    pub(super) fn rumbles(&mut self, l: f32, r: f32) {
+        let _ = (l, r);
+    }
 }

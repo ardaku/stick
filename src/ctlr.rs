@@ -45,6 +45,12 @@ impl Controller {
     pub fn rumble(&mut self, power: f32) {
         self.0.rumble(power.min(1.0).max(0.0));
     }
+
+    /// Turn on/off directional haptic force feedback.  Set `left_power` and `right_power` between 0.0 (off) and
+    /// 1.0 (maximum vibration).  Anything outside that range will be clamped.
+    pub fn rumbles(&mut self, left_power: f32, right_power: f32) {
+        self.0.rumbles(left_power.min(1.0).max(0.0), left_power.min(1.0).max(0.0));
+    }
 }
 
 impl Future for Controller {

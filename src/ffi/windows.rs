@@ -687,6 +687,7 @@ impl Ctlr {
                     // we have a new packet from the controller
                     self.last_packet = state.raw.dwPacketNumber;
 
+
                 }
 
                 while let Ok(Some(keystroke)) = handle.get_keystroke(self.device_id as u32) {
@@ -733,6 +734,12 @@ impl Ctlr {
     }
 
     pub(super) fn rumble(&mut self, v: f32) {
-        let _ = v;
+        self.rumbles(v, v);
+    }
+
+    pub(super) fn rumbles(&mut self, l: f32, r: f32) {
+        if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
+            handle.set_state(self.device_id as u32, (u16::MAX as f32 * l) as u16, (u16::MAX as f32 * r) as u16);
+        }
     }
 }
