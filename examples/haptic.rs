@@ -37,6 +37,20 @@ async fn event_loop() {
                     Event::ActionB(pressed) => {
                         ctlrs[id].rumble(if pressed { 0.3 } else { 0.0 });
                     }
+                    Event::BumperL(pressed) => {
+                        if pressed {
+                            ctlrs[id].rumbles(1.0, 0.0);
+                        } else {
+                            ctlrs[id].rumbles(0.0, 0.0);
+                        }
+                    }
+                    Event::BumperR(pressed) => {
+                        if pressed {
+                            ctlrs[id].rumbles(0.0, 1.0);
+                        } else {
+                            ctlrs[id].rumbles(0.0, 0.0);
+                        }
+                    }
                     _ => {}
                 }
             }

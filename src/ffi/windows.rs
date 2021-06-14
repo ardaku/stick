@@ -411,9 +411,9 @@ impl XInputState {
     /// before use. Negative inputs or maximum value inputs make the normalization
     /// just work improperly.
     #[inline]
-    pub fn normalize_raw_stick_value(raw_stick: (i16, i16), deadzone: i16) -> (f32, f32) {
-        let deadzone_float = deadzone.max(0).min(i16::max_value() - 1) as f32;
-        let raw_float = (raw_stick.0 as f32, raw_stick.1 as f32);
+    pub fn normalize_raw_stick_value(raw_stick: (i16, i16), deadzone: i16) -> (f64, f64) {
+        let deadzone_float = deadzone.max(0).min(i16::MAX - 1) as f64;
+        let raw_float = (raw_stick.0 as f64, raw_stick.1 as f64);
         let length = (raw_float.0 * raw_float.0 + raw_float.1 * raw_float.1).sqrt();
         let normalized = (raw_float.0 / length, raw_float.1 / length);
         if length > deadzone_float {
@@ -601,7 +601,7 @@ fn register_wake_timeout(delay: u32, waker: &Waker) {
 
 pub(crate) struct Hub {
     connected: u64,
-    to_check: u8
+    to_check: u8,
 }
 
 impl Hub {
@@ -609,7 +609,7 @@ impl Hub {
 
         Hub {
             connected: 0,
-            to_check: 0
+            to_check: 0,
         }
     }
 }
@@ -659,7 +659,13 @@ impl Future for Hub {
 pub(crate) struct Ctlr {
     device_id: u8,
     pending_events: Vec<Event>,
-    last_packet: DWORD
+    last_packet: DWORD,
+    joy_x: f64,
+    joy_y: f64,
+    cam_x: f64,
+    cam_y: f64,
+    trigger_left: u8,
+    trigger_right: u8,
 }
 
 impl Ctlr {
@@ -668,7 +674,13 @@ impl Ctlr {
         Self {
             device_id,
             pending_events: Vec::new(),
-            last_packet: 0
+            last_packet: 0,
+            joy_x: 0.0,
+            joy_y: 0.0,
+            cam_x: 0.0,
+            cam_y: 0.0,
+            trigger_left: 0,
+            trigger_right: 0
         }
     }
 
@@ -687,7 +699,45 @@ impl Ctlr {
                     // we have a new packet from the controller
                     self.last_packet = state.raw.dwPacketNumber;
 
+                    let (nx, ny) = XInputState::normalize_raw_stick_value((state.raw.Gamepad.sThumbRX, state.raw.Gamepad.sThumbRY), XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+                    if nx != self.joy_x {
+                        self.joy_x = nx;
+                        self.pending_events.push(Event::JoyX(nx));
+                    }
+                    if ny != self.joy_y {
+                        self.joy_y = ny;
+                        self.pending_events.push(Event::JoyY(ny));
+                    }
 
+                    let (nx, ny) = XInputState::normalize_raw_stick_value((state.raw.Gamepad.sThumbLX, state.raw.Gamepad.sThumbLY), XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+                    if nx != self.cam_x {
+                        self.cam_x = nx;
+                        self.pending_events.push(Event::CamX(nx));
+                    }
+                    if ny != self.cam_y {
+                        self.cam_y = ny;
+                        self.pending_events.push(Event::CamY(ny));
+                    }
+
+                    let t = if state.raw.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD {
+                        state.raw.Gamepad.bLeftTrigger
+                    } else {
+                        0
+                    };
+                    if t != self.trigger_left {
+                        self.trigger_left = t;
+                        self.pending_events.push(Event::TriggerL(t as f64 / 255.0));
+                    }
+
+                    let t = if state.raw.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD {
+                        state.raw.Gamepad.bRightTrigger
+                    } else {
+                        0
+                    };
+                    if t != self.trigger_right {
+                        self.trigger_right = t;
+                        self.pending_events.push(Event::TriggerR(t as f64 / 255.0));
+                    }
                 }
 
                 while let Ok(Some(keystroke)) = handle.get_keystroke(self.device_id as u32) {
