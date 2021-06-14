@@ -6,6 +6,9 @@ use stick::{Controller, Event};
 async fn event_loop() {
     let mut listener = Controller::listener();
     let mut ctlrs = Vec::<Controller>::new();
+    let mut left_rumble: f32 = 0.0;
+    let mut right_rumble: f32 = 0.0;
+
     'e: loop {
         match poll![listener, poll!(ctlrs)].await.1 {
             (_, Event::Connect(new)) => {
@@ -39,17 +42,20 @@ async fn event_loop() {
                     }
                     Event::BumperL(pressed) => {
                         if pressed {
-                            ctlrs[id].rumbles(1.0, 0.0);
+                            left_rumble = 1.0;
                         } else {
-                            ctlrs[id].rumbles(0.0, 0.0);
+                            left_rumble = 0.0;
                         }
+
+                        ctlrs[id].rumbles(left_rumble, right_rumble);
                     }
                     Event::BumperR(pressed) => {
                         if pressed {
-                            ctlrs[id].rumbles(0.0, 1.0);
+                            right_rumble = 1.0;
                         } else {
-                            ctlrs[id].rumbles(0.0, 0.0);
+                            right_rumble = 0.0;
                         }
+                        ctlrs[id].rumbles(left_rumble, right_rumble);
                     }
                     _ => {}
                 }
