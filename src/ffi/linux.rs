@@ -682,6 +682,10 @@ impl Hub {
             timer,
         }
     }
+
+    pub(super) fn enable(_flag: boolean) {
+        // do nothing
+    }
 }
 
 impl Future for Hub {

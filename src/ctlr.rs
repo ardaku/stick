@@ -30,6 +30,11 @@ impl Controller {
         crate::ffi::Hub::new()
     }
 
+    /// enable or disable event generation. Disable events when the application loses focus
+    pub fn enable(flag: bool) {
+        crate::ffi::Hub::enable(flag);
+    }
+
     /// Get a unique identifier for the specific model of gamepad.
     pub fn id(&self) -> [u16; 4] {
         self.0.id()
@@ -49,7 +54,7 @@ impl Controller {
     /// Turn on/off directional haptic force feedback.  Set `left_power` and `right_power` between 0.0 (off) and
     /// 1.0 (maximum vibration).  Anything outside that range will be clamped.
     pub fn rumbles(&mut self, left_power: f32, right_power: f32) {
-        self.0.rumbles(left_power.min(1.0).max(0.0), left_power.min(1.0).max(0.0));
+        self.0.rumbles(left_power.min(1.0).max(0.0), right_power.min(1.0).max(0.0));
     }
 }
 

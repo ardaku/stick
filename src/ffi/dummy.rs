@@ -18,6 +18,9 @@ impl Hub {
     pub(super) fn new() -> Self {
         Hub {}
     }
+    pub(super) fn enable(flag: bool) {
+        let _ = flag;
+    }
 }
 
 impl Future for Hub {

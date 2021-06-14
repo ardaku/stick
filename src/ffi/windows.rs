@@ -10,12 +10,9 @@
 
 // This is based on code found here https://github.com/Lokathor/rusty-xinput by Lokathor
 
-use std::mem;
-
 use std::{future::Future, task::{Context, Poll}, pin::Pin};
 
 use crate::Event;
-use std::mem::MaybeUninit;
 use std::task::Waker;
 
 use winapi::shared::guiddef::GUID;
@@ -56,7 +53,7 @@ impl Drop for ScopedHMODULE {
 
 /// A handle to a loaded XInput DLL.
 #[derive(Clone)]
-pub struct XInputHandle {
+struct XInputHandle {
     handle: Arc<ScopedHMODULE>,
     xinput_enable: XInputEnableFunc,
     xinput_get_state: XInputGetStateFunc,
@@ -69,15 +66,15 @@ pub struct XInputHandle {
 }
 
 impl Debug for XInputHandle {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "XInputHandle(handle = {:?})", self.handle.0)
     }
 }
 
 /// Quick and dirty wrapper to let us format log messages easier.
-pub(crate) struct WideNullU16<'a>(&'a [u16; ::winapi::shared::minwindef::MAX_PATH]);
-impl<'a> ::std::fmt::Debug for WideNullU16<'a> {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+struct WideNullU16<'a>(&'a [u16; ::winapi::shared::minwindef::MAX_PATH]);
+impl ::std::fmt::Debug for WideNullU16<'_> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         for &u in self.0.iter() {
             if u == 0 {
                 break;
@@ -90,7 +87,7 @@ impl<'a> ::std::fmt::Debug for WideNullU16<'a> {
 }
 
 /// Converts a rusty string into a win32 string.
-pub(crate) fn wide_null<S: AsRef<str>>(s: S) -> [u16; ::winapi::shared::minwindef::MAX_PATH] {
+fn wide_null<S: AsRef<str>>(s: S) -> [u16; ::winapi::shared::minwindef::MAX_PATH] {
     let mut output: [u16; ::winapi::shared::minwindef::MAX_PATH] =
         [0; ::winapi::shared::minwindef::MAX_PATH];
     let mut i = 0;
@@ -111,18 +108,7 @@ unsafe impl Sync for XInputHandle {}
 
 /// The ways that a dynamic load of XInput can fail.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum XInputLoadingFailure {
-    /// The xinput system was already in the process of loading in some other
-    /// thread. This attempt failed because of that, but that other attempt might
-    /// still succeed.
-    #[deprecated]
-    AlreadyLoading,
-    /// The xinput system was already active. A failure of this kind leaves the
-    /// system active.
-    AlreadyActive,
-    /// The system was not loading or active, but was in some unknown state. If
-    /// you get this, it's probably a bug that you should report.
-    UnknownState,
+enum XInputLoadingFailure {
     /// No DLL for XInput could be found. This places the system back into an
     /// "uninitialized" status, and you could potentially try again later if the
     /// user fiddles with the program's DLL path or whatever.
@@ -153,14 +139,14 @@ impl XInputHandle {
     /// * `xinput1_2.dll`
     /// * `xinput1_1.dll`
     /// * `xinput9_1_0.dll`
-    pub fn load_default() -> Result<XInputHandle, XInputLoadingFailure> {
+    pub(crate) fn load_default() -> Result<XInputHandle, XInputLoadingFailure> {
         let xinput14 = "xinput1_4.dll";
         let xinput13 = "xinput1_3.dll";
         let xinput12 = "xinput1_2.dll";
         let xinput11 = "xinput1_1.dll";
         let xinput91 = "xinput9_1_0.dll";
 
-        for lib_name in [xinput14, xinput13, xinput12, xinput11, xinput91].into_iter() {
+        for lib_name in [xinput14, xinput13, xinput12, xinput11, xinput91].iter() {
             if let Ok(handle) = XInputHandle::load(lib_name) {
                 return Ok(handle);
             }
@@ -171,7 +157,7 @@ impl XInputHandle {
     }
 
     /// Attempt to load a specific XInput DLL and get the function pointers.
-    pub fn load<S: AsRef<str>>(s: S) -> Result<XInputHandle, XInputLoadingFailure> {
+    pub(crate) fn load<S: AsRef<str>>(s: S) -> Result<XInputHandle, XInputLoadingFailure> {
         let lib_name = wide_null(s);
         trace!(
             "Attempting to load XInput DLL: {:?}",
@@ -333,9 +319,7 @@ impl XInputHandle {
 /// These are all the sorts of problems that can come up when you're using the
 /// xinput system.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum XInputUsageError {
-    /// XInput isn't currently loaded.
-    XInputNotLoaded,
+enum XInputUsageError {
     /// The controller ID you gave was 4 or more.
     InvalidControllerID,
     /// Not really an error, this controller is just missing.
@@ -348,9 +332,7 @@ pub enum XInputUsageError {
 /// Error that can be returned by functions that are not guaranteed to be present
 /// in earlier XInput versions.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum XInputOptionalFnUsageError {
-    /// XInput isn't currently loaded.
-    XInputNotLoaded,
+enum XInputOptionalFnUsageError {
     /// The controller ID you gave was 4 or more.
     InvalidControllerID,
     /// Not really an error, this controller is just missing.
@@ -377,9 +359,9 @@ pub enum XInputOptionalFnUsageError {
 ///
 /// If you want to do something that the rust wrapper doesn't support, just use
 /// the raw field to get at the inner value.
-pub struct XInputState {
+struct XInputState {
     /// The raw value we're wrapping.
-    pub raw: XINPUT_STATE,
+    pub(crate) raw: XINPUT_STATE,
 }
 
 impl ::std::cmp::PartialEq for XInputState {
@@ -395,7 +377,7 @@ impl ::std::cmp::PartialEq for XInputState {
 impl ::std::cmp::Eq for XInputState {}
 
 impl ::std::fmt::Debug for XInputState {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         write!(f, "XInputState (_)")
     }
 }
@@ -411,7 +393,7 @@ impl XInputState {
     /// before use. Negative inputs or maximum value inputs make the normalization
     /// just work improperly.
     #[inline]
-    pub fn normalize_raw_stick_value(raw_stick: (i16, i16), deadzone: i16) -> (f64, f64) {
+    pub(crate) fn normalize_raw_stick_value(raw_stick: (i16, i16), deadzone: i16) -> (f64, f64) {
         let deadzone_float = deadzone.max(0).min(i16::MAX - 1) as f64;
         let raw_float = (raw_stick.0 as f64, raw_stick.1 as f64);
         let length = (raw_float.0 * raw_float.0 + raw_float.1 * raw_float.1).sqrt();
@@ -431,7 +413,7 @@ impl XInputHandle {
     /// Enables or disables XInput.
     ///
     /// See the [MSDN documentation for XInputEnable](https://docs.microsoft.com/en-us/windows/desktop/api/xinput/nf-xinput-xinputenable).
-    pub fn enable(&self, enable: bool) -> () {
+    pub(crate) fn enable(&self, enable: bool) -> () {
         unsafe { (self.xinput_enable)(enable as BOOL) };
     }
 
@@ -458,7 +440,7 @@ impl XInputHandle {
     ///
     /// Most commonly, a controller will simply not be connected. Most people don't
     /// have all four slots plugged in all the time.
-    pub fn get_state(&self, user_index: u32) -> Result<XInputState, XInputUsageError> {
+    pub(crate) fn get_state(&self, user_index: u32) -> Result<XInputState, XInputUsageError> {
         if user_index >= 4 {
             Err(XInputUsageError::InvalidControllerID)
         } else {
@@ -493,7 +475,7 @@ impl XInputHandle {
     ///
     /// Most commonly, a controller will simply not be connected. Most people don't
     /// have all four slots plugged in all the time.
-    pub fn set_state(
+    pub(crate) fn set_state(
         &self, user_index: u32, left_motor_speed: u16, right_motor_speed: u16,
     ) -> Result<(), XInputUsageError> {
         if user_index >= 4 {
@@ -515,42 +497,20 @@ impl XInputHandle {
         }
     }
 
-    /// Retrieve the capabilities of a controller.
-    ///
-    /// See the [MSDN documentation for XInputGetCapabilities](https://docs.microsoft.com/en-us/windows/desktop/api/xinput/nf-xinput-xinputgetcapabilities).
-    pub fn get_capabilities(&self, user_index: u32) -> Result<XINPUT_CAPABILITIES, XInputUsageError> {
-        if user_index >= 4 {
-            Err(XInputUsageError::InvalidControllerID)
-        } else {
-            unsafe {
-                let mut capabilities = std::mem::uninitialized();
-                let return_status = (self.xinput_get_capabilities)(user_index, 0, &mut capabilities);
-                match return_status {
-                    ERROR_SUCCESS => Ok(capabilities),
-                    ERROR_DEVICE_NOT_CONNECTED => Err(XInputUsageError::DeviceNotConnected),
-                    s => {
-                        trace!("Unexpected error code: {}", s);
-                        Err(XInputUsageError::UnknownError(s))
-                    }
-                }
-            }
-        }
-    }
-
     /// Retrieve a gamepad input event.
     ///
     /// See the [MSDN documentation for XInputGetKeystroke](https://docs.microsoft.com/en-us/windows/desktop/api/xinput/nf-xinput-xinputgetkeystroke).
-    pub fn get_keystroke(
+    pub(crate) fn get_keystroke(
         &self, user_index: u32,
     ) -> Result<Option<XINPUT_KEYSTROKE>, XInputOptionalFnUsageError> {
         if user_index >= 4 {
             Err(XInputOptionalFnUsageError::InvalidControllerID)
         } else if let Some(func) = self.opt_xinput_get_keystroke {
             unsafe {
-                let mut keystroke = std::mem::uninitialized();
-                let return_status = (func)(user_index, 0, &mut keystroke);
+                let mut keystroke = std::mem::MaybeUninit::<XINPUT_KEYSTROKE>::uninit();
+                let return_status = (func)(user_index, 0, keystroke.as_mut_ptr());
                 match return_status {
-                    ERROR_SUCCESS => Ok(Some(keystroke)),
+                    ERROR_SUCCESS => Ok(Some(keystroke.assume_init())),
                     ERROR_EMPTY => Ok(None),
                     ERROR_DEVICE_NOT_CONNECTED => Err(XInputOptionalFnUsageError::DeviceNotConnected),
                     s => {
@@ -610,6 +570,12 @@ impl Hub {
         Hub {
             connected: 0,
             to_check: 0,
+        }
+    }
+
+    pub(super) fn enable(flag: bool) {
+        if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
+            handle.enable(flag);
         }
     }
 }
@@ -780,7 +746,7 @@ impl Ctlr {
     }
 
     pub(super) fn name(&self) -> String {
-        String::from("unknown")
+        String::from("Xinput device")
     }
 
     pub(super) fn rumble(&mut self, v: f32) {
@@ -789,7 +755,7 @@ impl Ctlr {
 
     pub(super) fn rumbles(&mut self, l: f32, r: f32) {
         if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
-            handle.set_state(self.device_id as u32, (u16::MAX as f32 * l) as u16, (u16::MAX as f32 * r) as u16);
+            handle.set_state(self.device_id as u32, (u16::MAX as f32 * l) as u16, (u16::MAX as f32 * r) as u16).unwrap();
         }
     }
 }

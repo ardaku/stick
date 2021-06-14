@@ -104,8 +104,8 @@ extern crate log;
 #[macro_use]
 extern crate lazy_static;
 
-#[cfg(target_os = "windows")]
-extern crate winapi;
+//#[cfg(target_os = "windows")]
+//extern crate winapi;
 
 mod ctlr;
 mod event;
