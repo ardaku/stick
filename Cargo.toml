@@ -10,8 +10,11 @@
 
 [package]
 name = "stick"
-version = "0.11.1"
-authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
+version = "0.11.2"
+authors = [
+    "Jeron Aldaron Lau <jeronlau@plopgrizzly.com>",
+    "Daniel Parnell <me@danielparnell.com>"
+]
 license = "Apache-2.0 OR BSL-1.0"
 
 description = "Platform-agnostic asynchronous gamepad library for Rust"
@@ -27,6 +30,11 @@ edition = "2018"
 
 [target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
 smelling_salts = "0.1"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["libloaderapi", "xinput", "winerror"] }
+lazy_static = "1.4.0"
+log = { version = "0.4", default-features = false }
 
 [build-dependencies]
 toml = "0.5"
