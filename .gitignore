@@ -2,3 +2,5 @@
 /.cargo-ok
 /Cargo.lock
 /**/*.rs.bk
+.idea
+*~

@@ -18,6 +18,9 @@ impl Hub {
     pub(super) fn new() -> Self {
         Hub {}
     }
+    pub(super) fn enable(flag: bool) {
+        let _ = flag;
+    }
 }
 
 impl Future for Hub {
@@ -59,5 +62,9 @@ impl Ctlr {
 
     pub(super) fn rumble(&mut self, v: f32) {
         let _ = v;
+    }
+
+    pub(super) fn rumbles(&mut self, l: f32, r: f32) {
+        let _ = (l, r);
     }
 }

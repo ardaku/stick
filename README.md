@@ -30,9 +30,9 @@ Now, I think there are many other reasons for stick to exist despite gilrs:
 
 ### Platform Support
 - Linux
+- Windows
 
 ### Planned Platform Support
-- Windows
 - MacOS
 - BSD
 - Redox

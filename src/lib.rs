@@ -71,6 +71,7 @@
 //! }
 //! ```
 
+
 #![doc(
     html_logo_url = "https://libcala.github.io/logo.svg",
     html_favicon_url = "https://libcala.github.io/icon.svg",
@@ -92,6 +93,16 @@
     unused_qualifications,
     variant_size_differences
 )]
+
+
+
+#[cfg(target_os = "windows")]
+#[macro_use]
+extern crate log;
+
+#[cfg(target_os = "windows")]
+#[macro_use]
+extern crate lazy_static;
 
 mod ctlr;
 mod event;

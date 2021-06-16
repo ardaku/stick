@@ -682,6 +682,10 @@ impl Hub {
             timer,
         }
     }
+
+    pub(super) fn enable(_flag: boolean) {
+        // do nothing
+    }
 }
 
 impl Future for Hub {
@@ -948,6 +952,12 @@ impl Ctlr {
     pub(super) fn rumble(&mut self, v: f32) {
         if self.rumble >= 0 {
             joystick_ff(self.device.fd(), self.rumble, v);
+        }
+    }
+
+    pub(super) fn rumbles(&mut self, l: f32, r: f32) {
+        if self.rumble >= 0 {
+            joystick_ff(self.device.fd(), self.rumble, max(l, r));
         }
     }
 }

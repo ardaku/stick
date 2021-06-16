@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
  - You can now import your own mappings at runtime **WIP**
  - Support For WASM **WIP**
  - Default evdev id guessing **WIP**
+ - Windows support
 
 ### Changed
  - Database now stored as data rather than control flow in resulting binary
