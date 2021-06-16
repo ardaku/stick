@@ -10,8 +10,7 @@ type Exit = usize;
 struct State {
     listener: Box<dyn Future<Output = Controller> + Unpin>,
     controllers: Vec<Controller>,
-    left_rumble: f32,
-    right_rumble: f32,
+    rumble: (f32, f32),
 }
 
 impl State {
@@ -41,17 +40,15 @@ impl State {
                 self.controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
             }
             Event::ActionB(pressed) => {
-                self.controllers[id].rumble(if pressed { 0.3 } else { 0.0 });
+                self.controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
             }
             Event::BumperL(pressed) => {
-                self.left_rumble = if pressed { 1.0 } else { 0.0 };
-                self.controllers[id]
-                    .rumbles(self.left_rumble, self.right_rumble);
+                self.rumble.0 = if pressed { 1.0 } else { 0.0 };
+                self.controllers[id].rumble(self.rumble);
             }
             Event::BumperR(pressed) => {
-                self.right_rumble = if pressed { 1.0 } else { 0.0 };
-                self.controllers[id]
-                    .rumbles(self.left_rumble, self.right_rumble);
+                self.rumble.1 = if pressed { 1.0 } else { 0.0 };
+                self.controllers[id].rumble(self.rumble);
             }
             _ => {}
         }
@@ -63,8 +60,7 @@ async fn event_loop() {
     let mut state = State {
         listener: Box::new(Controller::listener()),
         controllers: Vec::new(),
-        left_rumble: 0.0,
-        right_rumble: 0.0,
+        rumble: (0.0, 0.0),
     };
 
     let player_id = Loop::new(&mut state)

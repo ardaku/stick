@@ -46,19 +46,12 @@ impl Controller {
         self.0.name()
     }
 
-    /// Turn on/off haptic force feedback.  Set `power` between 0.0 (off) and
-    /// 1.0 (maximum vibration).  Anything outside that range will be clamped.
-    pub fn rumble(&mut self, power: f32) {
-        self.0.rumble(power.min(1.0).max(0.0));
-    }
-
-    /// Turn on/off directional haptic force feedback.  Set `left_power` and `right_power` between 0.0 (off) and
-    /// 1.0 (maximum vibration).  Anything outside that range will be clamped.
-    pub fn rumbles(&mut self, left_power: f32, right_power: f32) {
-        self.0.rumbles(
-            left_power.min(1.0).max(0.0),
-            right_power.min(1.0).max(0.0),
-        );
+    /// Turn on/off haptic force feedback.
+    ///
+    /// Takes either an `f32` for mono power or `(f32, f32)` for directional
+    /// power.  Power will be clamped between 0.0 (off) and 1.0 (maximum power).
+    pub fn rumble<R: Rumble>(&mut self, power: R) {
+        self.0.rumble(power.left(), power.right());
     }
 }
 
@@ -67,5 +60,34 @@ impl Future for Controller {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         self.get_mut().0.poll(cx)
+    }
+}
+
+pub trait Rumble {
+    fn left(&self) -> f32;
+    fn right(&self) -> f32;
+}
+
+impl Rumble for f32 {
+    #[inline(always)]
+    fn left(&self) -> f32 {
+        self.clamp(0.0, 1.0)
+    }
+
+    #[inline(always)]
+    fn right(&self) -> f32 {
+        self.clamp(0.0, 1.0)
+    }
+}
+
+impl Rumble for (f32, f32) {
+    #[inline(always)]
+    fn left(&self) -> f32 {
+        self.0.clamp(0.0, 1.0)
+    }
+
+    #[inline(always)]
+    fn right(&self) -> f32 {
+        self.1.clamp(0.0, 1.0)
     }
 }

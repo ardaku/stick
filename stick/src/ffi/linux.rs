@@ -946,16 +946,13 @@ impl Ctlr {
         format!("{} ({})", self.desc.name, name)
     }
 
-    // FIXME: Remove mono rumble
-    pub(super) fn rumble(&mut self, v: f32) {
+    pub(super) fn rumble(&mut self, left: f32, right: f32) {
         if self.rumble >= 0 {
-            joystick_ff(self.device.raw(), self.rumble, v);
-        }
-    }
-
-    pub(super) fn rumbles(&mut self, l: f32, r: f32) {
-        if self.rumble >= 0 {
-            joystick_ff(self.device.raw(), self.rumble, l.max(r));
+            joystick_ff(
+                self.device.raw(),
+                self.rumble,
+                left.max(right), /* FIXME */
+            );
         }
     }
 }

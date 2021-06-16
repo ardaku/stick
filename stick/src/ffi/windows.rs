@@ -921,17 +921,13 @@ impl Ctlr {
         String::from("Xinput device")
     }
 
-    pub(super) fn rumble(&mut self, v: f32) {
-        self.rumbles(v, v);
-    }
-
-    pub(super) fn rumbles(&mut self, l: f32, r: f32) {
+    pub(super) fn rumble(&mut self, left: f32, right: f32) {
         if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
             handle
                 .set_state(
                     self.device_id as u32,
-                    (u16::MAX as f32 * l) as u16,
-                    (u16::MAX as f32 * r) as u16,
+                    (u16::MAX as f32 * left) as u16,
+                    (u16::MAX as f32 * right) as u16,
                 )
                 .unwrap();
         }
