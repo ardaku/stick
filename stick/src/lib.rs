@@ -24,14 +24,13 @@
 //!
 //! ```rust,no_run
 //! use pasts::Loop;
-//! use std::future::Future;
 //! use std::task::Poll::{self, Pending, Ready};
-//! use stick::{Controller, Event};
+//! use stick::{Controller, Event, Listener};
 //!
 //! type Exit = usize;
 //!
 //! struct State {
-//!     listener: Box<dyn Future<Output = Controller> + Unpin>,
+//!     listener: Listener,
 //!     controllers: Vec<Controller>,
 //!     rumble: (f32, f32),
 //! }
@@ -81,7 +80,7 @@
 //!
 //! async fn event_loop() {
 //!     let mut state = State {
-//!         listener: Box::new(Controller::listener()),
+//!         listener: Listener::new(),
 //!         controllers: Vec::new(),
 //!         rumble: (0.0, 0.0),
 //!     };
@@ -131,6 +130,7 @@ extern crate lazy_static;
 
 mod ctlr;
 mod event;
+mod listener;
 
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(
@@ -160,3 +160,4 @@ mod ffi;
 
 pub use ctlr::Controller;
 pub use event::Event;
+pub use listener::Listener;

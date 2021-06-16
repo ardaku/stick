@@ -1,14 +1,13 @@
 //! This is the example from the lib.rs documentation.
 
 use pasts::Loop;
-use std::future::Future;
 use std::task::Poll::{self, Pending, Ready};
-use stick::{Controller, Event};
+use stick::{Controller, Event, Listener};
 
 type Exit = usize;
 
 struct State {
-    listener: Box<dyn Future<Output = Controller> + Unpin>,
+    listener: Listener,
     controllers: Vec<Controller>,
     rumble: (f32, f32),
 }
@@ -58,7 +57,7 @@ impl State {
 
 async fn event_loop() {
     let mut state = State {
-        listener: Box::new(Controller::listener()),
+        listener: Listener::new(),
         controllers: Vec::new(),
         rumble: (0.0, 0.0),
     };

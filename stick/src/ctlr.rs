@@ -26,11 +26,6 @@ impl Debug for Controller {
 }
 
 impl Controller {
-    /// Get a future that returns an event when a new controller is plugged in.
-    pub fn listener() -> impl Future<Output = Self> {
-        crate::ffi::Hub::new()
-    }
-
     /// enable or disable event generation. Disable events when the application loses focus
     pub fn enable(flag: bool) {
         crate::ffi::Hub::enable(flag);
