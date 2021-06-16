@@ -1,6 +1,6 @@
-use std::fs;
-use std::collections::HashMap;
 use serde_derive::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Button {
@@ -114,8 +114,10 @@ fn main() {
                 continue;
             }
             // Skip over emulated SDL joysticks.
-            if guid.get(2..8) != Some("000000") || guid.get(12..16) != Some("0000")
-                || guid.get(20..24) != Some("0000") || guid.get(28..32) != Some("0000")
+            if guid.get(2..8) != Some("000000")
+                || guid.get(12..16) != Some("0000")
+                || guid.get(20..24) != Some("0000")
+                || guid.get(28..32) != Some("0000")
             {
                 continue;
             }
@@ -158,11 +160,11 @@ fn main() {
             three_way: None,
             wheel: None,
         };
-        
+
         if pad.remove("nes").is_some() {
             pad_mapping.r#type = "NES".to_string();
         }
-        
+
         for (key, value) in pad {
             if key.starts_with("b") {
                 let button = Button {
@@ -189,7 +191,7 @@ fn main() {
                     let axis = Trigger {
                         code: axis.code,
                         event: axis.event,
-                        max: axis.max
+                        max: axis.max,
                     };
                     if let Some(ref mut axes) = pad_mapping.trigger {
                         axes.push(axis);
@@ -205,16 +207,33 @@ fn main() {
                 }
             } else if key.starts_with("h0.") {
                 let (code, neg) = match key.get(3..).unwrap() {
-                    "1" => /* up */ (0x11, true),
-                    "2" => /* right */ (0x10, false),
-                    "4" => /* down */ (0x11, false),
-                    "8" => /* left */ (0x10, true),
+                    "1" =>
+                    /* up */
+                    {
+                        (0x11, true)
+                    }
+                    "2" =>
+                    /* right */
+                    {
+                        (0x10, false)
+                    }
+                    "4" =>
+                    /* down */
+                    {
+                        (0x11, false)
+                    }
+                    "8" =>
+                    /* left */
+                    {
+                        (0x10, true)
+                    }
                     d => panic!("Unknown direction {}!", d),
                 };
                 if value.starts_with("+") || value.starts_with("-") {
-                    let relabel = relabel.get(&value.get(1..).unwrap()).unwrap();
+                    let relabel =
+                        relabel.get(&value.get(1..).unwrap()).unwrap();
                     let axis = Axis {
-                        code: code,
+                        code,
                         event: relabel.to_string(),
                         max: None,
                     };
@@ -272,12 +291,14 @@ fn main() {
                 panic!("Unknown key: {}, value: {}", key, value);
             }
         }
-        
+
         // Join Three-Ways
         let mut three_way_map = HashMap::new();
         if let Some(ref mut switches) = pad_mapping.three_way {
             while let Some(three_way) = switches.pop() {
-                if let Some(old) = three_way_map.insert(three_way.code, (three_way.neg, three_way.pos)) {
+                if let Some(old) = three_way_map
+                    .insert(three_way.code, (three_way.neg, three_way.pos))
+                {
                     let new = three_way_map.get_mut(&three_way.code).unwrap();
                     if !old.0.is_empty() {
                         assert!(new.0.is_empty());
@@ -290,12 +311,10 @@ fn main() {
                 }
             }
             for (code, (neg, pos)) in three_way_map {
-                switches.push(ThreeWay {
-                    code, neg, pos
-                });
+                switches.push(ThreeWay { code, neg, pos });
             }
         }
-        
+
         // Join Duplicated axes
         let mut axis_map = HashMap::new();
         if let Some(ref mut axes) = pad_mapping.axis {
@@ -306,12 +325,18 @@ fn main() {
             }
             for (event, code) in axis_map {
                 axes.push(Axis {
-                    event, code, max: None
+                    event,
+                    code,
+                    max: None,
                 });
             }
         }
 
         // Write out to specification file.
-        fs::write(&format!("Unix/{}.toml", id), toml::to_string(&pad_mapping).unwrap()).unwrap();
+        fs::write(
+            &format!("Unix/{}.toml", id),
+            toml::to_string(&pad_mapping).unwrap(),
+        )
+        .unwrap();
     }
 }

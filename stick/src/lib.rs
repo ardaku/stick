@@ -23,51 +23,81 @@
 //! feedback (copied from *examples/haptic.rs*):
 //!
 //! ```rust,no_run
+//! use pasts::Loop;
+//! use std::future::Future;
+//! use std::task::Poll::{self, Pending, Ready};
 //! use stick::{Controller, Event};
-//! use pasts::{race, wait};
-//! 
-//! async fn event_loop() {
-//!     let mut listener = Controller::listener();
-//!     let mut ctlrs = Vec::<Controller>::new();
-//!     'e: loop {
-//!         let event = wait![(&mut listener).await, race!(ctlrs)];
+//!
+//! type Exit = usize;
+//!
+//! struct State {
+//!     listener: Box<dyn Future<Output = Controller> + Unpin>,
+//!     controllers: Vec<Controller>,
+//!     left_rumble: f32,
+//!     right_rumble: f32,
+//! }
+//!
+//! impl State {
+//!     fn connect(&mut self, controller: Controller) -> Poll<Exit> {
+//!         println!(
+//!             "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
+//!             self.controllers.len() + 1,
+//!             controller.id()[0],
+//!             controller.id()[1],
+//!             controller.id()[2],
+//!             controller.id()[3],
+//!             controller.name(),
+//!         );
+//!         self.controllers.push(controller);
+//!         Pending
+//!     }
+//!
+//!     fn event(&mut self, id: usize, event: Event) -> Poll<Exit> {
+//!         let player = id + 1;
+//!         println!("p{}: {}", player, event);
 //!         match event {
-//!             (_, Event::Connect(new)) => {
-//!                 println!(
-//!                     "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
-//!                     ctlrs.len() + 1,
-//!                     new.id()[0],
-//!                     new.id()[1],
-//!                     new.id()[2],
-//!                     new.id()[3],
-//!                     new.name(),
-//!                 );
-//!                 ctlrs.push(*new);
+//!             Event::Disconnect => {
+//!                 self.controllers.swap_remove(id);
 //!             }
-//!             (id, Event::Disconnect) => {
-//!                 println!("Disconnected p{}", id + 1);
-//!                 ctlrs.swap_remove(id);
+//!             Event::Home(true) => return Ready(player),
+//!             Event::ActionA(pressed) => {
+//!                 self.controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
 //!             }
-//!             (id, Event::Home(true)) => {
-//!                 println!("p{} ended the session", id + 1);
-//!                 break 'e;
+//!             Event::ActionB(pressed) => {
+//!                 self.controllers[id].rumble(if pressed { 0.3 } else { 0.0 });
 //!             }
-//!             (id, event) => {
-//!                 println!("p{}: {}", id + 1, event);
-//!                 match event {
-//!                     Event::ActionA(pressed) => {
-//!                         ctlrs[id].rumble(if pressed { 1.0 } else { 0.0 });
-//!                     }
-//!                     Event::ActionB(pressed) => {
-//!                         ctlrs[id].rumble(if pressed { 0.3 } else { 0.0 });
-//!                     }
-//!                     _ => {}
-//!                 }
+//!             Event::BumperL(pressed) => {
+//!                 self.left_rumble = if pressed { 1.0 } else { 0.0 };
+//!                 self.controllers[id]
+//!                     .rumbles(self.left_rumble, self.right_rumble);
 //!             }
+//!             Event::BumperR(pressed) => {
+//!                 self.right_rumble = if pressed { 1.0 } else { 0.0 };
+//!                 self.controllers[id]
+//!                     .rumbles(self.left_rumble, self.right_rumble);
+//!             }
+//!             _ => {}
 //!         }
+//!         Pending
 //!     }
 //! }
-//! 
+//!
+//! async fn event_loop() {
+//!     let mut state = State {
+//!         listener: Box::new(Controller::listener()),
+//!         controllers: Vec::new(),
+//!         left_rumble: 0.0,
+//!         right_rumble: 0.0,
+//!     };
+//!
+//!     let player_id = Loop::new(&mut state)
+//!         .when(|s| &mut s.listener, State::connect)
+//!         .poll(|s| &mut s.controllers, State::event)
+//!         .await;
+//!
+//!     println!("p{} ended the session", player_id);
+//! }
+//!
 //! fn main() {
 //!     pasts::block_on(event_loop());
 //! }
@@ -94,6 +124,14 @@
     unused_qualifications,
     variant_size_differences
 )]
+
+#[cfg(target_os = "windows")]
+#[macro_use]
+extern crate log;
+
+#[cfg(target_os = "windows")]
+#[macro_use]
+extern crate lazy_static;
 
 mod ctlr;
 mod event;

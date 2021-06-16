@@ -683,10 +683,15 @@ impl Hub {
             timer,
         }
     }
+
+    // FIXME: split to disable/enable methods
+    pub(super) fn enable(_flag: bool) {
+        // do nothing
+    }
 }
 
 impl Future for Hub {
-    type Output = (usize, Event);
+    type Output = crate::Controller;
 
     fn poll(
         mut self: Pin<&mut Self>,
@@ -745,12 +750,7 @@ impl Future for Hub {
                             }
                         };
                         this.connected.insert(file);
-                        return Poll::Ready((
-                            std::usize::MAX,
-                            Event::Connect(Box::new(crate::Controller(
-                                Ctlr::new(fd),
-                            ))),
-                        ));
+                        return Poll::Ready(crate::Controller(Ctlr::new(fd)));
                     }
                 }
                 // If all gamepads are openned, disable timer.
@@ -946,9 +946,16 @@ impl Ctlr {
         format!("{} ({})", self.desc.name, name)
     }
 
+    // FIXME: Remove mono rumble
     pub(super) fn rumble(&mut self, v: f32) {
         if self.rumble >= 0 {
             joystick_ff(self.device.raw(), self.rumble, v);
+        }
+    }
+
+    pub(super) fn rumbles(&mut self, l: f32, r: f32) {
+        if self.rumble >= 0 {
+            joystick_ff(self.device.raw(), self.rumble, l.max(r));
         }
     }
 }

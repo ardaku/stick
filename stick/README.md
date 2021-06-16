@@ -29,19 +29,19 @@ Now, I think there are many other reasons for stick to exist despite gilrs:
    support across platforms.
 
 ### Platform Support
-- Linux
+ - Linux
+ - Windows
 
 ### Planned Platform Support
-- Windows
-- MacOS
-- BSD
-- Redox
-- Fuchsia
-- Android
-- iOS
-- Web Assembly
-- Nintendo Switch (And other game consoles)
-- Others
+ - MacOS
+ - BSD
+ - Redox
+ - Fuchsia
+ - Android
+ - iOS
+ - Web Assembly
+ - Nintendo Switch (And other game consoles)
+ - Others
 
 ## Table of Contents
 - [Getting Started](#getting-started)
