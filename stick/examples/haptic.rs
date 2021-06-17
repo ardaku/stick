@@ -34,7 +34,7 @@ impl State {
             Event::Disconnect => {
                 self.controllers.swap_remove(id);
             }
-            Event::Home(true) => return Ready(player),
+            Event::Next(true) => return Ready(player),
             Event::ActionA(pressed) => {
                 self.controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
             }

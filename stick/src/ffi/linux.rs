@@ -9,25 +9,18 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-use smelling_salts::{Device, Watcher};
-
-use std::{
-    collections::HashSet,
-    convert::TryInto,
-    fs::{self, File, OpenOptions},
-    future::Future,
-    io::ErrorKind,
-    mem::MaybeUninit,
-    num::FpCategory,
-    os::{
-        raw::{c_char, c_int, c_long, c_ulong, c_ushort, c_void},
-        unix::io::{IntoRawFd, RawFd},
-    },
-    pin::Pin,
-    task::{Context, Poll},
-};
-
 use crate::Event;
+use smelling_salts::{Device, Watcher};
+use std::convert::TryInto;
+use std::fs::read_dir;
+use std::future::Future;
+use std::mem::{size_of, MaybeUninit};
+use std::num::FpCategory;
+use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
+use std::os::unix::io::RawFd;
+use std::pin::Pin;
+use std::str;
+use std::task::{Context, Poll};
 
 // This input offset when subtracted, gives a platform-agnostic button ID.
 // Since Stick only looks for gamepads and joysticks, button IDs below this
@@ -509,8 +502,8 @@ struct InotifyEv {
     mask: u32, /* Mask describing event */
     cookie: u32, /* Unique cookie associating related
                events (for rename(2)) */
-    len: u32,            /* Size of name field */
-    name: [c_char; 256], /* Optional null-terminated name */
+    len: u32,        /* Size of name field */
+    name: [u8; 256], /* Optional null-terminated name */
 }
 
 #[repr(C)]
@@ -518,20 +511,6 @@ struct TimeVal {
     // struct timeval, from C.
     tv_sec: c_long,
     tv_usec: c_long,
-}
-
-#[repr(C)]
-struct TimeSpec {
-    // struct timespec, from C.
-    tv_sec: c_long,
-    tv_nsec: c_long,
-}
-
-#[repr(C)]
-struct ItimerSpec {
-    // struct itimerspec, from C.
-    it_interval: TimeSpec,
-    it_value: TimeSpec,
 }
 
 #[repr(C)]
@@ -570,6 +549,9 @@ struct AbsInfo {
 }
 
 extern "C" {
+    fn strlen(s: *const u8) -> usize;
+
+    fn open(pathname: *const u8, flags: c_int) -> c_int;
     fn read(fd: RawFd, buf: *mut c_void, count: usize) -> isize;
     fn write(fd: RawFd, buf: *const c_void, count: usize) -> isize;
     fn close(fd: RawFd) -> c_int;
@@ -577,116 +559,70 @@ extern "C" {
     fn ioctl(fd: RawFd, request: c_ulong, v: *mut c_void) -> c_int;
 
     fn inotify_init1(flags: c_int) -> c_int;
-    fn inotify_add_watch(fd: RawFd, path: *const c_char, mask: u32) -> c_int;
-
-    fn timerfd_create(clockid: c_int, flags: c_int) -> RawFd;
-    fn timerfd_settime(
-        fd: RawFd,
-        flags: c_int,
-        new_value: *const ItimerSpec,
-        old_value: *mut ItimerSpec,
-    ) -> c_int;
+    fn inotify_add_watch(fd: RawFd, path: *const u8, mask: u32) -> c_int;
 
     fn __errno_location() -> *mut c_int;
 }
 
-struct HubTimer {
-    device: Device,
-}
-
-impl HubTimer {
-    fn new(cx: &mut Context<'_>) -> Self {
-        // Create the timer.
-        let timerfd = unsafe {
-            timerfd_create(
-                1,      /*CLOCK_MONOTONIC*/
-                0o4000, /*TFD_NONBLOCK*/
-            )
-        };
-        assert_ne!(timerfd, -1); // Should never fail (unless out of memory).
-                                 // Arm the timer for every 10 millis, starting in 10 millis.
-        unsafe {
-            timerfd_settime(
-                timerfd,
-                0,
-                &ItimerSpec {
-                    it_interval: TimeSpec {
-                        tv_sec: 0,
-                        tv_nsec: 10_000_000, // 10 milliseconds
-                    },
-                    it_value: TimeSpec {
-                        tv_sec: 0,
-                        tv_nsec: 10_000_000, // 10 milliseconds
-                    },
-                },
-                std::ptr::null_mut(),
-            );
-        }
-        // Create timer device, watching for input events.
-        let device = Device::new(timerfd, Watcher::new().input());
-        // Wake up Future when timer goes off.
-        device.register_waker(cx.waker());
-
-        // Return timer
-        HubTimer { device }
-    }
-}
-
-impl Drop for HubTimer {
-    fn drop(&mut self) {
-        let fd = self.device.raw();
-        self.device.old();
-        assert_ne!(unsafe { close(fd) }, -1);
-    }
-}
-
+// FIXME: First poll should do a file search within the directory.
 pub(crate) struct Hub {
     device: Device,
-    connected: HashSet<String>,
-    timer: Option<HubTimer>,
+    read_dir: Option<Box<std::fs::ReadDir>>,
 }
 
 impl Hub {
     pub(super) fn new() -> Self {
-        // Create an inotify on the directory where gamepad filedescriptors are.
-        let inotify = unsafe {
-            inotify_init1(0o0004000 /*IN_NONBLOCK*/)
-        };
-        if inotify == -1 {
-            panic!("Couldn't create inotify (1)!");
-        }
-        if unsafe {
-            inotify_add_watch(
-                inotify,
-                b"/dev/input/by-id/\0".as_ptr() as *const _,
-                0x0000_0200 | 0x0000_0100,
-            )
-        } == -1
-        {
-            panic!("Couldn't create inotify (2)!");
+        const CLOEXEC: c_int = 0o2000000;
+        const NONBLOCK: c_int = 0o0004000;
+        const CREATE: c_uint = 0x00000100;
+        const DIR: &[u8] = b"/dev/input/by-id/\0";
+
+        // Create an inotify.
+        let listen = unsafe { inotify_init1(NONBLOCK | CLOEXEC) };
+        if listen == -1 {
+            panic!("Couldn't create inotify!");
         }
 
-        // Create watcher, and register with fd as a "device".
-        let watcher = Watcher::new().input();
-        let device = Device::new(inotify, watcher);
+        // Start watching the controller directory.
+        if unsafe { inotify_add_watch(listen, DIR.as_ptr(), CREATE) } == -1 {
+            panic!("Couldn't add inotify watch!");
+        }
 
-        // Start off with an empty hash set of connected devices.
-        let connected = HashSet::new();
-
-        // Start off with timer disabled.
-        let timer = None;
-
-        // Return
         Hub {
-            device,
-            connected,
-            timer,
+            // Create watcher, and register with fd as a "device".
+            device: Device::new(listen, Watcher::new().input()),
+            //
+            read_dir: Some(Box::new(read_dir("/dev/input/by-id/").unwrap())),
         }
     }
 
     // FIXME: split to disable/enable methods
     pub(super) fn enable(_flag: bool) {
         // do nothing
+    }
+
+    fn controller(mut filename: String) -> Poll<crate::Controller> {
+        if filename.ends_with("-event-joystick") {
+            filename.push('\0');
+            let mut timeout = 1024; // Quit after 1024 tries with no access
+            let fd = loop {
+                timeout -= 1;
+                let fd = unsafe {
+                    open(filename.as_ptr(), 2 /*read&write*/)
+                };
+                let errno = unsafe { *__errno_location() };
+                if errno != 13 || fd != -1 {
+                    break fd;
+                }
+                if timeout == 0 {
+                    break -1;
+                }
+            };
+            if fd != -1 {
+                return Poll::Ready(crate::Controller(Ctlr::new(fd)));
+            }
+        }
+        Poll::Pending
     }
 }
 
@@ -698,92 +634,43 @@ impl Future for Hub {
         cx: &mut Context<'_>,
     ) -> Poll<Self::Output> {
         let mut this = self.as_mut();
-        // Timeout after joystick doesn't give up permissions for 1 second.
-        if let Some(ref timer) = this.timer {
-            let mut num = MaybeUninit::<u64>::uninit();
-            if unsafe {
-                read(
-                    timer.device.raw(),
-                    num.as_mut_ptr().cast(),
-                    std::mem::size_of::<u64>(),
-                )
-            } == std::mem::size_of::<u64>() as isize
-                && unsafe { num.assume_init() } >= 100
-            {
-                this.timer = None;
-            }
-        }
 
-        // Read an event.
-        let mut ev = MaybeUninit::<InotifyEv>::uninit();
-        let ev = unsafe {
-            if read(
-                this.device.raw(),
-                ev.as_mut_ptr().cast(),
-                std::mem::size_of::<InotifyEv>(),
-            ) <= 0
-            {
-                let mut all_open = true;
-                // Search directory for new controllers.
-                'fds: for file in fs::read_dir("/dev/input/by-id/").unwrap() {
-                    let file = file.unwrap().file_name().into_string().unwrap();
-                    if file.ends_with("-event-joystick") {
-                        // Found an evdev gamepad
-                        if this.connected.contains(&file) {
-                            // Already connected.
-                            continue 'fds;
-                        }
-                        // New gamepad
-                        let mut filename = "/dev/input/by-id/".to_string();
-                        filename.push_str(&file);
-                        let fd = match OpenOptions::new()
-                            .read(true)
-                            .append(true)
-                            .open(filename)
-                        {
-                            Ok(f) => f,
-                            Err(e) => {
-                                if e.kind() == ErrorKind::PermissionDenied {
-                                    all_open = false;
-                                }
-                                continue 'fds;
-                            }
-                        };
-                        this.connected.insert(file);
-                        return Poll::Ready(crate::Controller(Ctlr::new(fd)));
+        // Read the directory for ctrls if initialization hasn't completed yet.
+        if let Some(ref mut read_dir) = this.read_dir {
+            for dir_entry in read_dir {
+                if let Ok(dir_entry) = dir_entry {
+                    let file = dir_entry.path();
+                    let path = file.as_path().to_string_lossy().to_string();
+                    if let Poll::Ready(controller) = Self::controller(path) {
+                        return Poll::Ready(controller);
                     }
                 }
-                // If all gamepads are openned, disable timer.
-                if all_open && this.timer.is_some() {
-                    this.timer = None;
-                }
-                // Register waker for this device
-                this.device.register_waker(cx.waker());
-                // If no new controllers found, return pending.
-                return Poll::Pending;
             }
-            ev.assume_init()
-        };
+            this.read_dir = None;
+        }
 
-        // Remove flag is set, remove from HashSet.
-        if (ev.mask & 0x0000_0200) != 0 {
-            let mut file = "".to_string();
-            let name = unsafe { std::ffi::CStr::from_ptr(ev.name.as_ptr()) };
-            file.push_str(&name.to_string_lossy());
-            if file.ends_with("-event-joystick") {
-                // Remove it if it exists, sometimes gamepads get "removed"
-                // twice because adds are condensed in innotify (not 100% sure).
-                let _ = this.connected.remove(&file);
+        // Read the Inotify Event.
+        let mut ev = MaybeUninit::<InotifyEv>::zeroed();
+        let read = unsafe {
+            read(
+                this.device.raw(),
+                ev.as_mut_ptr().cast(),
+                size_of::<InotifyEv>(),
+            )
+        };
+        if read > 0 {
+            let ev = unsafe { ev.assume_init() };
+            let len = unsafe { strlen(&ev.name[0]) };
+            let filename = String::from_utf8_lossy(&ev.name[..len]);
+            let path = format!("/dev/input/by-id/{}", filename);
+            if let Poll::Ready(controller) = Self::controller(path) {
+                return Poll::Ready(controller);
             }
         }
-        // Add flag is set, wait for permissions (unfortunately, can't rely on
-        // epoll events for this, so check every 10 milliseconds).
-        if (ev.mask & 0x0000_0100) != 0 && this.timer.is_none() {
-            this.timer = Some(HubTimer::new(cx));
-        }
-        // Check for more events, Search for new controllers again, and return
-        // Pending if neither have anything to process.
-        this.poll(cx)
+
+        // Register waker for this device
+        this.device.register_waker(cx.waker());
+        Poll::Pending
     }
 }
 
@@ -808,9 +695,7 @@ pub(crate) struct Ctlr {
 }
 
 impl Ctlr {
-    fn new(file: File) -> Self {
-        let fd = file.into_raw_fd();
-
+    fn new(fd: c_int) -> Self {
         // Enable evdev async.
         assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
 
@@ -907,7 +792,7 @@ impl Ctlr {
                 read(
                     self.device.raw(),
                     ev.as_mut_ptr().cast(),
-                    std::mem::size_of::<EvdevEv>(),
+                    size_of::<EvdevEv>(),
                 )
             };
             if bytes <= 0 {
@@ -921,7 +806,7 @@ impl Ctlr {
                 // If no new controllers found, return pending.
                 return Poll::Pending;
             }
-            assert_eq!(std::mem::size_of::<EvdevEv>() as isize, bytes);
+            assert_eq!(size_of::<EvdevEv>() as isize, bytes);
             unsafe { ev.assume_init() }
         };
 
@@ -1076,12 +961,12 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
         },
         ev_type: 0x15, /*EV_FF*/
         ev_code,
-        ev_value: if is_powered { 1 } else { 0 },
+        ev_value: is_powered as _,
     };
     let play: *const _ = play;
     unsafe {
-        if write(fd, play.cast(), std::mem::size_of::<EvdevEv>())
-            != std::mem::size_of::<EvdevEv>() as isize
+        if write(fd, play.cast(), size_of::<EvdevEv>())
+            != size_of::<EvdevEv>() as isize
         {
             let errno = *__errno_location();
             if errno != 19
