@@ -36,17 +36,17 @@ impl State {
             }
             Event::Next(true) => return Ready(player),
             Event::ActionA(pressed) => {
-                self.controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
+                self.controllers[id].rumble(f32::from(u8::from(pressed)));
             }
             Event::ActionB(pressed) => {
-                self.controllers[id].rumble(if pressed { 1.0 } else { 0.0 });
+                self.controllers[id].rumble(0.5 * f32::from(u8::from(pressed)));
             }
             Event::BumperL(pressed) => {
-                self.rumble.0 = if pressed { 1.0 } else { 0.0 };
+                self.rumble.0 = f32::from(u8::from(pressed));
                 self.controllers[id].rumble(self.rumble);
             }
             Event::BumperR(pressed) => {
-                self.rumble.1 = if pressed { 1.0 } else { 0.0 };
+                self.rumble.1 = f32::from(u8::from(pressed));
                 self.controllers[id].rumble(self.rumble);
             }
             _ => {}

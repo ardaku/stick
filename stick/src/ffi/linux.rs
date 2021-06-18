@@ -678,8 +678,10 @@ pub(crate) struct Ctlr {
     hardware_id: [u16; 4],
     // Userspace driver data
     state: CtlrState,
-    rumble: i16,
+    // Remappings
     desc: &'static CtlrDescriptor,
+    // Rumble effect id.
+    rumble: i16,
 }
 
 impl Ctlr {
@@ -753,14 +755,16 @@ impl Ctlr {
         };
 
         // Query the controller for haptic support.
-        let rumble = joystick_haptic(fd, -1, 0.0);
+        let rumble = joystick_haptic(fd, -1, 0.0, 0.0);
         // Construct device from fd, looking for input events.
+        let device = Device::new(fd, Watcher::new().input());
+        // Return
         Self {
             hardware_id,
-            device: Device::new(fd, Watcher::new().input()),
-            rumble,
+            device,
             state,
             desc,
+            rumble,
         }
     }
 
@@ -824,7 +828,8 @@ impl Ctlr {
             joystick_ff(
                 self.device.raw(),
                 self.rumble,
-                left.max(right), /* FIXME */
+                left,
+                right,
             );
         }
     }
@@ -932,16 +937,14 @@ struct FfEffect {
     u: FfUnion,
 }
 
-fn joystick_ff(fd: RawFd, code: i16, value: f32) {
-    let is_powered = value != 0.0;
-    let new_id = if is_powered {
-        joystick_haptic(fd, code, value)
-    } else {
-        -3
-    };
-
+fn joystick_ff(fd: RawFd, code: i16, strong: f32, weak: f32) {
+    // Update haptic effect `code`.
+    if strong != 0.0 || weak != 0.0 {
+        joystick_haptic(fd, code, strong, weak);
+    }
+    // 
     let ev_code = code.try_into().unwrap();
-
+    
     let play = &EvdevEv {
         ev_time: TimeVal {
             tv_sec: 0,
@@ -949,7 +952,7 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
         },
         ev_type: 0x15, /*EV_FF*/
         ev_code,
-        ev_value: is_powered as _,
+        ev_value: (strong > 0.0 || weak > 0.0) as _,
     };
     let play: *const _ = play;
     unsafe {
@@ -957,12 +960,9 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
             != size_of::<EvdevEv>() as isize
         {
             let errno = *__errno_location();
-            if errno != 19
-            /* 19 = device unplugged, ignore */
-            {
+            if errno != 19 { // 19 = device unplugged, ignore
                 panic!(
-                    "Write {:?} exited with {}",
-                    (code, new_id),
+                    "Write exited with {}",
                     *__errno_location()
                 );
             }
@@ -971,9 +971,9 @@ fn joystick_ff(fd: RawFd, code: i16, value: f32) {
 }
 
 // Get ID's for rumble and vibrate, if they're supported (otherwise, -1).
-fn joystick_haptic(fd: RawFd, id: i16, power: f32) -> i16 {
+fn joystick_haptic(fd: RawFd, id: i16, strong: f32, weak: f32) -> i16 {
     let a = &mut FfEffect {
-        stype: 0x51,
+        stype: 0x50,
         id, /*allocate new effect*/
         direction: 0,
         trigger: FfTrigger {
@@ -985,20 +985,9 @@ fn joystick_haptic(fd: RawFd, id: i16, power: f32) -> i16 {
             delay: 0,
         },
         u: FfUnion {
-            periodic: FfPeriodicEffect {
-                waveform: 0x5a,                      /*sine wave*/
-                period: 100,                         /*milliseconds*/
-                magnitude: (32767.0 * power) as i16, /*peak value*/
-                offset: 0,                           /*mean value of wave*/
-                phase: 0,                            /*horizontal shift*/
-                envelope: FfEnvelope {
-                    attack_length: 0,
-                    attack_level: 0,
-                    fade_length: 0,
-                    fade_level: 0,
-                },
-                custom_len: 0,
-                custom_data: std::ptr::null_mut(),
+            rumble: FfRumbleEffect {
+                strong_magnitude: (u16::MAX as f32 * strong) as u16,
+                weak_magnitude: (u16::MAX as f32 * weak) as u16,
             },
         },
     };

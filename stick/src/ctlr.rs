@@ -45,6 +45,10 @@ impl Controller {
     ///
     /// Takes either an `f32` for mono power or `(f32, f32)` for directional
     /// power.  Power will be clamped between 0.0 (off) and 1.0 (maximum power).
+    ///
+    /// The first `f32` in directional power is typically low frequency and is
+    /// located on the left, and the second is typically high frequency and is
+    /// located on the right (controllers may vary).
     pub fn rumble<R: Rumble>(&mut self, power: R) {
         self.0.rumble(power.left(), power.right());
     }

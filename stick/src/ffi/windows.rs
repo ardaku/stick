@@ -12,15 +12,11 @@
 
 //! This file's code is based on https://github.com/Lokathor/rusty-xinput
 
-use std::{
-    future::Future,
-    pin::Pin,
-    task::{Context, Poll},
-};
-
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 use crate::Event;
 use std::task::Waker;
-
 use winapi::shared::guiddef::GUID;
 use winapi::shared::minwindef::{BOOL, BYTE, DWORD, HMODULE, UINT};
 use winapi::shared::ntdef::LPWSTR;
@@ -29,7 +25,6 @@ use winapi::shared::winerror::{
 };
 use winapi::um::libloaderapi::{FreeLibrary, GetProcAddress, LoadLibraryW};
 use winapi::um::xinput::*;
-
 use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;
 
