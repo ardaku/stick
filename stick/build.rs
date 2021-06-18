@@ -134,7 +134,7 @@ fn generate_from_database() -> String {
                 if let Some(max) = max {
                     ret.push_str("Some(");
                     ret.push_str(&format!("{:?}", max));
-                    ret.push_str(")");
+                    ret.push(')');
                 } else {
                     ret.push_str("None");
                 }
@@ -169,11 +169,10 @@ fn generate_from_database() -> String {
                     _ => {
                         // Events that should be -1 thru 1
                         ret.push_str("|v| Event::");
+                        ret.push_str(&event);
                         if invert == Some(true) {
-                            ret.push_str(&event);
                             ret.push_str("((1.0 - v) * 2.0 - 1.0), ");
                         } else {
-                            ret.push_str(&event);
                             ret.push_str("(v * 2.0 - 1.0), ");
                         }
                     }
@@ -183,7 +182,7 @@ fn generate_from_database() -> String {
                 if let Some(max) = max {
                     ret.push_str("Some(");
                     ret.push_str(&max.to_string());
-                    ret.push_str(")");
+                    ret.push(')');
                 } else {
                     ret.push_str("None");
                 }

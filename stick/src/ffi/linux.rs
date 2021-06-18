@@ -287,11 +287,7 @@ impl CtlrDescriptor {
                         unknown = false;
                         event = match ev.ev_value {
                             0 => {
-                                if let Some(old) = state.neg[i].take() {
-                                    Some(new(old, false))
-                                } else {
-                                    None
-                                }
+                                state.neg[i].take().map(|old| new(old, false))
                             }
                             v if v > 0 => {
                                 let old = state.neg[i];
@@ -321,11 +317,7 @@ impl CtlrDescriptor {
                         unknown = false;
                         event = match ev.ev_value {
                             0 => {
-                                if let Some(old) = state.neg_axis[i].take() {
-                                    Some(new(old, 0.0))
-                                } else {
-                                    None
-                                }
+                                state.neg_axis[i].take().map(|old| new(old, 0.0))
                             }
                             v if v > 0 => {
                                 let old = state.neg_axis[i];
@@ -637,14 +629,12 @@ impl Future for Hub {
 
         // Read the directory for ctrls if initialization hasn't completed yet.
         if let Some(ref mut read_dir) = this.read_dir {
-            for dir_entry in read_dir {
-                if let Ok(dir_entry) = dir_entry {
+            for dir_entry in read_dir.flatten() {
                     let file = dir_entry.path();
                     let path = file.as_path().to_string_lossy().to_string();
                     if let Poll::Ready(controller) = Self::controller(path) {
                         return Poll::Ready(controller);
                     }
-                }
             }
             this.read_dir = None;
         }

@@ -35,7 +35,7 @@ fn fmt() {
 
 fn main() {
     let task = env::args().nth(1);
-    match task.as_ref().map(|it| it.as_str()) {
+    match task.as_deref() {
         Some("codegen") => codegen(),
         Some("fmt") => fmt(),
         None | Some("--help") => print_help(),

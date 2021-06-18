@@ -88,7 +88,7 @@ fn main() {
     let mut pad_map = HashMap::<String, (_, HashMap<_, _>)>::new();
 
     for line in gcdb.lines() {
-        if line.starts_with("#") || line.is_empty() {
+        if line.starts_with('#') || line.is_empty() {
             continue;
         }
 
@@ -166,7 +166,7 @@ fn main() {
         }
 
         for (key, value) in pad {
-            if key.starts_with("b") {
+            if key.starts_with('b') {
                 let button = Button {
                     code: key.get(1..).unwrap().parse().unwrap(),
                     event: relabel.get(&value).unwrap().to_string(),
@@ -176,8 +176,8 @@ fn main() {
                 } else {
                     pad_mapping.button = Some(vec![button]);
                 }
-            } else if key.starts_with("a") {
-                let key = if let Some(index) = key.find("~") {
+            } else if key.starts_with('a') {
+                let key = if let Some(index) = key.find('~') {
                     key.get(..index).unwrap()
                 } else {
                     key
@@ -198,12 +198,10 @@ fn main() {
                     } else {
                         pad_mapping.trigger = Some(vec![axis]);
                     }
+                } else if let Some(ref mut axes) = pad_mapping.axis {
+                    axes.push(axis);
                 } else {
-                    if let Some(ref mut axes) = pad_mapping.axis {
-                        axes.push(axis);
-                    } else {
-                        pad_mapping.axis = Some(vec![axis]);
-                    }
+                    pad_mapping.axis = Some(vec![axis]);
                 }
             } else if key.starts_with("h0.") {
                 let (code, neg) = match key.get(3..).unwrap() {
@@ -229,7 +227,7 @@ fn main() {
                     }
                     d => panic!("Unknown direction {}!", d),
                 };
-                if value.starts_with("+") || value.starts_with("-") {
+                if value.starts_with('+') || value.starts_with('-') {
                     let relabel =
                         relabel.get(&value.get(1..).unwrap()).unwrap();
                     let axis = Axis {
