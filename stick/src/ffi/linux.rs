@@ -286,9 +286,7 @@ impl CtlrDescriptor {
                     if ev.ev_code == *evcode {
                         unknown = false;
                         event = match ev.ev_value {
-                            0 => {
-                                state.neg[i].take().map(|old| new(old, false))
-                            }
+                            0 => state.neg[i].take().map(|old| new(old, false)),
                             v if v > 0 => {
                                 let old = state.neg[i];
                                 state.neg[i] = Some(false);
@@ -316,9 +314,9 @@ impl CtlrDescriptor {
                     if ev.ev_code == *evcode {
                         unknown = false;
                         event = match ev.ev_value {
-                            0 => {
-                                state.neg_axis[i].take().map(|old| new(old, 0.0))
-                            }
+                            0 => state.neg_axis[i]
+                                .take()
+                                .map(|old| new(old, 0.0)),
                             v if v > 0 => {
                                 let old = state.neg_axis[i];
                                 state.neg_axis[i] = Some(false);
@@ -630,11 +628,11 @@ impl Future for Hub {
         // Read the directory for ctrls if initialization hasn't completed yet.
         if let Some(ref mut read_dir) = this.read_dir {
             for dir_entry in read_dir.flatten() {
-                    let file = dir_entry.path();
-                    let path = file.as_path().to_string_lossy().to_string();
-                    if let Poll::Ready(controller) = Self::controller(path) {
-                        return Poll::Ready(controller);
-                    }
+                let file = dir_entry.path();
+                let path = file.as_path().to_string_lossy().to_string();
+                if let Poll::Ready(controller) = Self::controller(path) {
+                    return Poll::Ready(controller);
+                }
             }
             this.read_dir = None;
         }
