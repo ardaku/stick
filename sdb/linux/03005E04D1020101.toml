@@ -1,0 +1,14 @@
+name = "Microsoft Xbox One Controller"
+type = "xbox"
+
+[remap]
+HatUp = "Up"
+HatDown = "Down"
+HatLeft = "Left"
+HatRight = "Right"
+JoyZ = "TriggerL"
+CamZ = "TriggerR"
+1 = "MenuL"
+4 = "Joy"
+5 = "Cam"
+MenuL = "Exit"

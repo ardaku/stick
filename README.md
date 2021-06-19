@@ -18,20 +18,63 @@ serde to not be a direct dependency.
  - `cargo xtask codegen` - Generate the embeddable bytecode databases.
  - `cargo xtask fmt` - Auto-format and sort the TOML files in `stick_db/`.
 
+## TOML Format
+File names are 64-bit hexadecimal values with leading zeros followed by `.toml`
+within a folder referring to the platform.
+
+```toml
+name = "My Controller Name"
+type = "xbox"
+
+[axis]
+deadzone = 0.07
+maximum = 1.0 # same as default
+invert = false
+
+[trigger]
+deadzone = 0.0
+maximum = 0.7
+invert = false
+
+[remap]
+HatUp = Up
+HatDown = Down
+HatLeft = Left
+HatRight = Right
+```
+
+### `type`
+Type can be any of the following:
+ - `xbox` - An Xbox Gamepad (W3 Standard Gamepad Compliant)
+ - `flight` - A (Thrustmaster) Flightstick
+ - `playstation` - A PlayStation Gamepad (W3 Standard Gamepad Compliant)
+ - `nintendo` - A Nintendo Gamepad (W3 Standard Gamepad Compliant)
+
 ## Bytecode Format
 Stick reads the bytecode format that the library user inputs into the library.
-There's the databases that can be enabled/disabled with the `stickdb` and `gcdb`
+There's the databases that can be enabled/disabled with the `sdb` and `gcdb`
 features.  All numbers are little endian.
 
- - `version: 0x00`: Version of stick format.
- - `len: u24`: Number of controllers.
- - `filter: [(b64, u16); len]`: Controller filter.
-   - `wildcard: b4`: Mask for which parts of the ID are significant.
-   - `bus: b12`: The hardware type. (bit 0 mask)
-   - `vendor: b16`: Who made the controller. (bit 1 mask)
-   - `product: b16`: Which controller is it. (bit 2 mask)
-   - `version: b16`: Which revision is it. (bit 3 mask)
-   - `jump: u16`: How many bytes does the controller spec need (must be %2==0).
+ - `version: u16 = 0xC175`: Version of stick format.
+ - `platform: u16`: Which operating system is the remappings for?
+
+================================================================================
+
+ - `jump_len: u32`: How many bytes until next controller?
+ - `type: u32`: Controller type
+ - `id: b64`: 64-bit ID for platform.
+ - `axis_dead: f64`: NAN for no deadzone adjustment - normalized 0 to 1.
+ - `axis_max: f64`: NAN for no max adj. Opposite of deadzone - normalized 0 to 1
+ - `trig_dead: f64`: NAN for no deadzone adjustment - normalized 0 to 1.
+ - `trig_max: f64`: NAN for no max adj. Opposite of deadzone - normalized 0 to 1
+ - `tweaks: b128`: Extra controller tweaks
+   - `invert_axes: b1`: Invert axes?
+   - `invert_triggers: b1`: Invert triggers?
+ - `name: zstr`: Must be multiple of 4 bytes, nul terminated.
+ - `mappings: [(u16,u16)]`: Event Mappings Until jump len.
+
+================================================================================
+
  - `layout: u16`: Controller Layout
    - `0x0000`: Unknown Names
    - `0x0010`: W3C Standard Gamepad / Nintendo Names

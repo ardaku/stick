@@ -1,0 +1,29 @@
+name = "X360 Controller"
+type = "xbox"
+
+[remap]
+Trigger = "ActionA"
+Thumb = "ActionB"
+Thumb2 = "ActionH"
+Top = "ActionV"
+Top2 = "BumperL"
+Pinky = "BumperR"
+1 = "MenuL"
+2 = "MenuR"
+3 = "Exit"
+4 = "Joy"
+5 = "Cam"
+ActionA = "ActionB"
+ActionB = "ActionA"
+ActionV = "ActionH"
+ActionH = "ActionV"
+HatUp = "Up"
+HatDown = "Down"
+HatLeft = "Left"
+HatRight = "Right"
+JoyZ = "TriggerL"
+CamZ = "TriggerR"
+JoyX = { event = "JoyX", scale = 0.992 }
+JoyY = { event = "JoyY", scale = 0.992 }
+CamX = { event = "CamX", scale = 0.992 }
+CamY = { event = "CamY", scale = 0.992 }

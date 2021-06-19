@@ -1,0 +1,9 @@
+name = "Thrustmaster Flightstick"
+type = "flight"
+
+[remap]
+# Trigger = "ActionA"
+# Thumb = "ActionV"
+# Thumb2 = "ActionB"
+# Top = "ActionH"
+JoyZ = { event = "Throttle", min = 0, max = -1 }

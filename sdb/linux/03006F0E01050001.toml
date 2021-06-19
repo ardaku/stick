@@ -1,0 +1,14 @@
+name = "PDP Wired Xbox 360 Gamepad"
+type = "xbox"
+
+[remap]
+HatUp = "Up"
+HatDown = "Down"
+HatLeft = "Left"
+HatRight = "Right"
+ActionV = "ActionH"
+ActionH = "ActionV"
+TriggerL = {}
+TriggerR = {}
+JoyZ = { event = "TriggerL", deadzone = 0.07 }
+CamZ = { event = "TriggerR", deadzone = 0.07 }

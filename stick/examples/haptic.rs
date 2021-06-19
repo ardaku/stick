@@ -2,7 +2,7 @@
 
 use pasts::Loop;
 use std::task::Poll::{self, Pending, Ready};
-use stick::{Controller, Event, Listener, Remap};
+use stick::{Controller, Event, Listener};
 
 type Exit = usize;
 
@@ -57,7 +57,7 @@ impl State {
 
 async fn event_loop() {
     let mut state = State {
-        listener: Listener::new(Remap::new()),
+        listener: Listener::default(),
         controllers: Vec::new(),
         rumble: (0.0, 0.0),
     };

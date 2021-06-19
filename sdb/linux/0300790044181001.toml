@@ -1,0 +1,26 @@
+name = "GameCube Controller - Mayflash Adapter"
+type = "nintendo"
+
+[remap]
+HatUp = "Up"
+HatDown = "Down"
+HatLeft = "Left"
+HatRight = "Right"
+Trigger = "ActionH"
+Thumb = "ActionA"
+Thumb2 = "ActionB"
+Top = "ActionV"
+Top2 = {} # "TriggerL" duplicate
+Pinky = {} # "TriggerR" duplicate
+1 = "BumperR"
+3 = "MenuR"
+7 = "Up"
+8 = "Right"
+9 = "Down"
+10 = "Left"
+JoyX = { event = "JoyX", scale = 0.67 }
+JoyY = { event = "JoyY", scale = 0.67 }
+JoyZ = { event = "CamY", scale = 0.67 }
+CamX = { event = "TriggerL", deadzone = 0.125 }
+CamY = { event = "TriggerR", deadzone = 0.125 }
+CamZ = { event = "CamX", scale = 0.67 }
