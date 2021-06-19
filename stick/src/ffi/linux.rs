@@ -9,480 +9,257 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-use crate::Event;
+use crate::{Event, Remap};
 use smelling_salts::{Device, Watcher};
+use std::cmp::Ordering;
 use std::convert::TryInto;
 use std::fs::read_dir;
 use std::future::Future;
 use std::mem::{size_of, MaybeUninit};
-use std::num::FpCategory;
 use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
 use std::os::unix::io::RawFd;
 use std::pin::Pin;
-use std::str;
 use std::task::{Context, Poll};
 
-// This input offset when subtracted, gives a platform-agnostic button ID.
-// Since Stick only looks for gamepads and joysticks, button IDs below this
-// number shouldn't occur.
-const LINUX_SPECIFIC_BTN_OFFSET: c_ushort = 0x120;
+// Event codes taken from
+// https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
 
-/// State of a hat or dpad in order to remove duplicated events, because
-/// sometimes evdev produces both an axis and button event for hats and dpads.
-#[derive(Default)]
-struct CtlrStateHat {
-    up: bool,
-    down: bool,
-    left: bool,
-    right: bool,
+// Convert Linux BTN press to stick Event.
+fn linux_btn_to_stick_event(btn: c_ushort, pushed: bool) -> Option<Event> {
+    Some(match btn {
+        0x120 /* BTN_TRIGGER */ => Event::Trigger(pushed),
+        0x121 /* BTN_THUMB */ => {
+            eprintln!("FIXME: BTN_THUMB - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+        0x122 /* BTN_THUMB2 */ => {
+            eprintln!("FIXME: BTN_THUMB2 - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+        0x123 /* BTN_TOP */ => {
+            eprintln!("FIXME: BTN_TOP - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+        0x124 /* BTN_TOP2 */ => {
+            eprintln!("FIXME: BTN_TOP2 - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+        0x125 /* BTN_PINKIE */ => {
+            eprintln!("FIXME: BTN_PINKIE - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+        0x126 /* BTN_BASE1 */ => Event::Number(0, pushed),
+        0x127 /* BTN_BASE2 */ => Event::Number(1, pushed),
+        0x128 /* BTN_BASE3 */ => Event::Number(2, pushed),
+        0x129 /* BTN_BASE4 */ => Event::Number(3, pushed),
+        0x12A /* BTN_BASE5 */ => Event::Number(4, pushed),
+        0x12B /* BTN_BASE6 */ => Event::Number(5, pushed),
+
+        0x130 /* BTN_A / BTN_SOUTH */ => Event::ActionA(pushed),
+        0x131 /* BTN_B / BTN_EAST */ => Event::ActionB(pushed),
+        0x132 /* BTN_C */ => Event::ActionC(pushed),
+        0x133 /* BTN_X / BTN_NORTH */ => Event::ActionH(pushed),
+        0x134 /* BTN_Y / BTN_WEST */ => Event::ActionV(pushed),
+        0x135 /* BTN_Z */ => Event::ActionD(pushed),
+        0x136 /* BTN_TL */ => Event::BumperL(pushed),
+        0x137 /* BTN_TR */ => Event::BumperR(pushed),
+        0x138 /* BTN_TL2 */ => Event::TriggerL(f64::from(u8::from(pushed))),
+        0x139 /* BTN_TR2 */ => Event::TriggerR(f64::from(u8::from(pushed))),
+        0x13A /* BTN_SELECT */ => Event::MenuL(pushed),
+        0x13B /* BTN_START */ => Event::MenuR(pushed),
+        0x13C /* BTN_MODE */ => Event::Exit(pushed),
+        0x13D /* BTN_THUMBL */ => Event::Joy(pushed),
+        0x13E /* BTN_THUMBR */ => Event::Cam(pushed),
+
+        0x220 /* BTN_DPAD_UP */ => Event::Up(pushed),
+		0x221 /* BTN_DPAD_DOWN */ => Event::Down(pushed),
+ 		0x222 /* BTN_DPAD_LEFT */ => Event::Left(pushed),
+ 		0x223 /* BTN_DPAD_RIGHT */ => Event::Right(pushed),
+
+        _unknown => {
+            eprintln!("Unknown Linux Button {}", _unknown);
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+    })
 }
 
-/// Data associated with the state of the pad.  Used to produce the correct
-/// platform-agnostic events.
-struct CtlrState {
-    // Trigger state
-    trigger_l: f64,
-    trigger_l_held: bool,
-    // Trigger state
-    trigger_r: f64,
-    trigger_r_held: bool,
-    // If last three-way state was negative (1 for each three-way).
-    neg: Vec<Option<bool>>,
-    // If last three-way axis state was negative (1 for each three-way).
-    neg_axis: Vec<Option<bool>>,
-    // If axis is zero (1 for each axis).
-    dead: Vec<bool>,
-    dead_trig: Vec<bool>,
-    //
-    dpad: CtlrStateHat,
-    mic: CtlrStateHat,
-    pov: CtlrStateHat,
-    // Zero point
-    zero: f64,
-    // Normalization (-1.0, 1.0)
-    norm: f64,
-    // Flat value
-    flat: f64,
-    queued: Option<Event>,
+// Convert Linux REL axis to stick Event.
+fn linux_rel_to_stick_event(axis: c_ushort, value: c_int) -> Option<Event> {
+    Some(match axis {
+		0x00 /* REL_X */ => Event::MouseX(value as f64),
+		0x01 /* REL_Y */ => Event::MouseY(value as f64),
+		0x02 /* REL_Z */ => {
+            eprintln!("FIXME: REL_Z - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x03 /* REL_RX */ => {
+            eprintln!("FIXME: REL_RX - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x04 /* REL_RY */ => {
+            eprintln!("FIXME: REL_RY - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x05 /* REL_RZ */ => {
+            eprintln!("FIXME: REL_RZ - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x06 /* REL_HWHEEL */ => {
+            eprintln!("FIXME: REL_HWHEEL - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x07 /* REL_DIAL */ => {
+            eprintln!("FIXME: REL_DIAL - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x08 /* REL_WHEEL */ => {
+            eprintln!("FIXME: REL_WHEEL - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x09 /* REL_MISC */ => {
+            eprintln!("FIXME: REL_MISC - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+        _unknown => {
+            eprintln!("Unknown Linux Axis {}", _unknown);
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+    })
 }
 
-type CtlrDescriptorAxes =
-    (&'static dyn Fn(f64) -> Event, c_ushort, Option<f64>);
-type CtlrDescriptorButtons = (&'static dyn Fn(bool) -> Event, c_ushort);
-type CtlrDescriptorTrigButtons = (&'static dyn Fn(f64) -> Event, c_ushort);
-type CtlrDescriptorTriggers = (
-    &'static dyn Fn(f64) -> Event,
-    c_ushort,
-    Option<c_int>,
-    Option<f64>,
-);
-type CtlrDescriptorThreeWays = (&'static dyn Fn(bool, bool) -> Event, c_ushort);
-type CtlrDescriptorThreeAxes = (&'static dyn Fn(bool, f64) -> Event, c_ushort);
-type CtlrDescriptorWheels = (&'static dyn Fn(f64) -> Event, c_ushort);
-
-/// Describes some hardware joystick mapping
-struct CtlrDescriptor {
-    // Controller name
-    name: &'static str,
-    // Deadzone override
-    deadzone: Option<f64>,
-
-    // (Axis) value = Full range min to max axis
-    axes: &'static [CtlrDescriptorAxes],
-    // (Button) value = Boolean 1 or 0
-    buttons: &'static [CtlrDescriptorButtons],
-    // (Button) value = 0.0f64 or 1.0f64
-    trigbtns: &'static [CtlrDescriptorTrigButtons],
-    // (Axis) value = 0 thru 255
-    triggers: &'static [CtlrDescriptorTriggers],
-    // (Axis) value = -1, 0, or 1
-    three_ways: &'static [CtlrDescriptorThreeWays],
-    // (Axis) value = -1.0f64, 0, or 1.0f64
-    three_axes: &'static [CtlrDescriptorThreeAxes],
-    // (RelativeAxis) value = Full range min to max axis
-    wheels: &'static [CtlrDescriptorWheels],
+// Convert Linux ABS axis to stick Event.
+fn linux_abs_to_stick_event(axis: c_ushort, value: c_int) -> Option<Event> {
+    Some(match axis {
+		0x00 /* ABS_X */ => Event::JoyX(value as f64),
+		0x01 /* ABS_Y */ => Event::JoyY(value as f64),
+		0x02 /* ABS_Z */ => Event::JoyZ(value as f64),
+		0x03 /* ABS_RX */ => Event::CamX(value as f64),
+		0x04 /* ABS_RY */ => Event::CamY(value as f64),
+		0x05 /* ABS_RZ */ => Event::CamZ(value as f64),
+		0x06 /* ABS_THROTTLE */ => Event::Throttle(value as f64),
+		0x07 /* ABS_RUDDER */ => Event::Rudder(value as f64),
+		0x08 /* ABS_WHEEL */ => Event::Wheel(value as f64),
+		0x09 /* ABS_GAS */ => Event::Gas(value as f64),
+		0x0a /* ABS_BRAKE */ => Event::Brake(value as f64),
+		0x10 /* ABS_HAT0X */ => match value.cmp(&0) {
+            Ordering::Greater => Event::HatRight(true),
+            Ordering::Less => Event::HatLeft(true),
+            Ordering::Equal => Event::HatLeft(false)
+        },
+		0x11 /* ABS_HAT0Y */ => match value.cmp(&0) {
+            Ordering::Greater => Event::HatDown(true),
+            Ordering::Less => Event::HatUp(true),
+            Ordering::Equal => Event::HatUp(false)
+        },
+		0x12 /* ABS_HAT1X */ => {
+            eprintln!("FIXME: ABS_HAT1X - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x13 /* ABS_HAT1Y */ => {
+            eprintln!("FIXME: ABS_HAT1Y - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x14 /* ABS_HAT2X */ => {
+            eprintln!("FIXME: ABS_HAT2X - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x15 /* ABS_HAT2Y */ => {
+            eprintln!("FIXME: ABS_HAT2Y - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x16 /* ABS_HAT3X */ => {
+            eprintln!("FIXME: ABS_HAT3X - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x17 /* ABS_HAT3Y */ => {
+            eprintln!("FIXME: ABS_HAT3Y - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x18 /* ABS_PRESSURE */ => {
+            eprintln!("FIXME: ABS_PRESSURE - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x19 /* ABS_DISTANCE */ => {
+            eprintln!("FIXME: ABS_DISTANCE - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x1a /* ABS_TILT_X */ => {
+            eprintln!("FIXME: ABS_TILT_X - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x1b /* ABS_TILT_Y */ => {
+            eprintln!("FIXME: ABS_TILT_Y - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x1c /* ABS_TOOL_WIDTH */ => {
+            eprintln!("FIXME: ABS_TOOL_WIDTH - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x20 /* ABS_VOLUME */ => {
+            eprintln!("FIXME: ABS_VOLUME - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+		0x28 /* ABS_MISC */ => {
+            eprintln!("FIXME: ABS_MISC - Better Event Name");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+        _unknown => {
+            eprintln!("Unknown Linux Axis {}", _unknown);
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            return None;
+        }
+    })
 }
 
-impl CtlrDescriptor {
-    // Convert evdev event into Stick event.
-    fn event_from(&self, ev: EvdevEv, state: &mut CtlrState) -> Option<Event> {
-        fn check_held(value: c_int) -> Option<bool> {
-            match value {
-                0 => Some(false),
-                1 => Some(true),
-                2 => None, // Skip repeat "held" events
-                v => {
-                    eprintln!(
-                        "Unknown Button State {}, report at \
-                        https://github.com/libcala/stick/issues",
-                        v
-                    );
-                    None
-                }
+fn linux_evdev_to_stick_event(e: EvdevEv) -> Option<Event> {
+    match e.ev_type {
+        0x00 /* SYN */ => None, // Ignore Syn Input Events
+        0x01 /* BTN */ => linux_btn_to_stick_event(e.ev_code, e.ev_value != 0),
+        0x02 /* REL */ => linux_rel_to_stick_event(e.ev_code, e.ev_value),
+        0x03 /* ABS */ => linux_abs_to_stick_event(e.ev_code, e.ev_value),
+        0x04 /* MSC */ => {
+            if e.ev_code != 4 { // Ignore Misc./Scan Events
+                let (code, val) = (e.ev_code, e.ev_value);
+                eprintln!("Unknown Linux Misc Code: {}, Value: {}", code, val);
+                eprintln!("Report at https://github.com/libcala/stick/issues");
             }
+            None
         }
-        fn joyaxis_float(x: c_int, max: f64, state: &mut CtlrState) -> f64 {
-            let v = (x as f64 - state.zero) * state.norm / max;
-            if v.abs() <= state.flat {
-                0.0
-            } else {
-                v.min(1.0).max(-1.0)
-            }
-        }
-        fn trigger_float(x: c_int, flat: f64, max: c_int) -> f64 {
-            let v = x as f64 / max as f64;
-            if v.abs() <= flat {
-                0.0
-            } else {
-                v.min(1.0).max(0.0)
-            }
-        }
-
-        let event = match ev.ev_type {
-            0x00 => {
-                // Ignore SYN events.
-                None
-            }
-            0x01 => {
-                // button press / release (key)
-                let mut event = None;
-                let mut unknown = true;
-                let ev_code = ev
-                    .ev_code
-                    .checked_sub(LINUX_SPECIFIC_BTN_OFFSET)
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Out of range ev_code: {}, report at \
-                        https://github.com/libcala/stick/issues",
-                            ev.ev_code
-                        )
-                    });
-                for (new, evcode) in self.buttons {
-                    if ev_code == *evcode {
-                        unknown = false;
-                        let held = if let Some(held) = check_held(ev.ev_value) {
-                            held
-                        } else {
-                            continue;
-                        };
-                        event = Some(new(held));
-                    }
-                }
-                for (new, evcode) in self.trigbtns {
-                    if ev_code == *evcode {
-                        unknown = false;
-                        let held = if let Some(held) = check_held(ev.ev_value) {
-                            held
-                        } else {
-                            continue;
-                        };
-                        event = Some(match new(if held { 1.0 } else { 0.0 }) {
-                            Event::TriggerL(v) => {
-                                state.trigger_l_held = held;
-                                Event::TriggerL(
-                                    if v.classify() == FpCategory::Zero {
-                                        state.trigger_l
-                                    } else {
-                                        v
-                                    },
-                                )
-                            }
-                            Event::TriggerR(v) => {
-                                state.trigger_r_held = held;
-                                Event::TriggerR(
-                                    if v.classify() == FpCategory::Zero {
-                                        state.trigger_r
-                                    } else {
-                                        v
-                                    },
-                                )
-                            }
-                            event => event,
-                        });
-                    }
-                }
-                if unknown && ev.ev_value != 2 {
-                    eprintln!(
-                        "*Evdev* Unknown Button Code: {}, Value: {}, report at \
-                        https://github.com/libcala/stick/issues",
-                        ev_code, ev.ev_value
-                    );
-                    None
-                } else {
-                    event
-                }
-            }
-            0x02 => {
-                // Relative axis movement
-                let mut event = None;
-                let mut unknown = true;
-                for (new, evcode) in self.wheels {
-                    if ev.ev_code == *evcode {
-                        unknown = false;
-                        event =
-                            Some(new(joyaxis_float(ev.ev_value, 1.0, state)));
-                    }
-                }
-                if unknown {
-                    eprintln!(
-                        "*Evdev* Unknown Relative Axis Code: {}, Value: {}, \
-                        report at https://github.com/libcala/stick/issues",
-                        ev.ev_code, ev.ev_value
-                    );
-                }
-                event
-            }
-            0x03 => {
-                let mut event = None;
-                let mut unknown = true;
-                // Absolute axis movement
-                for (i, (new, evcode, max)) in self.axes.iter().enumerate() {
-                    if ev.ev_code == *evcode {
-                        unknown = false;
-                        let v = joyaxis_float(
-                            ev.ev_value,
-                            max.unwrap_or(1.0),
-                            state,
-                        );
-                        let is_zero = v.classify() == FpCategory::Zero;
-                        if !(is_zero && state.dead[i]) {
-                            state.dead[i] = is_zero;
-                            event = Some(new(v));
-                        }
-                    }
-                }
-                for (i, (new, evcode, max, dead)) in
-                    self.triggers.iter().enumerate()
-                {
-                    if ev.ev_code == *evcode {
-                        unknown = false;
-                        let v = trigger_float(
-                            ev.ev_value,
-                            dead.unwrap_or(0.0),
-                            max.unwrap_or(255),
-                        );
-                        let is_zero = v.classify() == FpCategory::Zero;
-                        if !(is_zero && state.dead_trig[i]) {
-                            state.dead_trig[i] = is_zero;
-                            match new(v) {
-                                Event::TriggerL(v) => {
-                                    state.trigger_l = v;
-                                    if !state.trigger_l_held {
-                                        event = Some(Event::TriggerL(v));
-                                    }
-                                }
-                                Event::TriggerR(v) => {
-                                    state.trigger_r = v;
-                                    if !state.trigger_r_held {
-                                        event = Some(Event::TriggerR(v));
-                                    }
-                                }
-                                ev => event = Some(ev),
-                            }
-                        }
-                    }
-                }
-                for (i, (new, evcode)) in self.three_ways.iter().enumerate() {
-                    if ev.ev_code == *evcode {
-                        unknown = false;
-                        event = match ev.ev_value {
-                            0 => state.neg[i].take().map(|old| new(old, false)),
-                            v if v > 0 => {
-                                let old = state.neg[i];
-                                state.neg[i] = Some(false);
-                                state.queued = Some(new(false, true));
-                                if old == Some(true) {
-                                    Some(new(true, false))
-                                } else {
-                                    state.queued.take()
-                                }
-                            }
-                            _ => {
-                                let old = state.neg[i];
-                                state.neg[i] = Some(true);
-                                state.queued = Some(new(true, true));
-                                if old == Some(false) {
-                                    Some(new(false, false))
-                                } else {
-                                    state.queued.take()
-                                }
-                            }
-                        };
-                    }
-                }
-                for (i, (new, evcode)) in self.three_axes.iter().enumerate() {
-                    if ev.ev_code == *evcode {
-                        unknown = false;
-                        event = match ev.ev_value {
-                            0 => state.neg_axis[i]
-                                .take()
-                                .map(|old| new(old, 0.0)),
-                            v if v > 0 => {
-                                let old = state.neg_axis[i];
-                                state.neg_axis[i] = Some(false);
-                                state.queued = Some(new(false, 1.0));
-                                if old == Some(true) {
-                                    Some(new(true, 0.0))
-                                } else {
-                                    state.queued.take()
-                                }
-                            }
-                            _ => {
-                                let old = state.neg_axis[i];
-                                state.neg_axis[i] = Some(true);
-                                state.queued = Some(new(true, 1.0));
-                                if old == Some(false) {
-                                    Some(new(false, 0.0))
-                                } else {
-                                    state.queued.take()
-                                }
-                            }
-                        };
-                    }
-                }
-                if unknown {
-                    eprintln!(
-                        "*Evdev* Unknown Absolute Axis Code: {}, Value: {}, \
-                        report at https://github.com/libcala/stick/issues",
-                        ev.ev_code, ev.ev_value
-                    );
-                }
-                event
-            }
-            0x04 => {
-                if ev.ev_code != /* scan */ 4 {
-                    eprintln!(
-                        "*Evdev* Unknown Misc Code: {}, Value: {}, report \
-                        at https://github.com/libcala/stick/issues",
-                        ev.ev_code, ev.ev_value
-                    );
-                }
-                None
-            }
-            0x15 => {
-                // Force Feedback echo, ignore
-                None
-            }
-            u => {
-                eprintln!(
-                    "*Evdev* Unknown Event: {}, Code: {}, Value: {}, \
-                    report at https://github.com/libcala/stick/issues.",
-                    u, ev.ev_code, ev.ev_value
-                );
-                None
-            }
-        };
-
-        // Remove duplicated events
-        match event {
-            Some(Event::DpadUp(p)) => {
-                if p == state.dpad.up {
-                    None
-                } else {
-                    state.dpad.up = p;
-                    event
-                }
-            }
-            Some(Event::DpadDown(p)) => {
-                if p == state.dpad.down {
-                    None
-                } else {
-                    state.dpad.down = p;
-                    event
-                }
-            }
-            Some(Event::DpadRight(p)) => {
-                if p == state.dpad.right {
-                    None
-                } else {
-                    state.dpad.right = p;
-                    event
-                }
-            }
-            Some(Event::DpadLeft(p)) => {
-                if p == state.dpad.left {
-                    None
-                } else {
-                    state.dpad.left = p;
-                    event
-                }
-            }
-            Some(Event::PovUp(p)) => {
-                if p == state.pov.up {
-                    None
-                } else {
-                    state.pov.up = p;
-                    event
-                }
-            }
-            Some(Event::PovDown(p)) => {
-                if p == state.pov.down {
-                    None
-                } else {
-                    state.pov.down = p;
-                    event
-                }
-            }
-            Some(Event::PovRight(p)) => {
-                if p == state.pov.right {
-                    None
-                } else {
-                    state.pov.right = p;
-                    event
-                }
-            }
-            Some(Event::PovLeft(p)) => {
-                if p == state.pov.left {
-                    None
-                } else {
-                    state.pov.left = p;
-                    event
-                }
-            }
-            Some(Event::MicUp(p)) => {
-                if p == state.mic.up {
-                    None
-                } else {
-                    state.mic.up = p;
-                    event
-                }
-            }
-            Some(Event::MicDown(p)) => {
-                if p == state.mic.down {
-                    None
-                } else {
-                    state.mic.down = p;
-                    event
-                }
-            }
-            Some(Event::MicRight(p)) => {
-                if p == state.mic.right {
-                    None
-                } else {
-                    state.mic.right = p;
-                    event
-                }
-            }
-            Some(Event::MicLeft(p)) => {
-                if p == state.mic.left {
-                    None
-                } else {
-                    state.mic.left = p;
-                    event
-                }
-            }
-            Some(Event::Nil(_)) => None,
-            event => event,
+        0x15 /* FF */ => None, // Ignore Force Feedback Input Events
+        _unknown => {
+            eprintln!("Unknown Linux Event Type: {}", _unknown);
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+            None
         }
     }
-}
-
-mod gen {
-    #![allow(clippy::if_same_then_else)]
-
-    use super::*;
-
-    include!(concat!(env!("OUT_DIR"), "/database.rs"));
 }
 
 #[repr(C)]
@@ -558,10 +335,11 @@ extern "C" {
 pub(crate) struct Hub {
     device: Device,
     read_dir: Option<Box<std::fs::ReadDir>>,
+    remap: Remap,
 }
 
 impl Hub {
-    pub(super) fn new() -> Self {
+    pub(super) fn new(remap: Remap) -> Self {
         const CLOEXEC: c_int = 0o2000000;
         const NONBLOCK: c_int = 0o0004000;
         const CREATE: c_uint = 0x00000100;
@@ -583,6 +361,8 @@ impl Hub {
             device: Device::new(listen, Watcher::new().input()),
             //
             read_dir: Some(Box::new(read_dir("/dev/input/by-id/").unwrap())),
+            //
+            remap,
         }
     }
 
@@ -591,7 +371,10 @@ impl Hub {
         // do nothing
     }
 
-    fn controller(mut filename: String) -> Poll<crate::Controller> {
+    fn controller(
+        remap: &Remap,
+        mut filename: String,
+    ) -> Poll<crate::Controller> {
         if filename.ends_with("-event-joystick") {
             filename.push('\0');
             let mut timeout = 1024; // Quit after 1024 tries with no access
@@ -609,7 +392,10 @@ impl Hub {
                 }
             };
             if fd != -1 {
-                return Poll::Ready(crate::Controller(Ctlr::new(fd)));
+                return Poll::Ready(crate::Controller::new(
+                    Ctlr::new(fd),
+                    remap,
+                ));
             }
         }
         Poll::Pending
@@ -623,14 +409,16 @@ impl Future for Hub {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Self::Output> {
-        let mut this = self.as_mut();
+        let this = &mut *self.as_mut();
 
         // Read the directory for ctrls if initialization hasn't completed yet.
-        if let Some(ref mut read_dir) = this.read_dir {
+        if let Some(ref mut read_dir) = &mut this.read_dir {
             for dir_entry in read_dir.flatten() {
                 let file = dir_entry.path();
                 let path = file.as_path().to_string_lossy().to_string();
-                if let Poll::Ready(controller) = Self::controller(path) {
+                if let Poll::Ready(controller) =
+                    Self::controller(&this.remap, path)
+                {
                     return Poll::Ready(controller);
                 }
             }
@@ -651,7 +439,8 @@ impl Future for Hub {
             let len = unsafe { strlen(&ev.name[0]) };
             let filename = String::from_utf8_lossy(&ev.name[..len]);
             let path = format!("/dev/input/by-id/{}", filename);
-            if let Poll::Ready(controller) = Self::controller(path) {
+            if let Poll::Ready(controller) = Self::controller(&this.remap, path)
+            {
                 return Poll::Ready(controller);
             }
         }
@@ -675,13 +464,15 @@ pub(crate) struct Ctlr {
     // Async device handle
     device: Device,
     // Hexadecimal controller type ID
-    hardware_id: [u16; 4],
-    // Userspace driver data
-    state: CtlrState,
-    // Remappings
-    desc: &'static CtlrDescriptor,
+    id: [u8; 8],
     // Rumble effect id.
     rumble: i16,
+    /// Signed axis multiplier
+    norm: f64,
+    /// Signed axis zero
+    zero: f64,
+    /// Don't process near 0
+    flat: f64,
 }
 
 impl Ctlr {
@@ -697,14 +488,14 @@ impl Ctlr {
         );
         let a = unsafe { a.assume_init() };
         // Convert raw integers from the linux kernel to endian-independant ids
-        let bustype = a.bustype.to_be();
-        let vendor = a.vendor.to_be();
-        let product = a.product.to_be();
-        let version = a.version.to_be();
-        let hardware_id = [bustype, vendor, product, version];
-
-        // Get the controller's descriptor
-        let desc = gen::ctlr_desc(bustype, vendor, product, version);
+        let bustype = a.bustype.to_be_bytes();
+        let vendor = a.vendor.to_be_bytes();
+        let product = a.product.to_be_bytes();
+        let version = a.version.to_be_bytes();
+        let id = [
+            bustype[0], bustype[1], vendor[0], vendor[1], product[0],
+            product[1], version[0], version[1],
+        ];
 
         // Get the min and max absolute values for axis.
         let mut a = MaybeUninit::<AbsInfo>::uninit();
@@ -715,44 +506,9 @@ impl Ctlr {
         let a = unsafe { a.assume_init() };
         let norm = (a.maximum as f64 - a.minimum as f64) * 0.5;
         let zero = a.minimum as f64 + norm;
-        let flat = if let Some(flat) = desc.deadzone {
-            flat
-        } else {
-            a.flat as f64 / norm
-        };
         // Invert so multiplication can be used instead of division
         let norm = norm.recip();
-
-        // Initialize driver state
-        let state = CtlrState {
-            trigger_l: 0.0,
-            trigger_r: 0.0,
-            trigger_l_held: false,
-            trigger_r_held: false,
-            neg: {
-                let mut neg = vec![];
-                for _ in desc.three_ways {
-                    neg.push(None);
-                }
-                neg
-            },
-            neg_axis: {
-                let mut neg = vec![];
-                for _ in desc.three_axes {
-                    neg.push(None);
-                }
-                neg
-            },
-            dead: vec![true; desc.axes.len()],
-            dead_trig: vec![true; desc.triggers.len()],
-            norm,
-            zero,
-            flat,
-            queued: None,
-            dpad: CtlrStateHat::default(),
-            mic: CtlrStateHat::default(),
-            pov: CtlrStateHat::default(),
-        };
+        let flat = a.flat as f64 * norm;
 
         // Query the controller for haptic support.
         let rumble = joystick_haptic(fd, -1, 0.0, 0.0);
@@ -760,23 +516,20 @@ impl Ctlr {
         let device = Device::new(fd, Watcher::new().input());
         // Return
         Self {
-            hardware_id,
             device,
-            state,
-            desc,
+            id,
             rumble,
+            norm,
+            zero,
+            flat,
         }
     }
 
-    pub(super) fn id(&self) -> [u16; 4] {
-        self.hardware_id
+    pub(super) fn id(&self) -> [u8; 8] {
+        self.id
     }
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
-        if let Some(event) = self.state.queued.take() {
-            return Poll::Ready(event);
-        }
-
         // Read an event.
         let mut ev = MaybeUninit::<EvdevEv>::uninit();
         let ev = {
@@ -803,7 +556,7 @@ impl Ctlr {
         };
 
         // Convert the event.
-        if let Some(event) = self.desc.event_from(ev, &mut self.state) {
+        if let Some(event) = linux_evdev_to_stick_event(ev) {
             Poll::Ready(event)
         } else {
             self.poll(cx)
@@ -819,18 +572,25 @@ impl Ctlr {
         );
         let a = unsafe { a.assume_init() };
         let name = unsafe { std::ffi::CStr::from_ptr(a.as_ptr()) };
-        let name = name.to_string_lossy().to_string();
-        format!("{} ({})", self.desc.name, name)
+        name.to_string_lossy().to_string()
     }
 
     pub(super) fn rumble(&mut self, left: f32, right: f32) {
         if self.rumble >= 0 {
-            joystick_ff(
-                self.device.raw(),
-                self.rumble,
-                left,
-                right,
-            );
+            joystick_ff(self.device.raw(), self.rumble, left, right);
+        }
+    }
+
+    pub(super) fn pressure(&self, input: f64) -> f64 {
+        input * (1.0 / 255.0)
+    }
+
+    pub(super) fn axis(&self, input: f64) -> f64 {
+        let input = (input - self.zero) * self.norm;
+        if input.abs() <= self.flat {
+            0.0
+        } else {
+            input
         }
     }
 }
@@ -942,9 +702,9 @@ fn joystick_ff(fd: RawFd, code: i16, strong: f32, weak: f32) {
     if strong != 0.0 || weak != 0.0 {
         joystick_haptic(fd, code, strong, weak);
     }
-    // 
+    //
     let ev_code = code.try_into().unwrap();
-    
+
     let play = &EvdevEv {
         ev_time: TimeVal {
             tv_sec: 0,
@@ -960,11 +720,9 @@ fn joystick_ff(fd: RawFd, code: i16, strong: f32, weak: f32) {
             != size_of::<EvdevEv>() as isize
         {
             let errno = *__errno_location();
-            if errno != 19 { // 19 = device unplugged, ignore
-                panic!(
-                    "Write exited with {}",
-                    *__errno_location()
-                );
+            if errno != 19 {
+                // 19 = device unplugged, ignore
+                panic!("Write exited with {}", *__errno_location());
             }
         }
     }

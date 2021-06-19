@@ -130,8 +130,6 @@ extern crate lazy_static;
 
 mod ctlr;
 mod event;
-mod listener;
-
 #[cfg_attr(target_arch = "wasm32", path = "ffi/wasm32.rs")]
 #[cfg_attr(
     not(target_arch = "wasm32"),
@@ -157,7 +155,8 @@ mod listener;
 )]
 #[allow(unsafe_code)]
 mod ffi;
+mod listener;
 
-pub use ctlr::Controller;
+pub use ctlr::{Controller, Remap};
 pub use event::Event;
 pub use listener::Listener;

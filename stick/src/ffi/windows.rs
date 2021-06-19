@@ -12,11 +12,13 @@
 
 //! This file's code is based on https://github.com/Lokathor/rusty-xinput
 
+use crate::Event;
+use std::fmt::{self, Debug, Formatter};
 use std::future::Future;
 use std::pin::Pin;
-use std::task::{Context, Poll};
-use crate::Event;
+use std::sync::Arc;
 use std::task::Waker;
+use std::task::{Context, Poll};
 use winapi::shared::guiddef::GUID;
 use winapi::shared::minwindef::{BOOL, BYTE, DWORD, HMODULE, UINT};
 use winapi::shared::ntdef::LPWSTR;
@@ -25,8 +27,6 @@ use winapi::shared::winerror::{
 };
 use winapi::um::libloaderapi::{FreeLibrary, GetProcAddress, LoadLibraryW};
 use winapi::um::xinput::*;
-use std::fmt::{self, Debug, Formatter};
-use std::sync::Arc;
 
 type XInputEnableFunc = unsafe extern "system" fn(BOOL);
 type XInputGetStateFunc =
@@ -727,8 +727,8 @@ impl Ctlr {
         }
     }
 
-    pub(super) fn id(&self) -> [u16; 4] {
-        [0, 0, 0, 0]
+    pub(super) fn id(&self) -> [u8; 8] {
+        [0x20 /*windows*/, 0, 0, 0, 0, 0, 0, 0]
     }
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {

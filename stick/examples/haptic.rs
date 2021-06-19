@@ -2,7 +2,7 @@
 
 use pasts::Loop;
 use std::task::Poll::{self, Pending, Ready};
-use stick::{Controller, Event, Listener};
+use stick::{Controller, Event, Listener, Remap};
 
 type Exit = usize;
 
@@ -34,7 +34,7 @@ impl State {
             Event::Disconnect => {
                 self.controllers.swap_remove(id);
             }
-            Event::Next(true) => return Ready(player),
+            Event::MenuR(true) => return Ready(player),
             Event::ActionA(pressed) => {
                 self.controllers[id].rumble(f32::from(u8::from(pressed)));
             }
@@ -57,7 +57,7 @@ impl State {
 
 async fn event_loop() {
     let mut state = State {
-        listener: Listener::new(),
+        listener: Listener::new(Remap::new()),
         controllers: Vec::new(),
         rumble: (0.0, 0.0),
     };

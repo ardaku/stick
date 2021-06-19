@@ -18,104 +18,118 @@
 /// ## Flightstick
 /// A joystick typically used in flight simulations and robotics:
 ///
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[non_exhaustive]
 pub enum Event {
     /*
-     * Connecting and disconnecting (common to all controllers)
+     * All controllers.
      */
-
-    /*  */
-    /// A new controller has just been plugged in.
-    Connect(Box<crate::Controller>),
     /// Controller unplugged.
     Disconnect,
 
     /*
-     * Events based on the w3 Standard Gamepad (may appear on other gamepads as
-     * well)
+     * Gamepad (W3 Standard Gamepad + extras)
      */
+    /// Exit / Main / Home / Mode
+    Exit(bool),
+    /// Left Menu / Back / Select / Minus / Stop
+    MenuL(bool),
+    /// Righ Menu / Forward / Start / Plus / Play
+    MenuR(bool),
 
-    /* Center buttons */
-    /// Home button (Exit gameplay, usually into a console menu)
-    Home(bool),
-    /// Back / Select / Minus / Stop Button (Escape)
-    Prev(bool),
-    /// Forward / Start / Plus / Play Button (Tab)
-    Next(bool),
-
-    /* Action pad - action button cluster */
-    /// A / 1 / 4 / Circle / Return / Left Click.  Action A (Main action).
+    /// A / 1 / 4 / Circle.  Action A (Primary action).
     ActionA(bool),
-    /// B / 2 / 3 / Cross / Shift.  Action B (Secondary action).
+    /// B / 2 / 3 / Cross.  Action B (Secondary action).
     ActionB(bool),
-    /// C
+    /// C.  Action C (Tertiary action).
     ActionC(bool),
-    /// Y / X / Square / Right Click / H.  Horizontal action.
+
+    /// Y / X / Square.  Action H (Horizontal action).
     ActionH(bool),
-    /// X / Y / Triangle / Space / V.  Vertical action (Topmost action button).
+    /// X / Y / Triangle.  Action V (Vertical action).
     ActionV(bool),
-    /// Numbered or unlabeled programmable action buttons (If unlabelled,
-    /// numbered from left to right, upper to lower)
-    Action(u16, bool),
+    /// Z (in 6-button layout).  Action D.
+    ActionD(bool),
 
-    /* D-PAD */
-    /// D-pad Up
-    DpadUp(bool),
-    /// D-pad Down
-    DpadDown(bool),
-    /// D-pad Left
-    DpadLeft(bool),
-    /// D-pad Right
-    DpadRight(bool),
+    /// D-Pad Up
+    Up(bool),
+    /// D-Pad Down
+    Down(bool),
+    /// D-Pad Right
+    Right(bool),
+    /// D-Pad Left
+    Left(bool),
 
-    /* Bumper Triggers (LZ, RZ - 2)  */
-    /// Range(0.0, 1.0) - Left Bumper Trigger (far button if no trigger) -
-    /// "Sneak" (Ctrl)
-    TriggerL(f64),
-    /// Range(0.0, 1.0) - Right Bumper Trigger (far button if no trigger) -
-    /// "Precision Action" (Alt)
-    TriggerR(f64),
-
-    /* Bumper Buttons (L, R, Z - 1) */
-    /// Left shoulder button (near button if no trigger) - "Inventory" (E)
+    /// Left shoulder button (near button if no trigger)
     BumperL(bool),
-    /// Right shoulder button (near button if no trigger) - "Use" (R)
+    /// Right shoulder button (near button if no trigger)
     BumperR(bool),
 
-    /* Joystick */
-    /// Range(-1.0, 1.0) - Main stick horizontal axis (A / D)
+    /// Left Bumper Trigger (far button if no trigger) - between 0.0 and 1.0
+    TriggerL(f64),
+    /// Right Bumper Trigger (far button if no trigger) - between 0.0 and 1.0
+    TriggerR(f64),
+
+    /// Thumb Push Button On Main / Left Joystick
+    Joy(bool),
+    /// Thumb Push Button On Camera / Right Joystick
+    Cam(bool),
+
+    /// Main stick horizontal axis (A / D) - between -1.0 and 1.0
     JoyX(f64),
-    /// Range(-1.0, 1.0) - Main stick vertical / depth axis (W / S)
+    /// Main stick vertical / depth axis (W / S) - between -1.0 and 1.0
     JoyY(f64),
-    /// Range(-1.0, 1.0) - Main stick rotation / yaw axis
+    /// Main stick rotation / yaw axis - between -1.0 and 1.0
     JoyZ(f64),
-    /// Range(-1.0, 1.0) - Secondary stick X axis (Mouse X Position)
+
+    /// Secondary stick X axis (Mouse X Position) - between -1.0 and 1.0
     CamX(f64),
-    /// Range(-1.0, 1.0) - Secondary stick Y axis (Mouse Y Position)
+    /// Secondary stick Y axis (Mouse Y Position) - between -1.0 and 1.0
     CamY(f64),
-    /// Range(-1.0, 1.0) - Secondary stick Z axis
+    /// Secondary stick Z axis - between -1.0 and 1.0
     CamZ(f64),
 
-    /* Joystick Buttons */
-    /// Left Joystick Button (Middle Click)
-    JoyPush(bool),
-    /// Right Joystick Button (F)
-    CamPush(bool),
-
-    /*
-     * Special XBox/Steam Controllers Extra Buttons
-     */
-
-    /* Paddles */
-    /// Back right grip button (upper if there are two)
-    PaddleRight(bool),
     /// Back left grip button (upper if there are two)
     PaddleLeft(bool),
-    /// Back lower right grip button
-    PaddleRightPinky(bool),
-    /// Back lower left grip button
-    PaddleLeftPinky(bool),
+    /// Back right grip button (upper if there are two)
+    PaddleRight(bool),
+    /// Left Pinky Button / Back lower right grip button
+    PinkyLeft(bool),
+    /// Right Pinky Button / Back lower left grip button
+    PinkyRight(bool),
+
+    /*
+     * Joystick (For cars and boats)
+     */
+    /// Numbered or unlabeled programmable action buttons (If unlabelled,
+    /// prefer numbering from left to right, upper to lower)
+    Number(i8, bool),
+
+    /// Steering wheel
+    Wheel(f64),
+    /// Brake pedal
+    Brake(f64),
+    /// Gas pedal
+    Gas(f64),
+    /// Ship rudder
+    Rudder(f64),
+
+    /*
+     * Flightstick
+     */
+    /// Flightstick trigger button on the back.
+    Trigger(bool),
+
+    /// Flightstick Hat Up
+    HatUp(bool),
+    /// Flightstick Hat Down
+    HatDown(bool),
+    /// Flightstick Hat Left
+    HatLeft(bool),
+    /// Flightstick Hat Right
+    HatRight(bool),
+
+    /* OLD Events: FIXME Move Up */
 
     /*
      * Realistic flight simulation stick extra buttons, switches, etc.
@@ -283,37 +297,47 @@ impl std::fmt::Display for Event {
         };
 
         match self {
-            Connect(_) => write!(f, "Controller Connected"),
             Disconnect => write!(f, "Controller Disconnected"),
+            Exit(p) => write!(f, "Exit {}", pushed(p)),
+            MenuL(p) => write!(f, "MenuL {}", pushed(p)),
+            MenuR(p) => write!(f, "MenuR {}", pushed(p)),
             ActionA(p) => write!(f, "ActionA {}", pushed(p)),
             ActionB(p) => write!(f, "ActionB {}", pushed(p)),
             ActionC(p) => write!(f, "ActionC {}", pushed(p)),
             ActionH(p) => write!(f, "ActionH {}", pushed(p)),
             ActionV(p) => write!(f, "ActionV {}", pushed(p)),
-            DpadUp(p) => write!(f, "DpadUp {}", pushed(p)),
-            DpadDown(p) => write!(f, "DpadDown {}", pushed(p)),
-            DpadLeft(p) => write!(f, "DpadLeft {}", pushed(p)),
-            DpadRight(p) => write!(f, "DpadRight {}", pushed(p)),
-            Prev(p) => write!(f, "Prev {}", pushed(p)),
-            Next(p) => write!(f, "Next {}", pushed(p)),
+            ActionD(p) => write!(f, "ActionD {}", pushed(p)),
+            Up(p) => write!(f, "Up {}", pushed(p)),
+            Down(p) => write!(f, "Down {}", pushed(p)),
+            Right(p) => write!(f, "Right {}", pushed(p)),
+            Left(p) => write!(f, "Left {}", pushed(p)),
             BumperL(p) => write!(f, "BumperL {}", pushed(p)),
             BumperR(p) => write!(f, "BumperR {}", pushed(p)),
             TriggerL(v) => write!(f, "TriggerL {}", v),
             TriggerR(v) => write!(f, "TriggerR {}", v),
+            Joy(p) => write!(f, "Joy {}", pushed(p)),
+            Cam(p) => write!(f, "Cam {}", pushed(p)),
             JoyX(v) => write!(f, "JoyX {}", v),
             JoyY(v) => write!(f, "JoyY {}", v),
             JoyZ(v) => write!(f, "JoyZ {}", v),
             CamX(v) => write!(f, "CamX {}", v),
             CamY(v) => write!(f, "CamY {}", v),
             CamZ(v) => write!(f, "CamZ {}", v),
-            JoyPush(p) => write!(f, "JoyPush {}", pushed(p)),
-            CamPush(p) => write!(f, "CamPush {}", pushed(p)),
-            PaddleRight(p) => write!(f, "PaddleRight {}", pushed(p)),
             PaddleLeft(p) => write!(f, "PaddleLeft {}", pushed(p)),
-            PaddleRightPinky(p) => write!(f, "PaddleRightPinky {}", pushed(p)),
-            PaddleLeftPinky(p) => write!(f, "PaddleLeftPinky {}", pushed(p)),
-            Home(p) => write!(f, "Home {}", pushed(p)),
-            Action(l, p) => write!(f, "Action{} {}", l, pushed(p)),
+            PaddleRight(p) => write!(f, "PaddleRight {}", pushed(p)),
+            PinkyLeft(p) => write!(f, "PinkyLeft {}", pushed(p)),
+            PinkyRight(p) => write!(f, "PinkyRight {}", pushed(p)),
+            Number(n, p) => write!(f, "Number({}) {}", n, pushed(p)),
+            Wheel(v) => write!(f, "Wheel {}", v),
+            Brake(v) => write!(f, "Brake {}", v),
+            Gas(v) => write!(f, "Gas {}", v),
+            Rudder(v) => write!(f, "Rudder {}", v),
+            Trigger(p) => write!(f, "Trigger {}", pushed(p)),
+            HatUp(p) => write!(f, "HatUp {}", pushed(p)),
+            HatDown(p) => write!(f, "HatDown {}", pushed(p)),
+            HatLeft(p) => write!(f, "HatLeft {}", pushed(p)),
+            HatRight(p) => write!(f, "HatRight {}", pushed(p)),
+
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),
             LandingGearSilence(p) => {
                 write!(f, "LandingGearSilence {}", pushed(p))

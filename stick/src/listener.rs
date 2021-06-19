@@ -9,6 +9,7 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
+use crate::Remap;
 use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
@@ -26,14 +27,14 @@ impl Debug for Listener {
 
 impl Default for Listener {
     fn default() -> Self {
-        Self::new()
+        Self::new(Remap::default())
     }
 }
 
 impl Listener {
     /// Create a new listener for when new controllers are plugged in.
-    pub fn new() -> Self {
-        Self(crate::ffi::Hub::new())
+    pub fn new(remap: Remap) -> Self {
+        Self(crate::ffi::Hub::new(remap))
     }
 }
 
