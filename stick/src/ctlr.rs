@@ -198,7 +198,7 @@ impl Controller {
             .0
             .get(&raw.id())
             .cloned()
-            .unwrap(); //_or_default(); // FIXME
+            .unwrap_or_default();
         Self {
             remap,
             raw,
@@ -252,7 +252,7 @@ impl Controller {
             }
         } else {
             self.btns ^= b;
-            self.remap(f(p))
+            Poll::Ready(f(p))
         }
     }
 
@@ -262,7 +262,7 @@ impl Controller {
             Poll::Pending
         } else {
             self.btns ^= b;
-            self.remap(f(p))
+            Poll::Ready(f(p))
         }
     }
 
@@ -277,7 +277,7 @@ impl Controller {
             Poll::Pending
         } else {
             self.nums ^= b;
-            self.remap(f(n, p))
+            Poll::Ready(f(n, p))
         }
     }
 
@@ -295,7 +295,7 @@ impl Controller {
             Poll::Pending
         } else {
             self.axis[axis] = v;
-            self.remap(f(v))
+            Poll::Ready(f(v))
         }
     }
 
@@ -313,23 +313,25 @@ impl Controller {
             Poll::Pending
         } else {
             self.axis[axis] = v;
-            self.remap(f(v))
+            Poll::Ready(f(v))
         }
     }
 
-    fn remap(&self, in_event: Event) -> Poll<Event> {
-        if let Some(new_id) = self.remap.maps.get(&in_event.to_id().0) {
-            Poll::Ready(in_event.remap(new_id.out))
+    fn process(&mut self, event: Event) -> Poll<Event> {
+        // Do remapping step first.
+        let ev = event.to_id().0;
+        let event = if let Some(new_id) = self.remap.maps.get(&ev) {
+            let event = event.remap(new_id.out);
+            if matches!(event, Disconnect) {
+                return Poll::Pending;
+            }
+            event
         } else {
-            Poll::Ready(in_event)
-        }
-    }
-
-    fn process(&mut self, in_event: Event) -> Poll<Event> {
-        let ev = in_event.to_id().0;
-
+            event
+        };
+        // 
         use Event::*;
-        match in_event {
+        match event {
             Disconnect => Poll::Ready(Disconnect),
             Exit(p) => self.button(Btn::Exit, Exit, p),
             MenuL(p) => self.button(Btn::MenuL, MenuL, p),

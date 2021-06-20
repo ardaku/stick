@@ -21,6 +21,6 @@ Pinky = {} # "TriggerR" duplicate
 JoyX = { event = "JoyX", scale = 0.67 }
 JoyY = { event = "JoyY", scale = 0.67 }
 JoyZ = { event = "CamY", scale = 0.67 }
-CamX = { event = "TriggerL", deadzone = 0.125, unsigned = 255 }
-CamY = { event = "TriggerR", deadzone = 0.125, unsigned = 255 }
+CamX = { event = "TriggerL", deadzone = 0.125 }
+CamY = { event = "TriggerR", deadzone = 0.125 }
 CamZ = { event = "CamX", scale = 0.67 }
