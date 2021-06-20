@@ -6,4 +6,4 @@ type = "flight"
 # Thumb = "ActionV"
 # Thumb2 = "ActionB"
 # Top = "ActionH"
-JoyZ = { event = "Throttle", min = 0, max = -1 }
+JoyZ = "Throttle"

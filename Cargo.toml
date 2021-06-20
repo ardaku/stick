@@ -13,8 +13,6 @@
 members = [
     # The Stick Crate
     "stick",
-    # Format The Stick Database
-    "fmt",
     # Attempt To Grab and Convert SDL Game Controller Mappings To Stick Mappings
     "map",
     #

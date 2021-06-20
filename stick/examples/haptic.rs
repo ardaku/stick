@@ -15,12 +15,9 @@ struct State {
 impl State {
     fn connect(&mut self, controller: Controller) -> Poll<Exit> {
         println!(
-            "Connected p{}, id: {:04X}_{:04X}_{:04X}_{:04X}, name: {}",
+            "Connected p{}, id: {:016X}, name: {}",
             self.controllers.len() + 1,
-            controller.id()[0],
-            controller.id()[1],
-            controller.id()[2],
-            controller.id()[3],
+            controller.id(),
             controller.name(),
         );
         self.controllers.push(controller);

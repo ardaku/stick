@@ -86,45 +86,45 @@ fn linux_btn_to_stick_event(btn: c_ushort, pushed: bool) -> Option<Event> {
  		0x223 /* BTN_DPAD_RIGHT */ => Event::Right(pushed),
 
         0x2C0 /* BTN_TRIGGER_HAPPY1 */ => Event::Number(11, pushed),
-        0x2c1 /* BTN_TRIGGER_HAPPY2 */ => Event::Number(12, pushed),
-        0x2c2 /* BTN_TRIGGER_HAPPY3 */ => Event::Number(13, pushed),
-        0x2c3 /* BTN_TRIGGER_HAPPY4 */ => Event::Number(14, pushed),
-        0x2c4 /* BTN_TRIGGER_HAPPY5 */ => Event::Number(15, pushed),
-        0x2c5 /* BTN_TRIGGER_HAPPY6 */ => Event::Number(16, pushed),
-        0x2c6 /* BTN_TRIGGER_HAPPY7 */ => Event::Number(17, pushed),
-        0x2c7 /* BTN_TRIGGER_HAPPY8 */ => Event::Number(18, pushed),
-        0x2c8 /* BTN_TRIGGER_HAPPY9 */ => Event::Number(19, pushed),
-        0x2c9 /* BTN_TRIGGER_HAPPY10 */ => Event::Number(20, pushed),
-        0x2ca /* BTN_TRIGGER_HAPPY11 */ => Event::Number(21, pushed),
-        0x2cb /* BTN_TRIGGER_HAPPY12 */ => Event::Number(22, pushed),
-        0x2cc /* BTN_TRIGGER_HAPPY13 */ => Event::Number(23, pushed),
-        0x2cd /* BTN_TRIGGER_HAPPY14 */ => Event::Number(24, pushed),
-        0x2ce /* BTN_TRIGGER_HAPPY15 */ => Event::Number(25, pushed),
-        0x2cf /* BTN_TRIGGER_HAPPY16 */ => Event::Number(26, pushed),
-        0x2d0 /* BTN_TRIGGER_HAPPY17 */ => Event::Number(27, pushed),
-        0x2d1 /* BTN_TRIGGER_HAPPY18 */ => Event::Number(28, pushed),
-        0x2d2 /* BTN_TRIGGER_HAPPY19 */ => Event::Number(29, pushed),
-        0x2d3 /* BTN_TRIGGER_HAPPY20 */ => Event::Number(30, pushed),
-        0x2d4 /* BTN_TRIGGER_HAPPY21 */ => Event::Number(31, pushed),
-        0x2d5 /* BTN_TRIGGER_HAPPY22 */ => Event::Number(32, pushed),
-        0x2d6 /* BTN_TRIGGER_HAPPY23 */ => Event::Number(33, pushed),
-        0x2d7 /* BTN_TRIGGER_HAPPY24 */ => Event::Number(34, pushed),
-        0x2d8 /* BTN_TRIGGER_HAPPY25 */ => Event::Number(35, pushed),
-        0x2d9 /* BTN_TRIGGER_HAPPY26 */ => Event::Number(36, pushed),
-        0x2da /* BTN_TRIGGER_HAPPY27 */ => Event::Number(37, pushed),
-        0x2db /* BTN_TRIGGER_HAPPY28 */ => Event::Number(38, pushed),
-        0x2dc /* BTN_TRIGGER_HAPPY29 */ => Event::Number(39, pushed),
-        0x2dd /* BTN_TRIGGER_HAPPY30 */ => Event::Number(40, pushed),
-        0x2de /* BTN_TRIGGER_HAPPY31 */ => Event::Number(41, pushed),
-        0x2df /* BTN_TRIGGER_HAPPY32 */ => Event::Number(42, pushed),
-        0x2e0 /* BTN_TRIGGER_HAPPY33 */ => Event::Number(43, pushed),
-        0x2e1 /* BTN_TRIGGER_HAPPY34 */ => Event::Number(44, pushed),
-        0x2e2 /* BTN_TRIGGER_HAPPY35 */ => Event::Number(45, pushed),
-        0x2e3 /* BTN_TRIGGER_HAPPY36 */ => Event::Number(46, pushed),
-        0x2e4 /* BTN_TRIGGER_HAPPY37 */ => Event::Number(47, pushed),
-        0x2e5 /* BTN_TRIGGER_HAPPY38 */ => Event::Number(48, pushed),
-        0x2e6 /* BTN_TRIGGER_HAPPY39 */ => Event::Number(49, pushed),
-        0x2e7 /* BTN_TRIGGER_HAPPY40 */ => Event::Number(50, pushed),
+        0x2C1 /* BTN_TRIGGER_HAPPY2 */ => Event::Number(12, pushed),
+        0x2C2 /* BTN_TRIGGER_HAPPY3 */ => Event::Number(13, pushed),
+        0x2C3 /* BTN_TRIGGER_HAPPY4 */ => Event::Number(14, pushed),
+        0x2C4 /* BTN_TRIGGER_HAPPY5 */ => Event::Number(15, pushed),
+        0x2C5 /* BTN_TRIGGER_HAPPY6 */ => Event::Number(16, pushed),
+        0x2C6 /* BTN_TRIGGER_HAPPY7 */ => Event::Number(17, pushed),
+        0x2C7 /* BTN_TRIGGER_HAPPY8 */ => Event::Number(18, pushed),
+        0x2C8 /* BTN_TRIGGER_HAPPY9 */ => Event::Number(19, pushed),
+        0x2C9 /* BTN_TRIGGER_HAPPY10 */ => Event::Number(20, pushed),
+        0x2CA /* BTN_TRIGGER_HAPPY11 */ => Event::Number(21, pushed),
+        0x2CB /* BTN_TRIGGER_HAPPY12 */ => Event::Number(22, pushed),
+        0x2CC /* BTN_TRIGGER_HAPPY13 */ => Event::Number(23, pushed),
+        0x2CD /* BTN_TRIGGER_HAPPY14 */ => Event::Number(24, pushed),
+        0x2CE /* BTN_TRIGGER_HAPPY15 */ => Event::Number(25, pushed),
+        0x2CF /* BTN_TRIGGER_HAPPY16 */ => Event::Number(26, pushed),
+        0x2D0 /* BTN_TRIGGER_HAPPY17 */ => Event::Number(27, pushed),
+        0x2D1 /* BTN_TRIGGER_HAPPY18 */ => Event::Number(28, pushed),
+        0x2D2 /* BTN_TRIGGER_HAPPY19 */ => Event::Number(29, pushed),
+        0x2D3 /* BTN_TRIGGER_HAPPY20 */ => Event::Number(30, pushed),
+        0x2D4 /* BTN_TRIGGER_HAPPY21 */ => Event::Number(31, pushed),
+        0x2D5 /* BTN_TRIGGER_HAPPY22 */ => Event::Number(32, pushed),
+        0x2D6 /* BTN_TRIGGER_HAPPY23 */ => Event::Number(33, pushed),
+        0x2D7 /* BTN_TRIGGER_HAPPY24 */ => Event::Number(34, pushed),
+        0x2D8 /* BTN_TRIGGER_HAPPY25 */ => Event::Number(35, pushed),
+        0x2D9 /* BTN_TRIGGER_HAPPY26 */ => Event::Number(36, pushed),
+        0x2DA /* BTN_TRIGGER_HAPPY27 */ => Event::Number(37, pushed),
+        0x2DB /* BTN_TRIGGER_HAPPY28 */ => Event::Number(38, pushed),
+        0x2DC /* BTN_TRIGGER_HAPPY29 */ => Event::Number(39, pushed),
+        0x2DD /* BTN_TRIGGER_HAPPY30 */ => Event::Number(40, pushed),
+        0x2DE /* BTN_TRIGGER_HAPPY31 */ => Event::Number(41, pushed),
+        0x2DF /* BTN_TRIGGER_HAPPY32 */ => Event::Number(42, pushed),
+        0x2E0 /* BTN_TRIGGER_HAPPY33 */ => Event::Number(43, pushed),
+        0x2E1 /* BTN_TRIGGER_HAPPY34 */ => Event::Number(44, pushed),
+        0x2E2 /* BTN_TRIGGER_HAPPY35 */ => Event::Number(45, pushed),
+        0x2E3 /* BTN_TRIGGER_HAPPY36 */ => Event::Number(46, pushed),
+        0x2E4 /* BTN_TRIGGER_HAPPY37 */ => Event::Number(47, pushed),
+        0x2E5 /* BTN_TRIGGER_HAPPY38 */ => Event::Number(48, pushed),
+        0x2E6 /* BTN_TRIGGER_HAPPY39 */ => Event::Number(49, pushed),
+        0x2E7 /* BTN_TRIGGER_HAPPY40 */ => Event::Number(50, pushed),
 
         _unknown => {
             eprintln!("Unknown Linux Button {}", _unknown);
@@ -326,15 +326,6 @@ struct TimeVal {
 }
 
 #[repr(C)]
-struct InputId {
-    // struct input_id, from C.
-    bustype: u16,
-    vendor: u16,
-    product: u16,
-    version: u16,
-}
-
-#[repr(C)]
 struct EvdevEv {
     // struct input_event, from C.
     ev_time: TimeVal,
@@ -509,7 +500,7 @@ pub(crate) struct Ctlr {
     // Async device handle
     device: Device,
     // Hexadecimal controller type ID
-    id: [u8; 8],
+    id: u64,
     // Rumble effect id.
     rumble: i16,
     /// Signed axis multiplier
@@ -526,21 +517,12 @@ impl Ctlr {
         assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
 
         // Get the hardware id of this controller.
-        let mut a = MaybeUninit::<InputId>::uninit();
+        let mut id = MaybeUninit::<u64>::uninit();
         assert_ne!(
-            unsafe { ioctl(fd, 0x_8008_4502, a.as_mut_ptr().cast()) },
+            unsafe { ioctl(fd, 0x_8008_4502, id.as_mut_ptr().cast()) },
             -1
         );
-        let a = unsafe { a.assume_init() };
-        // Convert raw integers from the linux kernel to endian-independant ids
-        let bustype = a.bustype.to_be_bytes();
-        let vendor = a.vendor.to_be_bytes();
-        let product = a.product.to_be_bytes();
-        let version = a.version.to_be_bytes();
-        let id = [
-            bustype[0], bustype[1], vendor[0], vendor[1], product[0],
-            product[1], version[0], version[1],
-        ];
+        let id = unsafe { id.assume_init() }.to_be();
 
         // Get the min and max absolute values for axis.
         let mut a = MaybeUninit::<AbsInfo>::uninit();
@@ -570,7 +552,7 @@ impl Ctlr {
         }
     }
 
-    pub(super) fn id(&self) -> [u8; 8] {
+    pub(super) fn id(&self) -> u64 {
         self.id
     }
 

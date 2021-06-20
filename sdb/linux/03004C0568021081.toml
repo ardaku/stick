@@ -8,5 +8,5 @@ ActionH = "ActionV"
 ActionV = "ActionH"
 TriggerL = {}
 TriggerR = {}
-JoyZ = "TriggerL"
-CamZ = "TriggerR"
+JoyZ = { event = "TriggerL", unsigned = 255 }
+CamZ = { event = "TriggerR", unsigned = 255 }

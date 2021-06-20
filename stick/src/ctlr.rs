@@ -10,11 +10,11 @@
 // modified, or distributed except according to those terms.
 
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
+use std::rc::Rc;
 
 use crate::Event;
 
@@ -65,76 +65,106 @@ enum Axs {
     Count = 12,
 }
 
-#[derive(Clone, Debug)]
-struct Remapping {
-    /// Deadzone for axis
+#[derive(Debug)]
+struct Map {
     deadzone: f64,
-    /// Input to Output ID Mapping
-    maps: HashMap<u16, u16>,
+    scale: f64,
+    unsigned: u16,
+    out: u8,
 }
 
-impl Default for Remapping {
+#[derive(Debug)]
+struct Info {
+    name: String,
+    maps: HashMap<u8, Map>,
+    type_: char,
+}
+
+impl Default for Info {
     fn default() -> Self {
         Self {
-            deadzone: f64::NAN,
+            name: "Unknown".to_string(),
             maps: HashMap::new(),
+            type_: 'w',
         }
     }
 }
 
 /// Controller remapping information
-#[derive(Default, Debug)]
-pub struct Remap(HashMap<u64, Remapping>);
+#[derive(Debug)]
+pub struct Remap(HashMap<u64, Rc<Info>>);
+
+impl Default for Remap {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl Remap {
     /// Create new remapper.
+    #[allow(unused_mut)]
     pub fn new() -> Self {
-        Self::default()
+        let mut remapper = Remap(HashMap::new());
+        #[cfg(all(feature = "sdb", target_os = "linux"))] {
+            let data = include_str!("../remap_linux.sdb");
+            remapper = remapper.load(data).unwrap();
+        }
+        remapper
     }
 
     /// Load a custom re-mapping.
-    pub fn load(mut self, data: &[u8]) -> Option<Remap> {
-        let mut cursor = 0;
-        while cursor < data.len() {
-            // Read 64-Bit Controller ID.
-            let mut id: [u8; 8] =
-                data.get(cursor..cursor + 8)?.try_into().unwrap();
-            cursor += 8;
-            // Unset top 4 bits.
-            let should_add = match id[0] & 0xF0 {
-                0x10 => cfg!(all(not(target_arch = "wasm32"), linux)),
-                0x20 => cfg!(all(not(target_arch = "wasm32"), windows)),
-                0x30 => cfg!(target_arch = "wasm32"),
-                _ => false, // Error
-            };
-            id[0] &= 0x0F;
-            // Read 64-Bit Deadzone
-            let deadzone = f64::from_le_bytes(
-                data.get(cursor..cursor + 8)?.try_into().unwrap(),
-            );
-            cursor += 8;
-            // Read 32-Bit Length
-            let len = u32::from_le_bytes(
-                data.get(cursor..cursor + 4)?.try_into().unwrap(),
-            );
-            cursor += 4;
-            // Go through each mapping.
+    pub fn load(mut self, data: &str) -> Option<Remap> {
+        // Controllers
+        for line in data.lines() {
+            let id = u64::from_str_radix(&line[..16], 16).ok()?;
+            let tab = line.find('\t')?;
+            let name = line[16..tab].to_string();
+            let type_ = line.get(tab + 1..tab + 2)?.chars().next()?;
             let mut maps = HashMap::new();
-            for _ in 0..len {
-                let io: [u8; 4] = data.get(0..4)?.try_into().unwrap();
-                let input = u16::from_le_bytes(io[0..2].try_into().unwrap());
-                let output = u16::from_le_bytes(io[2..4].try_into().unwrap());
-                maps.insert(input, output);
-                cursor += 4;
+
+            // Events
+            for event in line.get(tab + 2..)?.split(';') {
+                let in_ = u8::from_str_radix(event.get(0..2)?, 16).ok()?;
+                let out = u8::from_str_radix(event.get(2..4)?, 16).ok()?;
+
+                // Tweaks
+                let mut cursor = 4;
+                let mut deadzone = f64::NAN;
+                let mut scale = f64::NAN;
+                let mut unsigned: u16 = 0;
+                while let Some(tweak) = event.get(cursor..)?.chars().next() {
+                    match tweak {
+                        'd' => {
+                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
+                            deadzone = event.get(cursor+1..cursor+1+end)?.parse::<f64>().ok()?;
+                            cursor += end + 1;
+                        }
+                        's' => {
+                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
+                            scale = event.get(cursor+1..cursor+1+end)?.parse::<f64>().ok()?.recip();
+                            cursor += end + 1;
+                        }
+                        'u' => {
+                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
+                            unsigned = event.get(cursor+1..cursor+1+end)?.parse::<u16>().ok()?;
+                            cursor += end + 1;
+                        }
+                        _ => return None,
+                    }
+                }
+                
+                maps.insert(in_, Map {
+                    out, deadzone, scale, unsigned, 
+                });
             }
-            // Adjust self
-            if should_add {
-                self.0.insert(
-                    u64::from_ne_bytes(id),
-                    Remapping { deadzone, maps },
-                );
-            }
+
+            self.0.insert(id, Rc::new(Info {
+                name,
+                maps,
+                type_,
+            }));
         }
+
         Some(self)
     }
 }
@@ -142,7 +172,7 @@ impl Remap {
 /// A gamepad, flightstick, or other controller.
 pub struct Controller {
     // Shared remapping.
-    remap: Remapping,
+    remap: Rc<Info>,
     //
     raw: crate::ffi::Ctlr,
     // Button states
@@ -166,9 +196,9 @@ impl Controller {
         let axis = [0.0; Axs::Count as usize];
         let remap = remap
             .0
-            .get(&u64::from_ne_bytes(raw.id()))
+            .get(&raw.id())
             .cloned()
-            .unwrap_or_default();
+            .unwrap(); //_or_default(); // FIXME
         Self {
             remap,
             raw,
@@ -184,7 +214,7 @@ impl Controller {
     }
 
     /// Get a unique identifier for the specific model of gamepad.
-    pub fn id(&self) -> [u8; 8] {
+    pub fn id(&self) -> u64 {
         self.raw.id()
     }
 
@@ -252,10 +282,13 @@ impl Controller {
     }
 
     #[allow(clippy::float_cmp)] // imprecision should be consistent
-    fn axis(&mut self, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
+    fn axis(&mut self, ev: u8, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
+        let map = self.remap.maps.get(&ev);
         let mut v = self.raw.axis(v).clamp(-1.0, 1.0);
-        if !self.remap.deadzone.is_nan() && v <= self.remap.deadzone {
-            v = 0.0;
+        if let Some(map) = map {
+            if !map.deadzone.is_nan() && v.abs() <= map.deadzone {
+                v = 0.0;
+            }
         }
         let axis = a as usize;
         if self.axis[axis] == v {
@@ -267,8 +300,14 @@ impl Controller {
     }
 
     #[allow(clippy::float_cmp)] // imprecision should be consistent
-    fn pressure(&mut self, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
-        let v = self.raw.pressure(v).clamp(0.0, 1.0);
+    fn pressure(&mut self, ev: u8, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
+        let map = self.remap.maps.get(&ev);
+        let mut v = self.raw.pressure(v).clamp(0.0, 1.0);
+        if let Some(map) = map {
+            if !map.deadzone.is_nan() && v <= map.deadzone {
+                v = 0.0;
+            }
+        }
         let axis = a as usize;
         if self.axis[axis] == v {
             Poll::Pending
@@ -278,171 +317,17 @@ impl Controller {
         }
     }
 
-    fn map_to_button(input: u16, p: bool) -> Poll<Event> {
-        Poll::Ready(match input - 0x0080 {
-            _x if _x == Btn::Exit as u16 => Event::Exit(p),
-            _x if _x == Btn::MenuL as u16 => Event::MenuL(p),
-            _x if _x == Btn::MenuR as u16 => Event::MenuR(p),
-            _x if _x == Btn::ActionA as u16 => Event::ActionA(p),
-            _x if _x == Btn::ActionB as u16 => Event::ActionB(p),
-            _x if _x == Btn::ActionC as u16 => Event::ActionC(p),
-            _x if _x == Btn::ActionH as u16 => Event::ActionH(p),
-            _x if _x == Btn::ActionV as u16 => Event::ActionV(p),
-            _x if _x == Btn::ActionD as u16 => Event::ActionD(p),
-            _x if _x == Btn::Up as u16 => Event::Up(p),
-            _x if _x == Btn::Down as u16 => Event::Down(p),
-            _x if _x == Btn::Right as u16 => Event::Right(p),
-            _x if _x == Btn::Left as u16 => Event::Left(p),
-            _x if _x == Btn::BumperL as u16 => Event::BumperL(p),
-            _x if _x == Btn::BumperR as u16 => Event::BumperR(p),
-            _x if _x == Btn::Joy as u16 => Event::Joy(p),
-            _x if _x == Btn::Cam as u16 => Event::Cam(p),
-            _x if _x == Btn::PaddleLeft as u16 => Event::PaddleLeft(p),
-            _x if _x == Btn::PaddleRight as u16 => Event::PaddleRight(p),
-            _x if _x == Btn::PinkyLeft as u16 => Event::PinkyLeft(p),
-            _x if _x == Btn::PinkyRight as u16 => Event::PinkyRight(p),
-            _x if _x == Btn::Trigger as u16 => Event::Trigger(p),
-            _x if _x == Btn::HatUp as u16 => Event::HatUp(p),
-            _x if _x == Btn::HatDown as u16 => Event::HatDown(p),
-            _x if _x == Btn::HatRight as u16 => Event::HatRight(p),
-            _x if _x == Btn::HatLeft as u16 => Event::HatLeft(p),
-            _x => return Poll::Pending, // Error
-        })
-    }
-
-    fn map_to_number(input: u16, p: bool) -> Poll<Event> {
-        Poll::Ready(Event::Number((input - 0x0100) as i8, p))
-    }
-
-    fn map_to_axis(input: u16, v: f64) -> Poll<Event> {
-        Poll::Ready(match input - 0x0180 {
-            _x if _x == Axs::JoyX as u16 => Event::JoyX(v),
-            _x if _x == Axs::JoyY as u16 => Event::JoyY(v),
-            _x if _x == Axs::JoyZ as u16 => Event::JoyZ(v),
-            _x if _x == Axs::CamX as u16 => Event::CamX(v),
-            _x if _x == Axs::CamY as u16 => Event::CamY(v),
-            _x if _x == Axs::CamZ as u16 => Event::CamZ(v),
-            _x if _x == Axs::Wheel as u16 => Event::Wheel(v),
-            _x if _x == Axs::Brake as u16 => Event::Brake(v),
-            _x if _x == Axs::Gas as u16 => Event::Gas(v),
-            _x if _x == Axs::Rudder as u16 => Event::Rudder(v),
-            _x => return Poll::Pending, // Error
-        })
-    }
-
-    fn map_to_pressure(input: u16, v: f64) -> Poll<Event> {
-        Poll::Ready(match input - 0x0200 {
-            _x if _x == Axs::TriggerL as u16 => Event::TriggerL(v),
-            _x if _x == Axs::TriggerR as u16 => Event::TriggerR(v),
-            _x => return Poll::Pending, // Error
-        })
-    }
-
-    fn remap_button(&self, b: Btn, p: bool) -> Poll<Event> {
-        let b = 0x0080 + b as u16;
-        let new_event = self.remap.maps.get(&b).copied().unwrap_or(b);
-        match new_event {
-            0 => Poll::Pending,
-            0x0080..=0x0FF => Self::map_to_button(new_event, p),
-            0x0100..=0x17F => Self::map_to_number(new_event, p),
-            0x0180..=0x1FF => Poll::Pending, // Axis: Invalid!
-            0x0200..=0x27F => {
-                Self::map_to_pressure(new_event, f64::from(u8::from(p)))
-            }
-            _ => Poll::Pending,
-        }
-    }
-
-    fn remap_number(&self, n: i8, p: bool) -> Poll<Event> {
-        let n = 0x0100 + n as u16;
-        let new_event = self.remap.maps.get(&n).copied().unwrap_or(n);
-        match new_event {
-            0 => Poll::Pending,
-            0x0080..=0x0FF => Self::map_to_button(new_event, p),
-            0x0100..=0x17F => Self::map_to_number(new_event, p),
-            0x0180..=0x1FF => Poll::Pending, // Axis: Invalid!
-            0x0200..=0x27F => {
-                Self::map_to_pressure(new_event, f64::from(u8::from(p)))
-            }
-            _ => Poll::Pending,
-        }
-    }
-
-    fn remap_axis(&self, a: Axs, v: f64) -> Poll<Event> {
-        let a = 0x0180 + a as u16;
-        let new_event = self.remap.maps.get(&a).copied().unwrap_or(a);
-        match new_event {
-            0 => Poll::Pending,
-            0x0080..=0x0FF => Poll::Pending, // Button: Invalid
-            0x0100..=0x17F => Poll::Pending, // Number: Invalid
-            0x0180..=0x1FF => Self::map_to_axis(new_event, v),
-            0x0200..=0x27F => Poll::Pending, // Pressure: Invalid
-            _ => Poll::Pending,
-        }
-    }
-
-    fn remap_pressure(&self, b: Axs, v: f64) -> Poll<Event> {
-        let b = 0x0200 + b as u16;
-        let new_event = self.remap.maps.get(&b).copied().unwrap_or(b);
-        match new_event {
-            0 => Poll::Pending,
-            0x0080..=0x0FF => Self::map_to_button(new_event, v >= 1.0),
-            0x0100..=0x17F => Self::map_to_number(new_event, v >= 1.0),
-            0x0180..=0x1FF => Poll::Pending, // Axis: Invalid!
-            0x0200..=0x27F => Self::map_to_pressure(new_event, v),
-            _ => Poll::Pending,
-        }
-    }
-
     fn remap(&self, in_event: Event) -> Poll<Event> {
-        use Event::*;
-
-        match in_event {
-            Disconnect => Poll::Ready(Disconnect),
-            Exit(p) => self.remap_button(Btn::Exit, p),
-            MenuL(p) => self.remap_button(Btn::MenuL, p),
-            MenuR(p) => self.remap_button(Btn::MenuR, p),
-            ActionA(p) => self.remap_button(Btn::ActionA, p),
-            ActionB(p) => self.remap_button(Btn::ActionB, p),
-            ActionC(p) => self.remap_button(Btn::ActionC, p),
-            ActionH(p) => self.remap_button(Btn::ActionH, p),
-            ActionV(p) => self.remap_button(Btn::ActionV, p),
-            ActionD(p) => self.remap_button(Btn::ActionD, p),
-            Up(p) => self.remap_button(Btn::Up, p),
-            Down(p) => self.remap_button(Btn::Down, p),
-            Right(p) => self.remap_button(Btn::Right, p),
-            Left(p) => self.remap_button(Btn::Left, p),
-            BumperL(p) => self.remap_button(Btn::BumperL, p),
-            BumperR(p) => self.remap_button(Btn::BumperR, p),
-            TriggerL(v) => self.remap_pressure(Axs::TriggerL, v),
-            TriggerR(v) => self.remap_pressure(Axs::TriggerR, v),
-            Joy(p) => self.remap_button(Btn::Joy, p),
-            Cam(p) => self.remap_button(Btn::Cam, p),
-            JoyX(v) => self.remap_axis(Axs::JoyX, v),
-            JoyY(v) => self.remap_axis(Axs::JoyY, v),
-            JoyZ(v) => self.remap_axis(Axs::JoyZ, v),
-            CamX(v) => self.remap_axis(Axs::CamX, v),
-            CamY(v) => self.remap_axis(Axs::CamY, v),
-            CamZ(v) => self.remap_axis(Axs::CamZ, v),
-            PaddleLeft(p) => self.remap_button(Btn::PaddleLeft, p),
-            PaddleRight(p) => self.remap_button(Btn::PaddleRight, p),
-            PinkyLeft(p) => self.remap_button(Btn::PinkyLeft, p),
-            PinkyRight(p) => self.remap_button(Btn::PinkyRight, p),
-            Number(n, p) => self.remap_number(n, p),
-            Wheel(v) => self.remap_axis(Axs::Wheel, v),
-            Brake(v) => self.remap_axis(Axs::Brake, v),
-            Gas(v) => self.remap_axis(Axs::Gas, v),
-            Rudder(v) => self.remap_axis(Axs::Rudder, v),
-            HatUp(p) => self.remap_button(Btn::HatUp, p),
-            HatDown(p) => self.remap_button(Btn::HatDown, p),
-            HatRight(p) => self.remap_button(Btn::HatRight, p),
-            HatLeft(p) => self.remap_button(Btn::HatLeft, p),
-            Trigger(p) => self.remap_button(Btn::Trigger, p),
-            _event => todo!(), // FIXME
+        if let Some(new_id) = self.remap.maps.get(&in_event.to_id().0) {
+            Poll::Ready(in_event.remap(new_id.out))
+        } else {
+            Poll::Ready(in_event)
         }
     }
 
     fn process(&mut self, in_event: Event) -> Poll<Event> {
+        let ev = in_event.to_id().0;
+
         use Event::*;
         match in_event {
             Disconnect => Poll::Ready(Disconnect),
@@ -461,25 +346,25 @@ impl Controller {
             Left(p) => self.button(Btn::Left, Left, p),
             BumperL(p) => self.button(Btn::BumperL, BumperL, p),
             BumperR(p) => self.button(Btn::BumperR, BumperR, p),
-            TriggerL(v) => self.pressure(Axs::TriggerL, TriggerL, v),
-            TriggerR(v) => self.pressure(Axs::TriggerR, TriggerR, v),
+            TriggerL(v) => self.pressure(ev, Axs::TriggerL, TriggerL, v),
+            TriggerR(v) => self.pressure(ev, Axs::TriggerR, TriggerR, v),
             Joy(p) => self.button(Btn::Joy, Joy, p),
             Cam(p) => self.button(Btn::Cam, Cam, p),
-            JoyX(v) => self.axis(Axs::JoyX, JoyX, v),
-            JoyY(v) => self.axis(Axs::JoyY, JoyY, v),
-            JoyZ(v) => self.axis(Axs::JoyZ, JoyZ, v),
-            CamX(v) => self.axis(Axs::CamX, CamX, v),
-            CamY(v) => self.axis(Axs::CamY, CamY, v),
-            CamZ(v) => self.axis(Axs::CamZ, CamZ, v),
+            JoyX(v) => self.axis(ev, Axs::JoyX, JoyX, v),
+            JoyY(v) => self.axis(ev, Axs::JoyY, JoyY, v),
+            JoyZ(v) => self.axis(ev, Axs::JoyZ, JoyZ, v),
+            CamX(v) => self.axis(ev, Axs::CamX, CamX, v),
+            CamY(v) => self.axis(ev, Axs::CamY, CamY, v),
+            CamZ(v) => self.axis(ev, Axs::CamZ, CamZ, v),
             PaddleLeft(p) => self.button(Btn::PaddleLeft, PaddleLeft, p),
             PaddleRight(p) => self.button(Btn::PaddleRight, PaddleRight, p),
             PinkyLeft(p) => self.button(Btn::PinkyLeft, PinkyLeft, p),
             PinkyRight(p) => self.button(Btn::PinkyRight, PinkyRight, p),
             Number(n, p) => self.number(n, Number, p),
-            Wheel(v) => self.axis(Axs::Wheel, Wheel, v),
-            Brake(v) => self.axis(Axs::Brake, Brake, v),
-            Gas(v) => self.axis(Axs::Gas, Gas, v),
-            Rudder(v) => self.axis(Axs::Rudder, Rudder, v),
+            Wheel(v) => self.axis(ev, Axs::Wheel, Wheel, v),
+            Brake(v) => self.axis(ev, Axs::Brake, Brake, v),
+            Gas(v) => self.axis(ev, Axs::Gas, Gas, v),
+            Rudder(v) => self.axis(ev, Axs::Rudder, Rudder, v),
             HatUp(p) => self.hat(Btn::HatUp, Btn::HatDown, HatUp, HatDown, p),
             HatDown(p) => self.hat(Btn::HatDown, Btn::HatUp, HatDown, HatUp, p),
             HatRight(p) => {

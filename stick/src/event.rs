@@ -10,148 +10,57 @@
 // modified, or distributed except according to those terms.
 
 /// An event from a [`Controller`](crate::Controller).
-///
-/// # Gamepad Types
-/// ## Standard Gamepad
-/// A video game controller similar to w3c's "standard gamepad":
-///
-/// ## Flightstick
-/// A joystick typically used in flight simulations and robotics:
-///
 #[derive(Debug, Copy, Clone)]
 #[non_exhaustive]
 pub enum Event {
-    /*
-     * All controllers.
-     */
     /// Controller unplugged.
     Disconnect,
-
-    /*
-     * Gamepad (W3 Standard Gamepad + extras)
-     */
     /// Exit / Main / Home / Mode
     Exit(bool),
-    /// Left Menu / Back / Select / Minus / Stop
-    MenuL(bool),
-    /// Righ Menu / Forward / Start / Plus / Play
-    MenuR(bool),
-
     /// A / 1 / 4 / Circle.  Action A (Primary action).
     ActionA(bool),
     /// B / 2 / 3 / Cross.  Action B (Secondary action).
     ActionB(bool),
     /// C.  Action C (Tertiary action).
     ActionC(bool),
-
     /// Y / X / Square.  Action H (Horizontal action).
     ActionH(bool),
     /// X / Y / Triangle.  Action V (Vertical action).
     ActionV(bool),
     /// Z (in 6-button layout).  Action D.
     ActionD(bool),
-
-    /// D-Pad Up
-    Up(bool),
-    /// D-Pad Down
-    Down(bool),
-    /// D-Pad Right
-    Right(bool),
-    /// D-Pad Left
-    Left(bool),
-
-    /// Left shoulder button (near button if no trigger)
-    BumperL(bool),
-    /// Right shoulder button (near button if no trigger)
-    BumperR(bool),
-
-    /// Left Bumper Trigger (far button if no trigger) - between 0.0 and 1.0
-    TriggerL(f64),
-    /// Right Bumper Trigger (far button if no trigger) - between 0.0 and 1.0
-    TriggerR(f64),
-
+    /// Left Menu / Back / Select / Minus / Stop
+    MenuL(bool),
+    /// Right Menu / Forward / Start / Plus / Play
+    MenuR(bool),
     /// Thumb Push Button On Main / Left Joystick
     Joy(bool),
     /// Thumb Push Button On Camera / Right Joystick
     Cam(bool),
-
-    /// Main stick horizontal axis (A / D) - between -1.0 and 1.0
-    JoyX(f64),
-    /// Main stick vertical / depth axis (W / S) - between -1.0 and 1.0
-    JoyY(f64),
-    /// Main stick rotation / yaw axis - between -1.0 and 1.0
-    JoyZ(f64),
-
-    /// Secondary stick X axis (Mouse X Position) - between -1.0 and 1.0
-    CamX(f64),
-    /// Secondary stick Y axis (Mouse Y Position) - between -1.0 and 1.0
-    CamY(f64),
-    /// Secondary stick Z axis - between -1.0 and 1.0
-    CamZ(f64),
-
-    /// Back left grip button (upper if there are two)
-    PaddleLeft(bool),
-    /// Back right grip button (upper if there are two)
-    PaddleRight(bool),
-    /// Left Pinky Button / Back lower right grip button
-    PinkyLeft(bool),
-    /// Right Pinky Button / Back lower left grip button
-    PinkyRight(bool),
-
-    /*
-     * Joystick (For cars and boats)
-     */
-    /// Numbered or unlabeled programmable action buttons (If unlabelled,
-    /// prefer numbering from left to right, upper to lower)
-    Number(i8, bool),
-
-    /// Steering wheel
-    Wheel(f64),
-    /// Brake pedal
-    Brake(f64),
-    /// Gas pedal
-    Gas(f64),
-    /// Ship rudder
-    Rudder(f64),
-
-    /*
-     * Flightstick
-     */
-    /// Flightstick trigger button on the back.
-    Trigger(bool),
-
-    /// Flightstick Hat Up
+    /// Left shoulder button (near button if no trigger)
+    BumperL(bool),
+    /// Right shoulder button (near button if no trigger)
+    BumperR(bool),
+    /// Left Bumper Trigger (far button if no trigger) - between 0.0 and 1.0
+    TriggerL(f64),
+    /// Right Bumper Trigger (far button if no trigger) - between 0.0 and 1.0
+    TriggerR(f64),
+    /// D-Pad Up
+    Up(bool),
+    /// D-Pad Down
+    Down(bool),
+    /// D-Pad Left
+    Left(bool),
+    /// D-Pad Right
+    Right(bool),
+    /// (Main) Hat Up
     HatUp(bool),
-    /// Flightstick Hat Down
+    /// (Main) Hat Down
     HatDown(bool),
-    /// Flightstick Hat Left
+    /// (Main) Hat Left
     HatLeft(bool),
-    /// Flightstick Hat Right
+    /// (Main) Hat Right
     HatRight(bool),
-
-    /* OLD Events: FIXME Move Up */
-
-    /*
-     * Realistic flight simulation stick extra buttons, switches, etc.
-     */
-
-    /* Buttons */
-    /// Autopilot Toggle Button
-    AutopilotToggle(bool),
-    /// Landing Gear Horn Silence Button
-    LandingGearSilence(bool),
-
-    /* 8-way POV Hat */
-    /// POV Hat Up
-    PovUp(bool),
-    /// POV Hat Down
-    PovDown(bool),
-    /// POV Hat Left
-    PovLeft(bool),
-    /// POV Hat Right
-    PovRight(bool),
-
-    /* 4-way Mic Switch */
     /// Mic Hat Up
     MicUp(bool),
     /// Mic Hat Down
@@ -160,52 +69,62 @@ pub enum Event {
     MicLeft(bool),
     /// Mic Hat Right
     MicRight(bool),
+    /// Extra POV Hat Left
+    PovUp(bool),
+    /// Extra POV Hat Down
+    PovDown(bool),
+    /// Extra POV Hat Left
+    PovLeft(bool),
+    /// Extra POV Hat Right
+    PovRight(bool),
+    /// Main stick horizontal axis (A / D) - between -1.0 and 1.0
+    JoyX(f64),
+    /// Main stick vertical / depth axis (W / S) - between -1.0 and 1.0
+    JoyY(f64),
+    /// Main stick rotation / yaw axis - between -1.0 and 1.0
+    JoyZ(f64),
+    /// Secondary stick X axis (Mouse X Position) - between -1.0 and 1.0
+    CamX(f64),
+    /// Secondary stick Y axis (Mouse Y Position) - between -1.0 and 1.0
+    CamY(f64),
+    /// Secondary stick Z axis - between -1.0 and 1.0
+    CamZ(f64),
+    /// Slew Control - between 0.0 and 1.0
+    Slew(f64),
+    /// Stationary throttle (0.0 is forward, 1.0 is backward)
+    Throttle(f64),
+    /// Left stationary throttle (0.0 is forward, 1.0 is backward)
+    ThrottleL(f64),
+    /// Right stationary throttle (0.0 is forward, 1.0 is backward)
+    ThrottleR(f64),
+    /// Volume axis (0.0 is off, 1.0 is full volume)
+    Volume(f64),
+    /// Steering wheel - between 0.0 and 1.0
+    Wheel(f64),
+    /// Ship rudder - between 0.0 and 1.0
+    Rudder(f64),
+    /// Gas Pedal - between 0.0 and 1.0
+    Gas(f64),
+    /// Brake Pedal - between 0.0 and 1.0
+    Brake(f64),
     /// Mic Hat Push Button
     MicPush(bool),
-
-    /// Range(0.0, 1.0) - Slew Control
-    Slew(f64),
-    /// Range(0.0, 1.0) - Stationary throttle (1.0 is forward, 0.0 is backward)
-    Throttle(f64),
-    /// Range(0.0, 1.0) - Left stationary throttle (1.0 is forward,
-    /// 0.0 is backward)
-    ThrottleL(f64),
-    /// Range(0.0, 1.0) - Right stationary throttle (1.0 is forward, 0.0 is
-    /// backward)
-    ThrottleR(f64),
-
-    /// Left throttle button
-    ThrottleButtonL(bool),
-
-    /// Engine Fuel Flow Left two-way switch
-    /// - `true` - Normal
-    /// - `false` - Override
-    EngineFuelFlowL(bool),
-    /// Engine Fuel Flow Right two-way switch
-    /// - `true` - Normal
-    /// - `false` - Override
-    EngineFuelFlowR(bool),
-    /// EAC two-way switch
-    /// - `true` - Arm
-    /// - `false` - Off
-    Eac(bool),
-    /// Radar Altimeter two-way switch
-    /// - `true` - Normal
-    /// - `false` - Disabled
-    RadarAltimeter(bool),
-    /// APU two-way switch
-    /// - `true` - Start
-    /// - `false` - Off
-    Apu(bool),
-
-    /// Autopilot three-way switch Forward.
-    /// - `true` - Forward (Path)
-    /// - `false` - Neutral (Altitude / Heading)
-    AutopilotPath(bool),
-    /// Autopilot three-way switch Backward.
-    /// - `true` - Backward (Alt)
-    /// - `false` - Neutral (Altitude / Heading)
-    AutopilotAlt(bool),
+    /// Flightstick trigger button on the back.
+    Trigger(bool),
+    /// Thumb Button 1
+    Thumb(bool), // FIXME: Rename
+    /// Thumb Button 2
+    Thumb2(bool), // FIXME: Rename
+    /// Top Button 1
+    Top(bool), // FIXME: Rename
+    /// Top Button 2
+    Top2(bool), // FIXME: Rename
+    /// Pinky Button
+    Pinky(bool),
+    /// Pinky three-way switch Forward.
+    PinkyForward(bool),
+    /// Pinky three-way switch Backward.
+    PinkyBackward(bool),
     /// Flaps three-way switch Forward.
     /// - `true` - Forward (Up)
     /// - `false` - Neutral (Maneuver)
@@ -214,72 +133,297 @@ pub enum Event {
     /// - `true` - Backward (Down)
     /// - `false` - Neutral (Maneuver)
     FlapsDown(bool),
-    /// Left Engine Operate three-way switch Forward.
-    /// - `true` - Forward (Ignition)
-    /// - `false` - Neutral (Normal)
-    EngineLIgnition(bool),
+    /// Boat three-way switch Forward.
+    BoatForward(bool),
+    /// Boat three-way switch Backward.
+    BoatBackward(bool),
+    /// Autopilot three-way switch Forward.
+    /// - `true` - Forward (Path)
+    /// - `false` - Neutral (Altitude / Heading)
+    AutopilotPath(bool),
+    /// Autopilot three-way switch Backward.
+    /// - `true` - Backward (Alt)
+    /// - `false` - Neutral (Altitude / Heading)
+    AutopilotAlt(bool),
     /// Left Engine Operate three-way switch Backward.
     /// - `true` - Backward (Motor)
     /// - `false` - Neutral (Normal)
-    EngineLMotor(bool),
-    /// Right Engine Operate three-way switch Forward.
-    /// - `true` - Forward (Ignition)
-    /// - `false` - Neutral (Normal)
-    EngineRIgnition(bool),
+    EngineMotorL(bool),
     /// Right Engine Operate three-way switch Backward.
     /// - `true` - Backward (Motor)
     /// - `false` - Neutral (Normal)
-    EngineRMotor(bool),
-    /// Pinky three-way switch Forward.
-    PinkyForward(bool),
-    /// Pinky three-way switch Backward.
-    PinkyBackward(bool),
-    /// Speedbrake three-way switch Forward.
-    SpeedbrakeForward(bool),
+    EngineMotorR(bool),
+    /// Engine Fuel Flow Left two-way switch
+    /// - `true` - Normal
+    /// - `false` - Override
+    EngineFuelFlowL(bool),
+    /// Engine Fuel Flow Right two-way switch
+    /// - `true` - Normal
+    /// - `false` - Override
+    EngineFuelFlowR(bool),
+    /// Left Engine Operate three-way switch Forward.
+    /// - `true` - Forward (Ignition)
+    /// - `false` - Neutral (Normal)
+    EngineIgnitionL(bool),
+    /// Right Engine Operate three-way switch Forward.
+    /// - `true` - Forward (Ignition)
+    /// - `false` - Neutral (Normal)
+    EngineIgnitionR(bool),
     /// Speedbrake three-way switch Backward.
     SpeedbrakeBackward(bool),
-    /// Boat three-way switch Forward.
-    BoatForward(bool),
-    /// Pinky three-way switch Backward.
-    BoatBackward(bool),
-    /// China hat three-way switch Forward.
-    ChinaForward(bool),
+    /// Speedbrake three-way switch Forward.
+    SpeedbrakeForward(bool),
     /// China hat three-way switch Backward.
     ChinaBackward(bool),
-
-    /*
-     * Mice-like controllers extra buttons, scroll wheel
-     */
-
-    /* Extra Mouse buttons */
-    /// DPI Switch
-    Dpi(bool),
-
-    /* Mouse Main */
-    /// Range(-1.0, 1.0) - Mouse delta position horizontal
+    /// China hat three-way switch Forward.
+    ChinaForward(bool),
+    /// APU two-way switch
+    /// - `true` - Start
+    /// - `false` - Off
+    Apu(bool),
+    /// Radar Altimeter two-way switch
+    /// - `true` - Normal
+    /// - `false` - Disabled
+    RadarAltimeter(bool),
+    /// Landing Gear Horn Silence Button
+    LandingGearSilence(bool),
+    /// EAC two-way switch
+    /// - `true` - Arm
+    /// - `false` - Off
+    Eac(bool),
+    /// Autopilot Toggle Button
+    AutopilotToggle(bool),
+    /// Throttle button (Left)
+    ThrottleButton(bool),
+    /// Mouse delta position horizontal - between -1.0 and 1.0
     MouseX(f64),
-    /// Range(-1.0, 1.0) - Mouse delta position vertical
+    /// Mouse delta position vertical - between -1.0 and 1.0
     MouseY(f64),
-    /// Left click (main click, push button)
-    MousePush(bool),
-    /// Right click (secondary click, push button 2)
-    MouseMenu(bool),
+    /// Mouse primary button
+    Mouse(bool),
+    /// Numbered or unlabeled programmable action buttons (If unlabelled,
+    /// prefer numbering from left to right, upper to lower)
+    Number(i8, bool),
+    /// Back left grip button (upper if there are two)
+    PaddleLeft(bool),
+    /// Back right grip button (upper if there are two)
+    PaddleRight(bool),
+    /// Left Pinky Button / Back lower right grip button
+    PinkyLeft(bool),
+    /// Right Pinky Button / Back lower left grip button
+    PinkyRight(bool),
+    /// Context Menu Button on a mouse (Right Click)
+    Context(bool),
+    /// DPI Button on a mouse
+    Dpi(bool),
+    /// Scroll Wheel X on a mouse - between -1.0 and 1.0
+    ScrollX(f64),
+    /// Scroll Wheel Y on a mouse - between -1.0 and 1.0
+    ScrollY(f64),
+    /// Scroll Button on a mouse
+    Scroll(bool),
+}
 
-    /* Mouse Wheel */
-    /// Range(-1.0, 1.0) - Scroll wheel horizontal
-    WheelX(f64),
-    /// Range(-1.0, 1.0) - Scroll wheel vertical
-    WheelY(f64),
-    /// Middle click (scroll wheel push button)
-    WheelPush(bool),
+impl Event {
+    #[inline(always)]
+    pub(crate) fn remap(self, new_id: u8) -> Self {
+        Self::from_id(new_id, self.to_id().1)
+    }
 
-    /*
-     * Ignore Events
-     */
+    #[inline(always)]
+    fn from_id(id: u8, value: f64) -> Self {
+        match id {
+            0x00 => Event::Disconnect,
+            0x01 => Event::Exit(value != 0.0),
+            0x02 => Event::ActionA(value != 0.0),
+            0x03 => Event::ActionB(value != 0.0),
+            0x04 => Event::ActionC(value != 0.0),
+            0x05 => Event::ActionH(value != 0.0),
+            0x06 => Event::ActionV(value != 0.0),
+            0x07 => Event::ActionD(value != 0.0),
+            0x08 => Event::MenuL(value != 0.0),
+            0x09 => Event::MenuR(value != 0.0),
+            0x0A => Event::Joy(value != 0.0),
+            0x0B => Event::Cam(value != 0.0),
+            0x0C => Event::BumperL(value != 0.0),
+            0x0D => Event::BumperR(value != 0.0),
+            0x0E => Event::TriggerL(value),
+            0x0F => Event::TriggerR(value),
+            0x10 => Event::Up(value != 0.0),
+            0x11 => Event::Down(value != 0.0),
+            0x12 => Event::Left(value != 0.0),
+            0x13 => Event::Right(value != 0.0),
+            0x14 => Event::HatUp(value != 0.0),
+            0x15 => Event::HatDown(value != 0.0),
+            0x16 => Event::HatLeft(value != 0.0),
+            0x17 => Event::HatRight(value != 0.0),
+            0x18 => Event::MicUp(value != 0.0),
+            0x19 => Event::MicDown(value != 0.0),
+            0x1A => Event::MicLeft(value != 0.0),
+            0x1B => Event::MicRight(value != 0.0),
+            0x1C => Event::PovUp(value != 0.0),
+            0x1D => Event::PovDown(value != 0.0),
+            0x1E => Event::PovLeft(value != 0.0),
+            0x1F => Event::PovRight(value != 0.0),
+            0x20 => Event::JoyX((value * 2.0) - 1.0),
+            0x21 => Event::JoyY((value * 2.0) - 1.0),
+            0x22 => Event::JoyZ((value * 2.0) - 1.0),
+            0x23 => Event::CamX((value * 2.0) - 1.0),
+            0x24 => Event::CamY((value * 2.0) - 1.0),
+            0x25 => Event::CamZ((value * 2.0) - 1.0),
+            0x26 => Event::Slew(value),
+            0x27 => Event::Throttle(value),
+            0x28 => Event::ThrottleL(value),
+            0x29 => Event::ThrottleR(value),
+            0x2A => Event::Volume(value),
+            0x2B => Event::Wheel(value),
+            0x2C => Event::Rudder(value),
+            0x2D => Event::Gas(value),
+            0x2E => Event::Brake(value),
+            0x2F => Event::MicPush(value != 0.0),
+            0x30 => Event::Trigger(value != 0.0),
+            0x31 => Event::Thumb(value != 0.0),
+            0x32 => Event::Thumb2(value != 0.0),
+            0x33 => Event::Top(value != 0.0),
+            0x34 => Event::Top2(value != 0.0),
+            0x35 => Event::Pinky(value != 0.0),
+            0x36 => Event::PinkyForward(value != 0.0),
+            0x37 => Event::PinkyBackward(value != 0.0),
+            0x38 => Event::FlapsUp(value != 0.0),
+            0x39 => Event::FlapsDown(value != 0.0),
+            0x3A => Event::BoatForward(value != 0.0),
+            0x3B => Event::BoatBackward(value != 0.0),
+            0x3C => Event::AutopilotPath(value != 0.0),
+            0x3D => Event::AutopilotAlt(value != 0.0),
+            0x3E => Event::EngineMotorL(value != 0.0),
+            0x3F => Event::EngineMotorR(value != 0.0),
+            0x40 => Event::EngineFuelFlowL(value != 0.0),
+            0x41 => Event::EngineFuelFlowR(value != 0.0),
+            0x42 => Event::EngineIgnitionL(value != 0.0),
+            0x43 => Event::EngineIgnitionR(value != 0.0),
+            0x44 => Event::SpeedbrakeBackward(value != 0.0),
+            0x45 => Event::SpeedbrakeForward(value != 0.0),
+            0x46 => Event::ChinaBackward(value != 0.0),
+            0x47 => Event::ChinaForward(value != 0.0),
+            0x48 => Event::Apu(value != 0.0),
+            0x49 => Event::RadarAltimeter(value != 0.0),
+            0x4A => Event::LandingGearSilence(value != 0.0),
+            0x4B => Event::Eac(value != 0.0),
+            0x4C => Event::AutopilotToggle(value != 0.0),
+            0x4D => Event::ThrottleButton(value != 0.0),
+            0x4E => Event::MouseX((value * 2.0) - 1.0),
+            0x4F => Event::MouseY((value * 2.0) - 1.0),
+            0x50 => Event::Mouse(value != 0.0),
+            0x51 => Event::PaddleLeft(value != 0.0),
+            0x52 => Event::PaddleRight(value != 0.0),
+            0x53 => Event::PinkyLeft(value != 0.0),
+            0x54 => Event::PinkyRight(value != 0.0),
+            0x55 => Event::Context(value != 0.0),
+            0x56 => Event::Dpi(value != 0.0),
+            0x57 => Event::ScrollX((value * 2.0) - 1.0),
+            0x58 => Event::ScrollY((value * 2.0) - 1.0),
+            0x59 => Event::Scroll(value != 0.0),
+            n => Event::Number((n & !0x80) as i8, value != 0.0),
+        }
+    }
 
-    /* */
-    #[doc(hidden)]
-    Nil(bool),
+    #[inline(always)]
+    pub(crate) fn to_id(self) -> (u8, f64) {
+        use Event::*;
+        match self {
+            Disconnect => (0x00, f64::NAN),
+            Exit(p) => (0x01, f64::from(u8::from(p))),
+            ActionA(p) => (0x02, f64::from(u8::from(p))),
+            ActionB(p) => (0x03, f64::from(u8::from(p))),
+            ActionC(p) => (0x04, f64::from(u8::from(p))),
+            ActionH(p) => (0x05, f64::from(u8::from(p))),
+            ActionV(p) => (0x06, f64::from(u8::from(p))),
+            ActionD(p) => (0x07, f64::from(u8::from(p))),
+            MenuL(p) => (0x08, f64::from(u8::from(p))),
+            MenuR(p) => (0x09, f64::from(u8::from(p))),
+            Joy(p) => (0x0A, f64::from(u8::from(p))),
+            Cam(p) => (0x0B, f64::from(u8::from(p))),
+            BumperL(p) => (0x0C, f64::from(u8::from(p))),
+            BumperR(p) => (0x0D, f64::from(u8::from(p))),
+            TriggerL(t) => (0x0E, t),
+            TriggerR(t) => (0x0F, t),
+            Up(p) => (0x10, f64::from(u8::from(p))),
+            Down(p) => (0x11, f64::from(u8::from(p))),
+            Left(p) => (0x12, f64::from(u8::from(p))),
+            Right(p) => (0x13, f64::from(u8::from(p))),
+            HatUp(p) => (0x14, f64::from(u8::from(p))),
+            HatDown(p) => (0x15, f64::from(u8::from(p))),
+            HatLeft(p) => (0x16, f64::from(u8::from(p))),
+            HatRight(p) => (0x17, f64::from(u8::from(p))),
+            MicUp(p) => (0x18, f64::from(u8::from(p))),
+            MicDown(p) => (0x19, f64::from(u8::from(p))),
+            MicLeft(p) => (0x1A, f64::from(u8::from(p))),
+            MicRight(p) => (0x1B, f64::from(u8::from(p))),
+            PovUp(p) => (0x1C, f64::from(u8::from(p))),
+            PovDown(p) => (0x1D, f64::from(u8::from(p))),
+            PovLeft(p) => (0x1E, f64::from(u8::from(p))),
+            PovRight(p) => (0x1F, f64::from(u8::from(p))),
+            JoyX(v) => (0x20, (v + 1.0) * 0.5),
+            JoyY(v) => (0x21, (v + 1.0) * 0.5),
+            JoyZ(v) => (0x22, (v + 1.0) * 0.5),
+            CamX(v) => (0x23, (v + 1.0) * 0.5),
+            CamY(v) => (0x24, (v + 1.0) * 0.5),
+            CamZ(v) => (0x25, (v + 1.0) * 0.5),
+            Slew(t) => (0x26, t),
+            Throttle(t) => (0x27, t),
+            ThrottleL(t) => (0x28, t),
+            ThrottleR(t) => (0x29, t),
+            Volume(t) => (0x2A, t),
+            Wheel(t) => (0x2B, t),
+            Rudder(t) => (0x2C, t),
+            Gas(t) => (0x2D, t),
+            Brake(t) => (0x2E, t),
+            MicPush(p) => (0x2F, f64::from(u8::from(p))),
+            Trigger(p) => (0x30, f64::from(u8::from(p))),
+            Thumb(p) => (0x31, f64::from(u8::from(p))),
+            Thumb2(p) => (0x32, f64::from(u8::from(p))),
+            Top(p) => (0x33, f64::from(u8::from(p))),
+            Top2(p) => (0x34, f64::from(u8::from(p))),
+            Pinky(p) => (0x35, f64::from(u8::from(p))),
+            PinkyForward(p) => (0x36, f64::from(u8::from(p))),
+            PinkyBackward(p) => (0x37, f64::from(u8::from(p))),
+            FlapsUp(p) => (0x38, f64::from(u8::from(p))),
+            FlapsDown(p) => (0x39, f64::from(u8::from(p))),
+            BoatForward(p) => (0x3A, f64::from(u8::from(p))),
+            BoatBackward(p) => (0x3B, f64::from(u8::from(p))),
+            AutopilotPath(p) => (0x3C, f64::from(u8::from(p))),
+            AutopilotAlt(p) => (0x3D, f64::from(u8::from(p))),
+            EngineMotorL(p) => (0x3E, f64::from(u8::from(p))),
+            EngineMotorR(p) => (0x3F, f64::from(u8::from(p))),
+            EngineFuelFlowL(p) => (0x40, f64::from(u8::from(p))),
+            EngineFuelFlowR(p) => (0x41, f64::from(u8::from(p))),
+            EngineIgnitionL(p) => (0x42, f64::from(u8::from(p))),
+            EngineIgnitionR(p) => (0x43, f64::from(u8::from(p))),
+            SpeedbrakeBackward(p) => (0x44, f64::from(u8::from(p))),
+            SpeedbrakeForward(p) => (0x45, f64::from(u8::from(p))),
+            ChinaBackward(p) => (0x46, f64::from(u8::from(p))),
+            ChinaForward(p) => (0x47, f64::from(u8::from(p))),
+            Apu(p) => (0x48, f64::from(u8::from(p))),
+            RadarAltimeter(p) => (0x49, f64::from(u8::from(p))),
+            LandingGearSilence(p) => (0x4A, f64::from(u8::from(p))),
+            Eac(p) => (0x4B, f64::from(u8::from(p))),
+            AutopilotToggle(p) => (0x4C, f64::from(u8::from(p))),
+            ThrottleButton(p) => (0x4D, f64::from(u8::from(p))),
+            MouseX(v) => (0x4E, (v + 1.0) * 0.5),
+            MouseY(v) => (0x4F, (v + 1.0) * 0.5),
+            Mouse(p) => (0x50, f64::from(u8::from(p))),
+            Number(n, p) => (n as u8 | 0x80, f64::from(u8::from(p))),
+            PaddleLeft(p) => (0x51, f64::from(u8::from(p))),
+            PaddleRight(p) => (0x52, f64::from(u8::from(p))),
+            PinkyLeft(p) => (0x53, f64::from(u8::from(p))),
+            PinkyRight(p) => (0x54, f64::from(u8::from(p))),
+            Context(p) => (0x55, f64::from(u8::from(p))),
+            Dpi(p) => (0x56, f64::from(u8::from(p))),
+            ScrollX(v) => (0x57, (v + 1.0) * 0.5),
+            ScrollY(v) => (0x58, (v + 1.0) * 0.5),
+            Scroll(p) => (0x59, f64::from(u8::from(p))),
+        }
+    }
 }
 
 impl std::fmt::Display for Event {
@@ -337,7 +481,6 @@ impl std::fmt::Display for Event {
             HatDown(p) => write!(f, "HatDown {}", pushed(p)),
             HatLeft(p) => write!(f, "HatLeft {}", pushed(p)),
             HatRight(p) => write!(f, "HatRight {}", pushed(p)),
-
             AutopilotToggle(p) => write!(f, "AutopilotToggle {}", pushed(p)),
             LandingGearSilence(p) => {
                 write!(f, "LandingGearSilence {}", pushed(p))
@@ -355,7 +498,7 @@ impl std::fmt::Display for Event {
             Throttle(v) => write!(f, "Throttle {}", v),
             ThrottleL(v) => write!(f, "ThrottleL {}", v),
             ThrottleR(v) => write!(f, "ThrottleR {}", v),
-            ThrottleButtonL(p) => write!(f, "ThrottleButtonL {}", pushed(p)),
+            ThrottleButton(p) => write!(f, "ThrottleButton {}", pushed(p)),
             EngineFuelFlowL(t) => write!(f, "EngineFuelFlowL {}", two(t)),
             EngineFuelFlowR(t) => write!(f, "EngineFuelFlowR {}", two(t)),
             Eac(t) => write!(f, "Eac {}", two(t)),
@@ -365,10 +508,10 @@ impl std::fmt::Display for Event {
             AutopilotAlt(p) => write!(f, "AutopilotAlt {}", sw(p)),
             FlapsUp(p) => write!(f, "FlapsUp {}", sw(p)),
             FlapsDown(p) => write!(f, "FlapsDown {}", sw(p)),
-            EngineLIgnition(p) => write!(f, "EngineLIgnition {}", sw(p)),
-            EngineLMotor(p) => write!(f, "EngineLMotor {}", sw(p)),
-            EngineRIgnition(p) => write!(f, "EngineRIgnition {}", sw(p)),
-            EngineRMotor(p) => write!(f, "EngineRMotor {}", sw(p)),
+            EngineIgnitionL(p) => write!(f, "EngineIgnitionL {}", sw(p)),
+            EngineMotorL(p) => write!(f, "EngineMotorL {}", sw(p)),
+            EngineIgnitionR(p) => write!(f, "EngineIgnitionR {}", sw(p)),
+            EngineMotorR(p) => write!(f, "EngineMotorR {}", sw(p)),
             PinkyForward(p) => write!(f, "PinkyForward {}", sw(p)),
             PinkyBackward(p) => write!(f, "PinkyBackward {}", sw(p)),
             SpeedbrakeForward(p) => write!(f, "SpeedbrakeForward {}", sw(p)),
@@ -380,12 +523,17 @@ impl std::fmt::Display for Event {
             Dpi(p) => write!(f, "Dpi {}", pushed(p)),
             MouseX(v) => write!(f, "MouseX {}", v),
             MouseY(v) => write!(f, "MouseY {}", v),
-            MousePush(p) => write!(f, "MousePush {}", pushed(p)),
-            MouseMenu(p) => write!(f, "MouseMenu {}", pushed(p)),
-            WheelX(v) => write!(f, "WheelX {}", v),
-            WheelY(v) => write!(f, "WheelY {}", v),
-            WheelPush(p) => write!(f, "WheelPush {}", pushed(p)),
-            Nil(p) => write!(f, "Nil {}", pushed(p)),
+            Mouse(p) => write!(f, "Mouse {}", pushed(p)),
+            Context(p) => write!(f, "Context {}", pushed(p)),
+            ScrollX(v) => write!(f, "ScrollX {}", v),
+            ScrollY(v) => write!(f, "ScrollY {}", v),
+            Scroll(p) => write!(f, "Scroll {}", pushed(p)),
+            Volume(v) => write!(f, "Volume {}", v),
+            Thumb(p) => write!(f, "Thumb {}", pushed(p)),
+            Thumb2(p) => write!(f, "Thumb2 {}", pushed(p)),
+            Top(p) => write!(f, "Top {}", pushed(p)),
+            Top2(p) => write!(f, "Top2 {}", pushed(p)),
+            Pinky(p) => write!(f, "Pinky {}", pushed(p)),
         }
     }
 }

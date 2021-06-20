@@ -10,5 +10,9 @@ ActionV = "ActionH"
 ActionH = "ActionV"
 TriggerL = {}
 TriggerR = {}
-JoyZ = { event = "TriggerL", deadzone = 0.07 }
-CamZ = { event = "TriggerR", deadzone = 0.07 }
+JoyX = { event = "JoyX", deadzone = 0.07 }
+JoyY = { event = "JoyY", deadzone = 0.07 }
+CamX = { event = "CamX", deadzone = 0.07 }
+CamY = { event = "CamY", deadzone = 0.07 }
+JoyZ = { event = "TriggerL", unsigned = 255 }
+CamZ = { event = "TriggerR", unsigned = 255 }

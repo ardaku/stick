@@ -11,12 +11,13 @@
 
 use std::env;
 
+mod sdb;
+
 fn print_help() {
     eprintln!("Tasks:");
     eprintln!();
     eprintln!("--help          Print this help text");
-    eprintln!("codegen         Generate stick and sdl bytecode databases");
-    eprintln!("fmt             Format the stick database's TOML source data");
+    eprintln!("sdb             Generate stick and sdl bytecode databases");
 }
 
 fn print_unknown(x: &str) {
@@ -25,19 +26,14 @@ fn print_unknown(x: &str) {
     eprintln!("Run `cargo xtask` for help page.");
 }
 
-fn codegen() {
-    todo!()
-}
-
-fn fmt() {
-    todo!()
+fn sdb() {
+    sdb::main()
 }
 
 fn main() {
     let task = env::args().nth(1);
     match task.as_deref() {
-        Some("codegen") => codegen(),
-        Some("fmt") => fmt(),
+        Some("sdb") => sdb(),
         None | Some("--help") => print_help(),
         Some(x) => print_unknown(x),
     }
