@@ -25,34 +25,14 @@ use std::task::{Context, Poll};
 // https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
 
 // Convert Linux BTN press to stick Event.
-fn linux_btn_to_stick_event(btn: c_ushort, pushed: bool) -> Option<Event> {
-    Some(match btn {
+fn linux_btn_to_stick_event(pending: &mut Vec<Event>, btn: c_ushort, pushed: bool) {
+    pending.push(match btn {
         0x120 /* BTN_TRIGGER */ => Event::Trigger(pushed),
-        0x121 /* BTN_THUMB */ => {
-            eprintln!("FIXME: BTN_THUMB - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-        0x122 /* BTN_THUMB2 */ => {
-            eprintln!("FIXME: BTN_THUMB2 - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-        0x123 /* BTN_TOP */ => {
-            eprintln!("FIXME: BTN_TOP - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-        0x124 /* BTN_TOP2 */ => {
-            eprintln!("FIXME: BTN_TOP2 - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-        0x125 /* BTN_PINKIE */ => {
-            eprintln!("FIXME: BTN_PINKIE - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
+        0x121 /* BTN_THUMB */ => Event::ActionM(pushed),
+        0x122 /* BTN_THUMB2 */ => Event::Bumper(pushed),
+        0x123 /* BTN_TOP */ => Event::ActionR(pushed),
+        0x124 /* BTN_TOP2 */ => Event::ActionL(pushed),
+        0x125 /* BTN_PINKIE */ => Event::Pinky(pushed),
         0x126 /* BTN_BASE1 */ => Event::Number(1, pushed),
         0x127 /* BTN_BASE2 */ => Event::Number(2, pushed),
         0x128 /* BTN_BASE3 */ => Event::Number(3, pushed),
@@ -129,180 +109,185 @@ fn linux_btn_to_stick_event(btn: c_ushort, pushed: bool) -> Option<Event> {
         _unknown => {
             eprintln!("Unknown Linux Button {}", _unknown);
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
+            return;
         }
     })
 }
 
 // Convert Linux REL axis to stick Event.
-fn linux_rel_to_stick_event(axis: c_ushort, value: c_int) -> Option<Event> {
-    Some(match axis {
-		0x00 /* REL_X */ => Event::MouseX(value as f64),
-		0x01 /* REL_Y */ => Event::MouseY(value as f64),
+fn linux_rel_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_int) {
+    match axis {
+		0x00 /* REL_X */ => pending.push(Event::MouseX(value as f64)),
+		0x01 /* REL_Y */ => pending.push(Event::MouseY(value as f64)),
 		0x02 /* REL_Z */ => {
-            eprintln!("FIXME: REL_Z - Better Event Name");
+            eprintln!("FIXME: REL_Z");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x03 /* REL_RX */ => {
-            eprintln!("FIXME: REL_RX - Better Event Name");
+            eprintln!("FIXME: REL_RX");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x04 /* REL_RY */ => {
-            eprintln!("FIXME: REL_RY - Better Event Name");
+            eprintln!("FIXME: REL_RY");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x05 /* REL_RZ */ => {
-            eprintln!("FIXME: REL_RZ - Better Event Name");
+            eprintln!("FIXME: REL_RZ");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x06 /* REL_HWHEEL */ => {
-            eprintln!("FIXME: REL_HWHEEL - Better Event Name");
+            eprintln!("FIXME: REL_HWHEEL");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x07 /* REL_DIAL */ => {
-            eprintln!("FIXME: REL_DIAL - Better Event Name");
+            eprintln!("FIXME: REL_DIAL");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x08 /* REL_WHEEL */ => {
-            eprintln!("FIXME: REL_WHEEL - Better Event Name");
+            eprintln!("FIXME: REL_WHEEL");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x09 /* REL_MISC */ => {
-            eprintln!("FIXME: REL_MISC - Better Event Name");
+            eprintln!("FIXME: REL_MISC");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
         _unknown => {
             eprintln!("Unknown Linux Axis {}", _unknown);
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
-    })
+    }
 }
 
 // Convert Linux ABS axis to stick Event.
-fn linux_abs_to_stick_event(axis: c_ushort, value: c_int) -> Option<Event> {
-    Some(match axis {
-		0x00 /* ABS_X */ => Event::JoyX(value as f64),
-		0x01 /* ABS_Y */ => Event::JoyY(value as f64),
-		0x02 /* ABS_Z */ => Event::JoyZ(value as f64),
-		0x03 /* ABS_RX */ => Event::CamX(value as f64),
-		0x04 /* ABS_RY */ => Event::CamY(value as f64),
-		0x05 /* ABS_RZ */ => Event::CamZ(value as f64),
-		0x06 /* ABS_THROTTLE */ => Event::Throttle(value as f64),
-		0x07 /* ABS_RUDDER */ => Event::Rudder(value as f64),
-		0x08 /* ABS_WHEEL */ => Event::Wheel(value as f64),
-		0x09 /* ABS_GAS */ => Event::Gas(value as f64),
-		0x0a /* ABS_BRAKE */ => Event::Brake(value as f64),
+fn linux_abs_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_int) {
+    match axis {
+		0x00 /* ABS_X */ => pending.push(Event::JoyX(value as f64)),
+		0x01 /* ABS_Y */ => pending.push(Event::JoyY(value as f64)),
+		0x02 /* ABS_Z */ => pending.push(Event::JoyZ(value as f64)),
+		0x03 /* ABS_RX */ => pending.push(Event::CamX(value as f64)),
+		0x04 /* ABS_RY */ => pending.push(Event::CamY(value as f64)),
+		0x05 /* ABS_RZ */ => pending.push(Event::CamZ(value as f64)),
+		0x06 /* ABS_THROTTLE */ => pending.push(Event::Throttle(value as f64)),
+		0x07 /* ABS_RUDDER */ => pending.push(Event::Rudder(value as f64)),
+		0x08 /* ABS_WHEEL */ => pending.push(Event::Wheel(value as f64)),
+		0x09 /* ABS_GAS */ => pending.push(Event::Gas(value as f64)),
+		0x0a /* ABS_BRAKE */ => pending.push(Event::Brake(value as f64)),
 		0x10 /* ABS_HAT0X */ => match value.cmp(&0) {
-            Ordering::Greater => Event::HatRight(true),
-            Ordering::Less => Event::HatLeft(true),
-            Ordering::Equal => Event::HatLeft(false)
+            Ordering::Greater => pending.push(Event::PovRight(true)),
+            Ordering::Less => pending.push(Event::PovLeft(true)),
+            Ordering::Equal => {
+                pending.push(Event::PovRight(false));
+                pending.push(Event::PovLeft(false));
+            }
         },
 		0x11 /* ABS_HAT0Y */ => match value.cmp(&0) {
-            Ordering::Greater => Event::HatDown(true),
-            Ordering::Less => Event::HatUp(true),
-            Ordering::Equal => Event::HatUp(false)
+            Ordering::Greater => pending.push(Event::PovDown(true)),
+            Ordering::Less => pending.push(Event::PovUp(true)),
+            Ordering::Equal => {
+                pending.push(Event::PovUp(false));
+                pending.push(Event::PovDown(false));
+            }
         },
-		0x12 /* ABS_HAT1X */ => {
-            eprintln!("FIXME: ABS_HAT1X - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-		0x13 /* ABS_HAT1Y */ => {
-            eprintln!("FIXME: ABS_HAT1Y - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-		0x14 /* ABS_HAT2X */ => {
-            eprintln!("FIXME: ABS_HAT2X - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-		0x15 /* ABS_HAT2Y */ => {
-            eprintln!("FIXME: ABS_HAT2Y - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-		0x16 /* ABS_HAT3X */ => {
-            eprintln!("FIXME: ABS_HAT3X - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
-		0x17 /* ABS_HAT3Y */ => {
-            eprintln!("FIXME: ABS_HAT3Y - Better Event Name");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
-        }
+		0x12 /* ABS_HAT1X */ => match value.cmp(&0) {
+            Ordering::Greater => pending.push(Event::HatRight(true)),
+            Ordering::Less => pending.push(Event::HatLeft(true)),
+            Ordering::Equal => {
+                pending.push(Event::HatRight(false));
+                pending.push(Event::HatLeft(false));
+            }
+        },
+		0x13 /* ABS_HAT1Y */ => match value.cmp(&0) {
+            Ordering::Greater => pending.push(Event::HatDown(true)),
+            Ordering::Less => pending.push(Event::HatUp(true)),
+            Ordering::Equal => {
+                pending.push(Event::HatUp(false));
+                pending.push(Event::HatDown(false));
+            }
+        },
+		0x14 /* ABS_HAT2X */ => match value.cmp(&0) {
+            Ordering::Greater => pending.push(Event::TrimRight(true)),
+            Ordering::Less => pending.push(Event::TrimLeft(true)),
+            Ordering::Equal => {
+                pending.push(Event::TrimRight(false));
+                pending.push(Event::TrimLeft(false));
+            }
+        },
+		0x15 /* ABS_HAT2Y */ => match value.cmp(&0) {
+            Ordering::Greater => pending.push(Event::TrimDown(true)),
+            Ordering::Less => pending.push(Event::TrimUp(true)),
+            Ordering::Equal => {
+                pending.push(Event::TrimUp(false));
+                pending.push(Event::TrimDown(false));
+            }
+        },
+		0x16 /* ABS_HAT3X */ => match value.cmp(&0) {
+            Ordering::Greater => pending.push(Event::MicRight(true)),
+            Ordering::Less => pending.push(Event::MicLeft(true)),
+            Ordering::Equal => {
+                pending.push(Event::MicRight(false));
+                pending.push(Event::MicLeft(false));
+            }
+        },
+		0x17 /* ABS_HAT3Y */ => match value.cmp(&0) {
+            Ordering::Greater => pending.push(Event::MicDown(true)),
+            Ordering::Less => pending.push(Event::MicUp(true)),
+            Ordering::Equal => {
+                pending.push(Event::MicUp(false));
+                pending.push(Event::MicDown(false));
+            }
+        },
 		0x18 /* ABS_PRESSURE */ => {
-            eprintln!("FIXME: ABS_PRESSURE - Better Event Name");
+            eprintln!("FIXME: ABS_PRESSURE");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x19 /* ABS_DISTANCE */ => {
-            eprintln!("FIXME: ABS_DISTANCE - Better Event Name");
+            eprintln!("FIXME: ABS_DISTANCE");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x1a /* ABS_TILT_X */ => {
-            eprintln!("FIXME: ABS_TILT_X - Better Event Name");
+            eprintln!("FIXME: ABS_TILT_X");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x1b /* ABS_TILT_Y */ => {
-            eprintln!("FIXME: ABS_TILT_Y - Better Event Name");
+            eprintln!("FIXME: ABS_TILT_Y");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x1c /* ABS_TOOL_WIDTH */ => {
-            eprintln!("FIXME: ABS_TOOL_WIDTH - Better Event Name");
+            eprintln!("FIXME: ABS_TOOL_WIDTH");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x20 /* ABS_VOLUME */ => {
-            eprintln!("FIXME: ABS_VOLUME - Better Event Name");
+            eprintln!("FIXME: ABS_VOLUME");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
 		0x28 /* ABS_MISC */ => {
-            eprintln!("FIXME: ABS_MISC - Better Event Name");
+            eprintln!("FIXME: ABS_MISC");
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
         _unknown => {
             eprintln!("Unknown Linux Axis {}", _unknown);
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            return None;
         }
-    })
+    }
 }
 
-fn linux_evdev_to_stick_event(e: EvdevEv) -> Option<Event> {
+fn linux_evdev_to_stick_event(pending: &mut Vec<Event>, e: EvdevEv) {
     match e.ev_type {
-        0x00 /* SYN */ => None, // Ignore Syn Input Events
-        0x01 /* BTN */ => linux_btn_to_stick_event(e.ev_code, e.ev_value != 0),
-        0x02 /* REL */ => linux_rel_to_stick_event(e.ev_code, e.ev_value),
-        0x03 /* ABS */ => linux_abs_to_stick_event(e.ev_code, e.ev_value),
+        0x00 /* SYN */ => {}, // Ignore Syn Input Events
+        0x01 /* BTN */ => linux_btn_to_stick_event(pending, e.ev_code, e.ev_value != 0),
+        0x02 /* REL */ => linux_rel_to_stick_event(pending, e.ev_code, e.ev_value),
+        0x03 /* ABS */ => linux_abs_to_stick_event(pending, e.ev_code, e.ev_value),
         0x04 /* MSC */ => {
             if e.ev_code != 4 { // Ignore Misc./Scan Events
                 let (code, val) = (e.ev_code, e.ev_value);
                 eprintln!("Unknown Linux Misc Code: {}, Value: {}", code, val);
                 eprintln!("Report at https://github.com/libcala/stick/issues");
             }
-            None
         }
-        0x15 /* FF */ => None, // Ignore Force Feedback Input Events
+        0x15 /* FF */ => {}, // Ignore Force Feedback Input Events
         _unknown => {
             eprintln!("Unknown Linux Event Type: {}", _unknown);
             eprintln!("Report at https://github.com/libcala/stick/issues");
-            None
         }
     }
 }
@@ -367,7 +352,6 @@ extern "C" {
     fn __errno_location() -> *mut c_int;
 }
 
-// FIXME: First poll should do a file search within the directory.
 pub(crate) struct Hub {
     device: Device,
     read_dir: Option<Box<std::fs::ReadDir>>,
@@ -509,6 +493,8 @@ pub(crate) struct Ctlr {
     zero: f64,
     /// Don't process near 0
     flat: f64,
+    /// 
+    pending_events: Vec<Event>,
 }
 
 impl Ctlr {
@@ -541,6 +527,8 @@ impl Ctlr {
         let rumble = joystick_haptic(fd, -1, 0.0, 0.0);
         // Construct device from fd, looking for input events.
         let device = Device::new(fd, Watcher::new().input());
+        //
+        let pending_events = Vec::new();
         // Return
         Self {
             device,
@@ -549,6 +537,7 @@ impl Ctlr {
             norm,
             zero,
             flat,
+            pending_events,
         }
     }
 
@@ -557,6 +546,10 @@ impl Ctlr {
     }
 
     pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
+        if let Some(e) = self.pending_events.pop() {
+            return Poll::Ready(e);
+        }
+
         // Read an event.
         let mut ev = MaybeUninit::<EvdevEv>::uninit();
         let ev = {
@@ -582,12 +575,11 @@ impl Ctlr {
             unsafe { ev.assume_init() }
         };
 
-        // Convert the event.
-        if let Some(event) = linux_evdev_to_stick_event(ev) {
-            Poll::Ready(event)
-        } else {
-            self.poll(cx)
-        }
+        // Convert the event (may produce multiple stick events).
+        linux_evdev_to_stick_event(&mut self.pending_events, ev);
+
+        // Tail call recursion!
+        self.poll(cx)
     }
 
     pub(super) fn name(&self) -> String {
@@ -608,10 +600,12 @@ impl Ctlr {
         }
     }
 
+    /// Use default unsigned axis range
     pub(super) fn pressure(&self, input: f64) -> f64 {
         input * (1.0 / 255.0)
     }
 
+    /// Use full joystick axis range.
     pub(super) fn axis(&self, input: f64) -> f64 {
         let input = (input - self.zero) * self.norm;
         if input.abs() <= self.flat {

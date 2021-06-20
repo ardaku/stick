@@ -53,14 +53,30 @@ pub enum Event {
     Left(bool),
     /// D-Pad Right
     Right(bool),
-    /// (Main) Hat Up
+    /// POV/Main Hat Left
+    PovUp(bool),
+    /// POV/Main Hat Down
+    PovDown(bool),
+    /// POV/Main Hat Left
+    PovLeft(bool),
+    /// POV/Main Hat Right
+    PovRight(bool),
+    /// Extra Hat Up
     HatUp(bool),
-    /// (Main) Hat Down
+    /// Extra Hat Down
     HatDown(bool),
-    /// (Main) Hat Left
+    /// Extra Hat Left
     HatLeft(bool),
-    /// (Main) Hat Right
+    /// Extra Hat Right
     HatRight(bool),
+    /// Trim Hat Up
+    TrimUp(bool),
+    /// Trim Hat Down
+    TrimDown(bool),
+    /// Trim Hat Left
+    TrimLeft(bool),
+    /// Trim Hat Right
+    TrimRight(bool),
     /// Mic Hat Up
     MicUp(bool),
     /// Mic Hat Down
@@ -69,14 +85,6 @@ pub enum Event {
     MicLeft(bool),
     /// Mic Hat Right
     MicRight(bool),
-    /// Extra POV Hat Left
-    PovUp(bool),
-    /// Extra POV Hat Down
-    PovDown(bool),
-    /// Extra POV Hat Left
-    PovLeft(bool),
-    /// Extra POV Hat Right
-    PovRight(bool),
     /// Main stick horizontal axis (A / D) - between -1.0 and 1.0
     JoyX(f64),
     /// Main stick vertical / depth axis (W / S) - between -1.0 and 1.0
@@ -111,14 +119,14 @@ pub enum Event {
     MicPush(bool),
     /// Flightstick trigger button on the back.
     Trigger(bool),
-    /// Thumb Button 1
-    Thumb(bool), // FIXME: Rename
-    /// Thumb Button 2
-    Thumb2(bool), // FIXME: Rename
-    /// Top Button 1
-    Top(bool), // FIXME: Rename
-    /// Top Button 2
-    Top2(bool), // FIXME: Rename
+    /// Flightstick Side Bumper Button
+    Bumper(bool),
+    /// Flightstick Top Middle Action Button 
+    ActionM(bool),
+    /// Flightstick Top Left Action Button
+    ActionL(bool),
+    /// Flightstick Top Right Action Button
+    ActionR(bool),
     /// Pinky Button
     Pinky(bool),
     /// Pinky three-way switch Forward.
@@ -177,17 +185,17 @@ pub enum Event {
     ChinaBackward(bool),
     /// China hat three-way switch Forward.
     ChinaForward(bool),
-    /// APU two-way switch
+    /// APU (Auxiliary Power Unit) two-way switch
     /// - `true` - Start
     /// - `false` - Off
     Apu(bool),
-    /// Radar Altimeter two-way switch
+    /// Radar Altimeter two-way switch (Altitude measurements)
     /// - `true` - Normal
     /// - `false` - Disabled
     RadarAltimeter(bool),
     /// Landing Gear Horn Silence Button
     LandingGearSilence(bool),
-    /// EAC two-way switch
+    /// EAC (Enhanced Attitude Control - Autopilot) two-way switch
     /// - `true` - Arm
     /// - `false` - Off
     Eac(bool),
@@ -282,10 +290,10 @@ impl Event {
             0x2E => Event::Brake(value),
             0x2F => Event::MicPush(value != 0.0),
             0x30 => Event::Trigger(value != 0.0),
-            0x31 => Event::Thumb(value != 0.0),
-            0x32 => Event::Thumb2(value != 0.0),
-            0x33 => Event::Top(value != 0.0),
-            0x34 => Event::Top2(value != 0.0),
+            0x31 => Event::Bumper(value != 0.0),
+            0x32 => Event::ActionL(value != 0.0),
+            0x33 => Event::ActionM(value != 0.0),
+            0x34 => Event::ActionR(value != 0.0),
             0x35 => Event::Pinky(value != 0.0),
             0x36 => Event::PinkyForward(value != 0.0),
             0x37 => Event::PinkyBackward(value != 0.0),
@@ -323,6 +331,10 @@ impl Event {
             0x57 => Event::ScrollX(value),
             0x58 => Event::ScrollY(value),
             0x59 => Event::Scroll(value != 0.0),
+            0x5A => Event::TrimUp(value != 0.0),
+            0x5B => Event::TrimDown(value != 0.0),
+            0x5C => Event::TrimLeft(value != 0.0),
+            0x5D => Event::TrimRight(value != 0.0),
             n => Event::Number((n & !0x80) as i8, value != 0.0),
         }
     }
@@ -380,10 +392,10 @@ impl Event {
             Brake(t) => (0x2E, t),
             MicPush(p) => (0x2F, f64::from(u8::from(p))),
             Trigger(p) => (0x30, f64::from(u8::from(p))),
-            Thumb(p) => (0x31, f64::from(u8::from(p))),
-            Thumb2(p) => (0x32, f64::from(u8::from(p))),
-            Top(p) => (0x33, f64::from(u8::from(p))),
-            Top2(p) => (0x34, f64::from(u8::from(p))),
+            Bumper(p) => (0x31, f64::from(u8::from(p))),
+            ActionL(p) => (0x32, f64::from(u8::from(p))),
+            ActionM(p) => (0x33, f64::from(u8::from(p))),
+            ActionR(p) => (0x34, f64::from(u8::from(p))),
             Pinky(p) => (0x35, f64::from(u8::from(p))),
             PinkyForward(p) => (0x36, f64::from(u8::from(p))),
             PinkyBackward(p) => (0x37, f64::from(u8::from(p))),
@@ -422,6 +434,10 @@ impl Event {
             ScrollX(v) => (0x57, v),
             ScrollY(v) => (0x58, v),
             Scroll(p) => (0x59, f64::from(u8::from(p))),
+            TrimUp(p) => (0x5A, f64::from(u8::from(p))),
+            TrimDown(p) => (0x5B, f64::from(u8::from(p))),
+            TrimLeft(p) => (0x5C, f64::from(u8::from(p))),
+            TrimRight(p) => (0x5D, f64::from(u8::from(p))),
         }
     }
 }
@@ -485,6 +501,10 @@ impl std::fmt::Display for Event {
             LandingGearSilence(p) => {
                 write!(f, "LandingGearSilence {}", pushed(p))
             }
+            TrimUp(p) => write!(f, "TrimUp {}", pushed(p)),
+            TrimDown(p) => write!(f, "TrimDown {}", pushed(p)),
+            TrimLeft(p) => write!(f, "TrimLeft {}", pushed(p)),
+            TrimRight(p) => write!(f, "TrimRight {}", pushed(p)),
             PovUp(p) => write!(f, "PovUp {}", pushed(p)),
             PovDown(p) => write!(f, "PovDown {}", pushed(p)),
             PovLeft(p) => write!(f, "PovLeft {}", pushed(p)),
@@ -529,10 +549,10 @@ impl std::fmt::Display for Event {
             ScrollY(v) => write!(f, "ScrollY {}", v),
             Scroll(p) => write!(f, "Scroll {}", pushed(p)),
             Volume(v) => write!(f, "Volume {}", v),
-            Thumb(p) => write!(f, "Thumb {}", pushed(p)),
-            Thumb2(p) => write!(f, "Thumb2 {}", pushed(p)),
-            Top(p) => write!(f, "Top {}", pushed(p)),
-            Top2(p) => write!(f, "Top2 {}", pushed(p)),
+            Bumper(p) => write!(f, "Bumper {}", pushed(p)),
+            ActionM(p) => write!(f, "ActionM {}", pushed(p)),
+            ActionL(p) => write!(f, "ActionL {}", pushed(p)),
+            ActionR(p) => write!(f, "ActionR {}", pushed(p)),
             Pinky(p) => write!(f, "Pinky {}", pushed(p)),
         }
     }

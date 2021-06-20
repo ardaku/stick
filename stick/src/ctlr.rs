@@ -46,6 +46,52 @@ enum Btn {
     HatDown = 23,
     HatRight = 24,
     HatLeft = 25,
+    MicUp = 26,
+    MicDown = 27,
+    MicRight = 28,
+    MicLeft = 29,
+    PovUp = 30,
+    PovDown = 31,
+    PovRight = 32,
+    PovLeft = 33,
+    MicPush = 34,
+    ActionL = 35,
+    ActionR = 36,
+    Bumper = 37,
+    ActionM = 38,
+    Pinky = 39,
+    PinkyForward = 40,
+    PinkyBackward = 41,
+    FlapsUp = 42,
+    FlapsDown = 43,
+    BoatForward = 44,
+    BoatBackward = 45,
+    AutopilotPath = 46,
+    AutopilotAlt = 47,
+    EngineMotorL = 48,
+    EngineMotorR = 49,
+    EngineFuelFlowL = 50,
+    EngineFuelFlowR = 51,
+    EngineIgnitionL = 52,
+    EngineIgnitionR = 53,
+    SpeedbrakeBackward = 54,
+    SpeedbrakeForward = 55,
+    ChinaBackward = 56,
+    ChinaForward = 57,
+    Apu = 58,
+    RadarAltimeter = 59,
+    LandingGearSilence = 60,
+    Eac = 61,
+    AutopilotToggle = 62,
+    ThrottleButton = 63,
+    Mouse = 64,
+    Scroll = 65,
+    Context = 66,
+    Dpi = 67,
+    TrimUp = 68,
+    TrimDown = 69,
+    TrimRight = 70,
+    TrimLeft = 71,
 }
 
 #[repr(i8)]
@@ -62,14 +108,24 @@ enum Axs {
     Brake = 9,
     Gas = 10,
     Rudder = 11,
-    Count = 12,
+    Slew = 12,
+    Throttle = 13,
+    ThrottleL = 14,
+    ThrottleR = 15,
+    Volume = 16,
+    MouseX = 17,
+    MouseY = 18,
+    ScrollX = 19,
+    ScrollY = 20,
+    Count = 21,
 }
 
 #[derive(Debug)]
 struct Map {
     deadzone: f64,
     scale: f64,
-    unsigned: u16,
+    max: i32,
+    min: i32,
     out: u8,
 }
 
@@ -131,7 +187,8 @@ impl Remap {
                 let mut cursor = 4;
                 let mut deadzone = f64::NAN;
                 let mut scale = f64::NAN;
-                let mut unsigned: u16 = 0;
+                let mut max: i32 = 0;
+                let mut min: i32 = 0;
                 while let Some(tweak) = event.get(cursor..)?.chars().next() {
                     match tweak {
                         'd' => {
@@ -144,17 +201,22 @@ impl Remap {
                             scale = event.get(cursor+1..cursor+1+end)?.parse::<f64>().ok()?.recip();
                             cursor += end + 1;
                         }
-                        'u' => {
+                        'a' => {
                             let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
-                            unsigned = event.get(cursor+1..cursor+1+end)?.parse::<u16>().ok()?;
+                            max = event.get(cursor+1..cursor+1+end)?.parse::<i32>().ok()?;
+                            cursor += end + 1;
+                        }
+                        'i' => {
+                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
+                            min = event.get(cursor+1..cursor+1+end)?.parse::<i32>().ok()?;
                             cursor += end + 1;
                         }
                         _ => return None,
                     }
                 }
-                
+
                 maps.insert(in_, Map {
-                    out, deadzone, scale, unsigned, 
+                    out, deadzone, scale, max, min, 
                 });
             }
 
@@ -235,27 +297,6 @@ impl Controller {
         self.raw.rumble(power.left(), power.right());
     }
 
-    fn hat(
-        &mut self,
-        b: Btn,
-        b2: Btn,
-        f: fn(bool) -> Event,
-        f2: fn(bool) -> Event,
-        p: bool,
-    ) -> Poll<Event> {
-        let b = 1u128 << b as i8;
-        if (self.btns & b != 0) == p {
-            if !p {
-                self.button(b2, f2, p)
-            } else {
-                Poll::Pending
-            }
-        } else {
-            self.btns ^= b;
-            Poll::Ready(f(p))
-        }
-    }
-
     fn button(&mut self, b: Btn, f: fn(bool) -> Event, p: bool) -> Poll<Event> {
         let b = 1u128 << b as i8;
         if (self.btns & b != 0) == p {
@@ -284,12 +325,20 @@ impl Controller {
     #[allow(clippy::float_cmp)] // imprecision should be consistent
     fn axis(&mut self, ev: u8, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
         let map = self.remap.maps.get(&ev);
-        let mut v = self.raw.axis(v).clamp(-1.0, 1.0);
-        if let Some(map) = map {
+        let v = if let Some(map) = map {
+            let v = if map.min != 0 || map.max != 0 {
+                (((v - f64::from(map.min)) / f64::from(map.max - map.min)) * 2.0 - 1.0).clamp(-1.0, 1.0)
+            } else {
+                self.raw.axis(v).clamp(-1.0, 1.0)
+            };
             if !map.deadzone.is_nan() && v.abs() <= map.deadzone {
-                v = 0.0;
+                0.0
+            } else {
+                v
             }
-        }
+        } else {
+            self.raw.axis(v).clamp(-1.0, 1.0)
+        };
         let axis = a as usize;
         if self.axis[axis] == v {
             Poll::Pending
@@ -302,12 +351,20 @@ impl Controller {
     #[allow(clippy::float_cmp)] // imprecision should be consistent
     fn pressure(&mut self, ev: u8, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
         let map = self.remap.maps.get(&ev);
-        let mut v = self.raw.pressure(v).clamp(0.0, 1.0);
-        if let Some(map) = map {
+        let v = if let Some(map) = map {
+            let v = if map.min != 0 || map.max != 0 {
+                ((v - f64::from(map.min)) / f64::from(map.max - map.min)).clamp(0.0, 1.0)
+            } else {
+                self.raw.pressure(v).clamp(0.0, 1.0)
+            };
             if !map.deadzone.is_nan() && v <= map.deadzone {
-                v = 0.0;
+                0.0
+            } else {
+                v
             }
-        }
+        } else {
+            self.raw.pressure(v).clamp(0.0, 1.0)
+        };
         let axis = a as usize;
         if self.axis[axis] == v {
             Poll::Pending
@@ -363,21 +420,70 @@ impl Controller {
             PinkyLeft(p) => self.button(Btn::PinkyLeft, PinkyLeft, p),
             PinkyRight(p) => self.button(Btn::PinkyRight, PinkyRight, p),
             Number(n, p) => self.number(n, Number, p),
-            Wheel(v) => self.axis(ev, Axs::Wheel, Wheel, v),
-            Brake(v) => self.axis(ev, Axs::Brake, Brake, v),
-            Gas(v) => self.axis(ev, Axs::Gas, Gas, v),
-            Rudder(v) => self.axis(ev, Axs::Rudder, Rudder, v),
-            HatUp(p) => self.hat(Btn::HatUp, Btn::HatDown, HatUp, HatDown, p),
-            HatDown(p) => self.hat(Btn::HatDown, Btn::HatUp, HatDown, HatUp, p),
-            HatRight(p) => {
-                self.hat(Btn::HatRight, Btn::HatLeft, HatRight, HatLeft, p)
-            }
-            HatLeft(p) => {
-                self.hat(Btn::HatLeft, Btn::HatRight, HatLeft, HatRight, p)
-            }
+            HatUp(p) => self.button(Btn::HatUp, HatUp, p),
+            HatDown(p) => self.button(Btn::HatDown, HatDown, p),
+            HatRight(p) => self.button(Btn::HatRight, HatRight, p),
+            HatLeft(p) => self.button(Btn::HatLeft, HatLeft, p),
             Trigger(p) => self.button(Btn::Trigger, Trigger, p),
-
-            _event => todo!(), // FIXME
+            MicUp(p) => self.button(Btn::MicUp, MicUp, p),
+            MicDown(p) => self.button(Btn::MicDown, MicDown, p),
+            MicRight(p) => self.button(Btn::MicRight, MicRight, p),
+            MicLeft(p) => self.button(Btn::MicLeft, MicLeft, p),
+            PovUp(p) => self.button(Btn::PovUp, PovUp, p),
+            PovDown(p) => self.button(Btn::PovDown, PovDown, p),
+            PovRight(p) => self.button(Btn::PovRight, PovRight, p),
+            PovLeft(p) => self.button(Btn::PovLeft, PovLeft, p),
+            Slew(v) => self.pressure(ev, Axs::Slew, Slew, v),
+            Throttle(v) => self.pressure(ev, Axs::Throttle, Throttle, v),
+            ThrottleL(v) => self.pressure(ev, Axs::ThrottleL, ThrottleL, v),
+            ThrottleR(v) => self.pressure(ev, Axs::ThrottleR, ThrottleR, v),
+            Volume(v) => self.pressure(ev, Axs::Volume, Volume, v),
+            Wheel(v) => self.pressure(ev, Axs::Wheel, Wheel, v),
+            Rudder(v) => self.pressure(ev, Axs::Rudder, Rudder, v),
+            Gas(v) => self.pressure(ev, Axs::Gas, Gas, v),
+            Brake(v) => self.pressure(ev, Axs::Brake, Brake, v),
+            MicPush(p) => self.button(Btn::MicPush, MicPush, p),
+            ActionL(p) => self.button(Btn::ActionL, ActionL, p),
+            ActionM(p) => self.button(Btn::ActionM, ActionM, p),
+            ActionR(p) => self.button(Btn::ActionR, ActionR, p),
+            Bumper(p) => self.button(Btn::Bumper, Bumper, p),
+            Pinky(p) => self.button(Btn::Pinky, Pinky, p),
+            PinkyForward(p) => self.button(Btn::PinkyForward, PinkyForward, p),
+            PinkyBackward(p) => self.button(Btn::PinkyBackward, PinkyBackward, p),
+            FlapsUp(p) => self.button(Btn::FlapsUp, FlapsUp, p),
+            FlapsDown(p) => self.button(Btn::FlapsDown, FlapsDown, p),
+            BoatForward(p) => self.button(Btn::BoatForward, BoatForward, p),
+            BoatBackward(p) => self.button(Btn::BoatBackward, BoatBackward, p),
+            AutopilotPath(p) => self.button(Btn::AutopilotPath, AutopilotPath, p),
+            AutopilotAlt(p) => self.button(Btn::AutopilotAlt, AutopilotAlt, p),
+            EngineMotorL(p) => self.button(Btn::EngineMotorL, EngineMotorL, p),
+            EngineMotorR(p) => self.button(Btn::EngineMotorR, EngineMotorR, p),
+            EngineFuelFlowL(p) => self.button(Btn::EngineFuelFlowL, EngineFuelFlowL, p),
+            EngineFuelFlowR(p) => self.button(Btn::EngineFuelFlowR, EngineFuelFlowR, p),
+            EngineIgnitionL(p) => self.button(Btn::EngineIgnitionL, EngineIgnitionL, p),
+            EngineIgnitionR(p) => self.button(Btn::EngineIgnitionR, EngineIgnitionR, p),
+            SpeedbrakeBackward(p) => self.button(Btn::SpeedbrakeBackward, SpeedbrakeBackward, p),
+            SpeedbrakeForward(p) => self.button(Btn::SpeedbrakeForward, SpeedbrakeForward, p),
+            ChinaBackward(p) => self.button(Btn::ChinaBackward, ChinaBackward, p),
+            ChinaForward(p) => self.button(Btn::ChinaForward, ChinaForward, p),
+            Apu(p) => self.button(Btn::Apu, Apu, p),
+            RadarAltimeter(p) => self.button(Btn::RadarAltimeter, RadarAltimeter, p),
+            LandingGearSilence(p) => self.button(Btn::LandingGearSilence, LandingGearSilence, p),
+            Eac(p) => self.button(Btn::Eac, Eac, p),
+            AutopilotToggle(p) => self.button(Btn::AutopilotToggle, AutopilotToggle, p),
+            ThrottleButton(p) => self.button(Btn::ThrottleButton, ThrottleButton, p),
+            MouseX(v) => self.axis(ev, Axs::MouseX, MouseX, v),
+            MouseY(v) => self.axis(ev, Axs::MouseY, MouseY, v),
+            ScrollX(v) => self.axis(ev, Axs::ScrollX, ScrollX, v),
+            ScrollY(v) => self.axis(ev, Axs::ScrollY, ScrollY, v),
+            Mouse(p) => self.button(Btn::Mouse, Mouse, p),
+            Scroll(p) => self.button(Btn::Scroll, Scroll, p),
+            Context(p) => self.button(Btn::Context, Context, p),
+            Dpi(p) => self.button(Btn::Dpi, Dpi, p),
+            TrimUp(p) => self.button(Btn::TrimUp, TrimUp, p),
+            TrimDown(p) => self.button(Btn::TrimDown, TrimDown, p),
+            TrimLeft(p) => self.button(Btn::TrimLeft, TrimLeft, p),
+            TrimRight(p) => self.button(Btn::TrimRight, TrimRight, p),
         }
     }
 }

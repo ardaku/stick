@@ -4,10 +4,10 @@ type = "flight"
 [remap]
 Throttle = "Slew"
 Trigger = "Mouse"
-Thumb = "MicPush"
-Thumb2 = "MicUp"
-Top = "MicLeft"
-Top2 = "MicDown"
+ActionM = "MicPush"
+Bumper = "MicUp"
+ActionR = "MicLeft"
+ActionL = "MicDown"
 Pinky = "MicRight"
 1 = "SpeedbrakeForward"
 2 = "SpeedbrakeBackward"
@@ -33,7 +33,7 @@ Pinky = "MicRight"
 22 = "AutopilotAlt"
 25 = "EngineIgnitionL"
 26 = "EngineIgnitionR"
-JoyX = { event = "MouseX", unsigned = 1024 }
-JoyY = { event = "MouseY", unsigned = 1024 }
-JoyZ = { event = "ThrottleR", unsigned = 16339 }
-CamZ = { event = "ThrottleL", unsigned = 16339 }
+JoyX = { event = "MouseX", max = 1024 }
+JoyY = { event = "MouseY", max = 1024 }
+JoyZ = { event = "ThrottleR", max = 16339 }
+CamZ = { event = "ThrottleL", max = 16339 }

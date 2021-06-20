@@ -77,10 +77,10 @@ fn name_to_hex(name: &str) -> &str {
         "Brake" => "2E",
         "MicPush" => "2F",
         "Trigger" => "30",
-        "Thumb" => "31",
-        "Thumb2" => "32",
-        "Top" => "33",
-        "Top2" => "34",
+        "Bumper" => "31",
+        "ActionL" => "32",
+        "ActionM" => "33",
+        "ActionR" => "34",
         "Pinky" => "35",
         "PinkyForward" => "36",
         "PinkyBackward" => "37",
@@ -118,6 +118,10 @@ fn name_to_hex(name: &str) -> &str {
         "ScrollX" => "0x57",
         "ScrollY" => "0x58",
         "Scroll" => "0x59",
+        "TrimUp" => "0x5A",
+        "TrimDown" => "0x5B",
+        "TrimLeft" => "0x5C",
+        "TrimRight" => "0x5D",
         _unknown => panic!("Unknown: {}", _unknown),
     }
 }
@@ -171,10 +175,15 @@ pub(super) fn main() {
                     } else {
                         out.push_str(name_to_hex("None"));
                     }
-                    if let Some(unsigned) = table.get("unsigned") {
-                        let unsigned = unsigned.as_integer().unwrap();
-                        out.push('u');
-                        write!(&mut out, "{}", unsigned).unwrap();
+                    if let Some(max) = table.get("max") {
+                        let max = max.as_integer().unwrap();
+                        out.push('a');
+                        write!(&mut out, "{}", max).unwrap();
+                    }
+                    if let Some(min) = table.get("min") {
+                        let min = min.as_integer().unwrap();
+                        out.push('i');
+                        write!(&mut out, "{}", min).unwrap();
                     }
                     if let Some(scale) = table.get("scale") {
                         let scale = scale.as_float().unwrap();
