@@ -129,7 +129,9 @@ mod ctlr;
 mod event;
 mod listener;
 mod sys;
+mod focus;
 
 pub use ctlr::{Controller, Remap};
 pub use event::Event;
 pub use listener::Listener;
+pub use focus::{focus, unfocus};

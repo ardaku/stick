@@ -627,6 +627,11 @@ impl super::Controller for Controller {
         // Convert the event (may produce multiple stick events).
         linux_evdev_to_stick_event(&mut self.pending_events, ev);
 
+        // Check if events should be dropped.
+        if !ENABLED.load(std::sync::atomic::Ordering::Relaxed) {
+            self.pending_events.clear();
+        }
+
         // Tail call recursion!
         self.poll(cx)
     }
@@ -780,18 +785,18 @@ impl Drop for Listener {
     }
 }
 
-struct Global {
-    enabled: std::sync::atomic::AtomicBool,
-}
+static ENABLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+
+struct Global;
 
 impl super::Global for Global {
     /// Enable all events (when window comes in focus).
     fn enable(&self) {
-        self.enabled.store(true, std::sync::atomic::Ordering::Relaxed);
+        ENABLED.store(true, std::sync::atomic::Ordering::Relaxed);
     }
     /// Disable all events (when window leaves focus).
     fn disable(&self) {
-        self.enabled.store(false, std::sync::atomic::Ordering::Relaxed);
+        ENABLED.store(false, std::sync::atomic::Ordering::Relaxed);
     }
     /// Create a new listener.
     fn listener(&self, remap: Remap) -> Box<dyn super::Listener> {
@@ -800,7 +805,5 @@ impl super::Global for Global {
 }
 
 pub(super) fn global() -> Box<dyn super::Global> {
-    Box::new(Global {
-        enabled: std::sync::atomic::AtomicBool::new(true),
-    })
+    Box::new(Global)
 }
