@@ -12,6 +12,7 @@
 
 //! This file's code is based on https://github.com/Lokathor/rusty-xinput
 
+use super::{SysListener, SysController};
 use crate::Event;
 use std::fmt::{self, Debug, Formatter};
 use std::future::Future;

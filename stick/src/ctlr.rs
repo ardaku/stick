@@ -239,8 +239,8 @@ impl Remap {
 pub struct Controller {
     // Shared remapping.
     remap: Rc<Info>,
-    //
-    raw: crate::ffi::Ctlr,
+    // 
+    raw: Box<dyn crate::sys::Controller>,
     // Button states
     btns: u128,
     // Number button states
@@ -256,7 +256,7 @@ impl Debug for Controller {
 }
 
 impl Controller {
-    pub(crate) fn new(raw: crate::ffi::Ctlr, remap: &Remap) -> Self {
+    pub(crate) fn new(raw: Box<dyn crate::sys::Controller>, remap: &Remap) -> Self {
         let btns = 0;
         let nums = 0;
         let axis = [0.0; Axs::Count as usize];
@@ -274,18 +274,13 @@ impl Controller {
         }
     }
 
-    /// enable or disable event generation. Disable events when the application loses focus
-    pub fn enable(flag: bool) {
-        crate::ffi::Hub::enable(flag);
-    }
-
     /// Get a unique identifier for the specific model of gamepad.
     pub fn id(&self) -> u64 {
         self.raw.id()
     }
 
     /// Get the name of this Pad.
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> &str {
         self.raw.name()
     }
 

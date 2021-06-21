@@ -17,7 +17,7 @@ use std::task::Context;
 use std::task::Poll;
 
 /// Listener for when new controllers are plugged in.
-pub struct Listener(crate::ffi::Hub);
+pub struct Listener(Box<dyn crate::sys::Listener>);
 
 impl Debug for Listener {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -34,7 +34,7 @@ impl Default for Listener {
 impl Listener {
     /// Create a new listener for when new controllers are plugged in.
     pub fn new(remap: Remap) -> Self {
-        Self(crate::ffi::Hub::new(remap))
+        Self(crate::sys::GLOBAL.with(|g| g.listener(remap)))
     }
 }
 

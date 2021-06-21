@@ -9,4 +9,9 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-compile_error!("Target os not supported, please open an issue at https://github.com/libcala/stick/issues");
+use super::SysListener;
+
+#[inline(always)]
+pub(super) fn new() -> Option<Box<dyn SysListener>> {
+    None
+}
