@@ -176,8 +176,6 @@ impl Remap {
     pub fn load(mut self, data: &str) -> Option<Remap> {
         // Controllers
         for line in data.lines() {
-            println!("CTLR {}", line);
-        
             let id = u64::from_str_radix(&line[..16], 16).ok()?;
             let tab = line.find('\t')?;
             let name = line[16..tab].to_string();
