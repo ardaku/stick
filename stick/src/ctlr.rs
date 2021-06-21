@@ -161,6 +161,10 @@ impl Remap {
     #[allow(unused_mut)]
     pub fn new() -> Self {
         let mut remapper = Remap(HashMap::new());
+        #[cfg(all(feature = "gcdb", target_os = "linux"))] {
+            let data = include_str!("../sdlgc_linux.sdb");
+            remapper = remapper.load(data).unwrap();
+        }
         #[cfg(all(feature = "sdb", target_os = "linux"))] {
             let data = include_str!("../remap_linux.sdb");
             remapper = remapper.load(data).unwrap();
@@ -172,6 +176,8 @@ impl Remap {
     pub fn load(mut self, data: &str) -> Option<Remap> {
         // Controllers
         for line in data.lines() {
+            println!("CTLR {}", line);
+        
             let id = u64::from_str_radix(&line[..16], 16).ok()?;
             let tab = line.find('\t')?;
             let name = line[16..tab].to_string();

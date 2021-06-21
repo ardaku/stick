@@ -19,6 +19,8 @@ const _WINDOWS: &str = "./sdb/windows/";
 const _WEB: &str = "./sdb/web/";
 const _USB: &str = "./sdb/usb/";
 
+const SDL: &str = "./gcdb/gamecontrollerdb.txt";
+
 #[derive(Deserialize)]
 struct Map {
     name: String,
@@ -207,6 +209,147 @@ pub(super) fn main() {
     }
     out.pop();
 
-    std::fs::write("./stick/remap_linux.sdb", out).unwrap();
-    // std::fs::write("./stick/sdlgc.sdb", out).unwrap();
+    std::fs::write("./stick/remap_linux.sdb", &out).unwrap();
+
+    println!("Loading Linux (SDL) TOML Controller Mappings…");
+
+    out.clear();
+
+    for line in std::fs::read_to_string(SDL).expect("Missing database").lines() {
+        if line.is_empty() || line.starts_with("#") {
+            continue;
+        }
+        
+        // ID of Controller
+        let guid = line.get(0..32).unwrap();
+        // Skip over emulated joysticks.        
+        if guid.get(2..8) != Some("000000")
+            || guid.get(12..16) != Some("0000")
+            || guid.get(20..24) != Some("0000")
+            || guid.get(28..32) != Some("0000")
+            || !line.contains("platform:Linux")
+        {
+            continue;
+        }
+
+        out.push_str(&guid.get(0..4).unwrap().to_uppercase());
+        out.push_str(&guid.get(8..12).unwrap().to_uppercase());
+        out.push_str(&guid.get(16..24).unwrap().to_uppercase());
+        out.push_str(&guid.get(24..28).unwrap().to_uppercase());
+
+        // Name of Controller.
+        let mut iter = line[33..].split(',');
+        let name = iter.next().expect("No name");
+        out.push_str(&name);
+        out.push('\t');
+
+        // Type of controller
+        out.push('w');
+
+        // Add remappings
+        for mapping in iter {
+            if mapping.is_empty() {
+                continue;
+            }
+
+            let mut mapping = mapping.split(':');
+            let js_out = mapping.next().unwrap();
+            let js_in = mapping.next().unwrap();
+
+            let js_in = match js_in {
+                "b0" => name_to_hex("Trigger"),
+                "b1" => name_to_hex("ActionM"),
+                "b2" => name_to_hex("Bumper"),
+                "b3" => name_to_hex("ActionR"),
+                "b4" => name_to_hex("ActionL"),
+                "b5" => name_to_hex("Pinky"),
+                "b6" => "80",
+                "b7" => "81",
+                "b8" => "82",
+                "b9" => "83",
+                "b10" => "84",
+                "b11" => "85",
+                "b12" => "86",
+                "b13" => "87",
+                "b14" => "88",
+                "b15" => "89",
+                "b16" => name_to_hex("ActionA"),
+                "b17" => name_to_hex("ActionB"),
+                "b18" => name_to_hex("ActionC"),
+                "b19" => name_to_hex("ActionV"),
+                "b20" => name_to_hex("ActionH"),
+                "b21" => name_to_hex("ActionD"),
+                "b22" => name_to_hex("BumperL"),
+                "b32" => continue, // Not a gamepad?
+                "h0.1" => name_to_hex("PovUp"),
+                "h0.2" => name_to_hex("PovRight"),
+                "h0.4" => name_to_hex("PovDown"),
+                "h0.8" => name_to_hex("PovLeft"),
+                "a0" | "a0~" => name_to_hex("JoyX"),
+                "a1" | "a1~" => name_to_hex("JoyY"),
+                "a2" | "a2~" => name_to_hex("JoyZ"),
+                "a3" | "a3~" => name_to_hex("CamX"),
+                "a4" | "a4~" => name_to_hex("CamY"),
+                "a5" | "a5~" => name_to_hex("CamZ"),
+                "a6" | "a6~" => name_to_hex("Throttle"),
+                "a7" | "a7~" => name_to_hex("Rudder"),
+                "a8" | "a8~" => name_to_hex("Wheel"),
+                "a9" | "a9~" => name_to_hex("Gas"),
+                "a10" | "a10~" => name_to_hex("Brake"),
+                "a11" | "a11~" => name_to_hex("Slew"),
+                "a12" => name_to_hex("ThrottleL"),
+                "a13" => name_to_hex("ThrottleR"),
+                "a14" => name_to_hex("ScrollX"),
+                "+a0" | "+a1" | "+a2" | "+a3" | "+a4" | "+a5" | "-a0" | "-a1" | "-a2" | "-a3" | "-a4" | "-a5" => continue,
+                "Linux" => continue,
+                // ?
+                "b122" => name_to_hex("Down"),
+                "b119" => name_to_hex("Left"),
+                "b120" => name_to_hex("Right"),
+                "b117" => name_to_hex("Up"),
+                "b161" => "8B",
+                "b136" => continue,
+                _in => panic!("Unknown input {}", _in),
+            };
+            
+            let js_out = match js_out {
+                "a" => "02",
+                "b" => "03",
+                "x" => "05",
+                "y" => "06",
+                "back" => "08",
+                "start" => "09",
+                "guide" => "01",
+                "leftshoulder" => "0C",
+                "lefttrigger" => "0E",
+                "leftx" => "20",
+                "lefty" => "21",
+                "rightx" => "23",
+                "righty" => "24",
+                "rightshoulder" => "0D",
+                "righttrigger" => "0F",
+                "leftstick" => "0A",
+                "rightstick" => "0B",
+                "dpleft" => "12",
+                "dpright" => "13",
+                "dpup" => "10",
+                "dpdown" => "11",
+                "misc1" => "81",
+                "+leftx" | "-leftx" | "+lefty" | "-lefty" => continue,
+                "paddle1" => "51",
+                "paddle2" => "52",
+                _out => panic!("Unknown output {}", _out),
+            };
+            
+            out.push_str(js_in);
+            out.push_str(js_out);           
+            // FIXME: Tweaks
+            out.push(';');
+        }
+        out.pop();
+        out.push('\n');
+    }
+    out.pop();
+
+    std::fs::write("./stick/sdlgc_linux.sdb", out).unwrap();
 }

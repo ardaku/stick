@@ -52,8 +52,8 @@ fn linux_btn_to_stick_event(pending: &mut Vec<Event>, btn: c_ushort, pushed: boo
         0x135 /* BTN_Z */ => Event::ActionD(pushed),
         0x136 /* BTN_TL */ => Event::BumperL(pushed),
         0x137 /* BTN_TR */ => Event::BumperR(pushed),
-        0x138 /* BTN_TL2 */ => Event::TriggerL(f64::from(u8::from(pushed))),
-        0x139 /* BTN_TR2 */ => Event::TriggerR(f64::from(u8::from(pushed))),
+        0x138 /* BTN_TL2 */ => Event::TriggerL(f64::from(u8::from(pushed)) * 255.0),
+        0x139 /* BTN_TR2 */ => Event::TriggerR(f64::from(u8::from(pushed)) * 255.0),
         0x13A /* BTN_SELECT */ => Event::MenuL(pushed),
         0x13B /* BTN_START */ => Event::MenuR(pushed),
         0x13C /* BTN_MODE */ => Event::Exit(pushed),
@@ -171,7 +171,12 @@ fn linux_abs_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_i
 		0x07 /* ABS_RUDDER */ => pending.push(Event::Rudder(value as f64)),
 		0x08 /* ABS_WHEEL */ => pending.push(Event::Wheel(value as f64)),
 		0x09 /* ABS_GAS */ => pending.push(Event::Gas(value as f64)),
-		0x0a /* ABS_BRAKE */ => pending.push(Event::Brake(value as f64)),
+		0x0A /* ABS_BRAKE */ => pending.push(Event::Brake(value as f64)),
+		0x0B /* ABS_UNKNOWN0 */ => pending.push(Event::Slew(value as f64)),
+		0x0C /* ABS_UNKNOWN1 */ => pending.push(Event::ThrottleL(value as f64)),
+		0x0D /* ABS_UNKNOWN2 */ => pending.push(Event::ThrottleR(value as f64)),
+		0x0E /* ABS_UNKNOWN3 */ => pending.push(Event::ScrollX(value as f64)),
+		0x0F /* ABS_UNKNOWN4 */ => pending.push(Event::ScrollY(value as f64)),
 		0x10 /* ABS_HAT0X */ => match value.cmp(&0) {
             Ordering::Greater => pending.push(Event::PovRight(true)),
             Ordering::Less => pending.push(Event::PovLeft(true)),
@@ -237,31 +242,31 @@ fn linux_abs_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_i
             }
         },
 		0x18 /* ABS_PRESSURE */ => {
-            eprintln!("FIXME: ABS_PRESSURE");
+            eprintln!("Unknown Event: ABS_PRESSURE");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
 		0x19 /* ABS_DISTANCE */ => {
-            eprintln!("FIXME: ABS_DISTANCE");
+            eprintln!("Unknown Event: ABS_DISTANCE");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
 		0x1a /* ABS_TILT_X */ => {
-            eprintln!("FIXME: ABS_TILT_X");
+            eprintln!("Unknown Event: ABS_TILT_X");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
 		0x1b /* ABS_TILT_Y */ => {
-            eprintln!("FIXME: ABS_TILT_Y");
+            eprintln!("Unknown Event: ABS_TILT_Y");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
 		0x1c /* ABS_TOOL_WIDTH */ => {
-            eprintln!("FIXME: ABS_TOOL_WIDTH");
+            eprintln!("Unknown Event: ABS_TOOL_WIDTH");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
 		0x20 /* ABS_VOLUME */ => {
-            eprintln!("FIXME: ABS_VOLUME");
+            eprintln!("Unknown Event: ABS_VOLUME");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
 		0x28 /* ABS_MISC */ => {
-            eprintln!("FIXME: ABS_MISC");
+            eprintln!("Unknown Event: ABS_MISC");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
         _unknown => {

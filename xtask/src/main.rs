@@ -17,7 +17,7 @@ fn print_help() {
     eprintln!("Tasks:");
     eprintln!();
     eprintln!("--help          Print this help text");
-    eprintln!("sdb             Generate stick and sdl bytecode databases");
+    eprintln!("sdb             Generate stick & gcdb bytecode databases");
 }
 
 fn print_unknown(x: &str) {

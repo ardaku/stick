@@ -23,8 +23,7 @@ description = "Platform-agnostic asynchronous gamepad library for Rust"
 repository = "https://github.com/libcala/stick"
 documentation = "https://docs.rs/stick"
 homepage = "https://github.com/libcala/stick/blob/main/CHANGELOG.md"
-include = ["ctlr_db/", "build.rs", "Cargo.toml", "README.md", "LICENSE-ZLIB",
-    "LICENSE-APACHE", "src/"]
+include = ["Cargo.toml", "README.md", "src/", "*.sdb"]
 categories = ["hardware-support", "asynchronous", "game-development"]
 keywords = ["ux", "joystick", "gamepad", "platform-agnostic", "controller"]
 readme = "README.md"
