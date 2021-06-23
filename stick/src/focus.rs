@@ -9,4 +9,12 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-compile_error!("Target os not supported, please open an issue at https://github.com/libcala/stick/issues");
+/// Window grab focus, re-enable events if they were disabled.
+pub fn focus() {
+    crate::sys::GLOBAL.with(|g| g.enable());
+}
+
+/// Window ungrab focus, disable events.
+pub fn unfocus() {
+    crate::sys::GLOBAL.with(|g| g.disable());
+}

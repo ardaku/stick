@@ -9,4 +9,9 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-include!("dummy.rs");
+use super::SysListener;
+
+#[inline(always)]
+pub(super) fn new() -> Option<Box<dyn SysListener>> {
+    None
+}

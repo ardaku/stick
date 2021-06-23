@@ -6,23 +6,31 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 
 ## [0.12.0] - Unreleased
 ### Added
- - You can now import your own mappings at runtime **WIP**
+ - You can now import your own mappings at runtime with `Remap`
  - Support For WASM **WIP**
- - Default evdev id guessing **WIP**
+ - Default evdev id guessing
  - Windows support
+ - Support adjusting left and right rumble separately.
+ - `focus()` for enabling events (enabled by default).
+ - `unfocus()` - for disabling events when window is not in focus.
+ - New variants to `Event`
 
 ### Changed
  - Database now stored as data rather than control flow in resulting binary
-   (lowering bloat) - **WIP**
- - Use faster-compiling dependency than serde for controller mappings **WIP**
+   (lowering bloat)
+ - Offload serde dependency to xtask pattern to improve compile times
+ - Database TOML is simplified
+ - Some `Event` names
 
 ### Removed
  - Controllers from sdl controller db (it assumes everything is a gamepad, which
    not all controllers are - stick will only include semantically correct
-   mappings from now on).
+   mappings from now on by default).  You may add them back with the new "gcdb"
+   feature.
 
 ### Fixed
  - Cleaned up database (fixing inconsistencies).
+ - Inconsistent freezing issues on Linux
 
 ## [0.11.1] - 2020-12-13
 ### Fixed

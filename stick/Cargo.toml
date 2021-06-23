@@ -34,7 +34,6 @@ smelling_salts = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["libloaderapi", "xinput", "winerror"] }
-lazy_static = "1.4.0"
 log = { version = "0.4", default-features = false }
 
 [dev-dependencies]

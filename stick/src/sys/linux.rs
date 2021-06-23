@@ -14,18 +14,20 @@ use smelling_salts::{Device, Watcher};
 use std::cmp::Ordering;
 use std::convert::TryInto;
 use std::fs::read_dir;
-use std::future::Future;
 use std::mem::{size_of, MaybeUninit};
 use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
 use std::os::unix::io::RawFd;
-use std::pin::Pin;
 use std::task::{Context, Poll};
 
 // Event codes taken from
 // https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
 
 // Convert Linux BTN press to stick Event.
-fn linux_btn_to_stick_event(pending: &mut Vec<Event>, btn: c_ushort, pushed: bool) {
+fn linux_btn_to_stick_event(
+    pending: &mut Vec<Event>,
+    btn: c_ushort,
+    pushed: bool,
+) {
     pending.push(match btn {
         0x120 /* BTN_TRIGGER */ => Event::Trigger(pushed),
         0x121 /* BTN_THUMB */ => Event::ActionM(pushed),
@@ -115,7 +117,11 @@ fn linux_btn_to_stick_event(pending: &mut Vec<Event>, btn: c_ushort, pushed: boo
 }
 
 // Convert Linux REL axis to stick Event.
-fn linux_rel_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_int) {
+fn linux_rel_to_stick_event(
+    pending: &mut Vec<Event>,
+    axis: c_ushort,
+    value: c_int,
+) {
     match axis {
 		0x00 /* REL_X */ => pending.push(Event::MouseX(value as f64)),
 		0x01 /* REL_Y */ => pending.push(Event::MouseY(value as f64)),
@@ -159,7 +165,11 @@ fn linux_rel_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_i
 }
 
 // Convert Linux ABS axis to stick Event.
-fn linux_abs_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_int) {
+fn linux_abs_to_stick_event(
+    pending: &mut Vec<Event>,
+    axis: c_ushort,
+    value: c_int,
+) {
     match axis {
 		0x00 /* ABS_X */ => pending.push(Event::JoyX(value as f64)),
 		0x01 /* ABS_Y */ => pending.push(Event::JoyY(value as f64)),
@@ -357,278 +367,6 @@ extern "C" {
     fn __errno_location() -> *mut c_int;
 }
 
-pub(crate) struct Hub {
-    device: Device,
-    read_dir: Option<Box<std::fs::ReadDir>>,
-    remap: Remap,
-}
-
-impl Hub {
-    pub(super) fn new(remap: Remap) -> Self {
-        const CLOEXEC: c_int = 0o2000000;
-        const NONBLOCK: c_int = 0o0004000;
-        const CREATE: c_uint = 0x00000100;
-        const DIR: &[u8] = b"/dev/input/by-id/\0";
-
-        // Create an inotify.
-        let listen = unsafe { inotify_init1(NONBLOCK | CLOEXEC) };
-        if listen == -1 {
-            panic!("Couldn't create inotify!");
-        }
-
-        // Start watching the controller directory.
-        if unsafe { inotify_add_watch(listen, DIR.as_ptr(), CREATE) } == -1 {
-            panic!("Couldn't add inotify watch!");
-        }
-
-        Hub {
-            // Create watcher, and register with fd as a "device".
-            device: Device::new(listen, Watcher::new().input()),
-            //
-            read_dir: Some(Box::new(read_dir("/dev/input/by-id/").unwrap())),
-            //
-            remap,
-        }
-    }
-
-    // FIXME: split to disable/enable methods
-    pub(super) fn enable(_flag: bool) {
-        // do nothing
-    }
-
-    fn controller(
-        remap: &Remap,
-        mut filename: String,
-    ) -> Poll<crate::Controller> {
-        if filename.ends_with("-event-joystick") {
-            filename.push('\0');
-            let mut timeout = 1024; // Quit after 1024 tries with no access
-            let fd = loop {
-                timeout -= 1;
-                let fd = unsafe {
-                    open(filename.as_ptr(), 2 /*read&write*/)
-                };
-                let errno = unsafe { *__errno_location() };
-                if errno != 13 || fd != -1 {
-                    break fd;
-                }
-                if timeout == 0 {
-                    break -1;
-                }
-            };
-            if fd != -1 {
-                return Poll::Ready(crate::Controller::new(
-                    Ctlr::new(fd),
-                    remap,
-                ));
-            }
-        }
-        Poll::Pending
-    }
-}
-
-impl Future for Hub {
-    type Output = crate::Controller;
-
-    fn poll(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Self::Output> {
-        let this = &mut *self.as_mut();
-
-        // Read the directory for ctrls if initialization hasn't completed yet.
-        if let Some(ref mut read_dir) = &mut this.read_dir {
-            for dir_entry in read_dir.flatten() {
-                let file = dir_entry.path();
-                let path = file.as_path().to_string_lossy().to_string();
-                if let Poll::Ready(controller) =
-                    Self::controller(&this.remap, path)
-                {
-                    return Poll::Ready(controller);
-                }
-            }
-            this.read_dir = None;
-        }
-
-        // Read the Inotify Event.
-        let mut ev = MaybeUninit::<InotifyEv>::zeroed();
-        let read = unsafe {
-            read(
-                this.device.raw(),
-                ev.as_mut_ptr().cast(),
-                size_of::<InotifyEv>(),
-            )
-        };
-        if read > 0 {
-            let ev = unsafe { ev.assume_init() };
-            let len = unsafe { strlen(&ev.name[0]) };
-            let filename = String::from_utf8_lossy(&ev.name[..len]);
-            let path = format!("/dev/input/by-id/{}", filename);
-            if let Poll::Ready(controller) = Self::controller(&this.remap, path)
-            {
-                return Poll::Ready(controller);
-            }
-        }
-
-        // Register waker for this device
-        this.device.register_waker(cx.waker());
-        Poll::Pending
-    }
-}
-
-impl Drop for Hub {
-    fn drop(&mut self) {
-        let fd = self.device.raw();
-        self.device.old();
-        assert_ne!(unsafe { close(fd) }, -1);
-    }
-}
-
-/// Gamepad / Other HID
-pub(crate) struct Ctlr {
-    // Async device handle
-    device: Device,
-    // Hexadecimal controller type ID
-    id: u64,
-    // Rumble effect id.
-    rumble: i16,
-    /// Signed axis multiplier
-    norm: f64,
-    /// Signed axis zero
-    zero: f64,
-    /// Don't process near 0
-    flat: f64,
-    /// 
-    pending_events: Vec<Event>,
-}
-
-impl Ctlr {
-    fn new(fd: c_int) -> Self {
-        // Enable evdev async.
-        assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
-
-        // Get the hardware id of this controller.
-        let mut id = MaybeUninit::<u64>::uninit();
-        assert_ne!(
-            unsafe { ioctl(fd, 0x_8008_4502, id.as_mut_ptr().cast()) },
-            -1
-        );
-        let id = unsafe { id.assume_init() }.to_be();
-
-        // Get the min and max absolute values for axis.
-        let mut a = MaybeUninit::<AbsInfo>::uninit();
-        assert_ne!(
-            unsafe { ioctl(fd, 0x_8018_4540, a.as_mut_ptr().cast()) },
-            -1
-        );
-        let a = unsafe { a.assume_init() };
-        let norm = (a.maximum as f64 - a.minimum as f64) * 0.5;
-        let zero = a.minimum as f64 + norm;
-        // Invert so multiplication can be used instead of division
-        let norm = norm.recip();
-        let flat = a.flat as f64 * norm;
-
-        // Query the controller for haptic support.
-        let rumble = joystick_haptic(fd, -1, 0.0, 0.0);
-        // Construct device from fd, looking for input events.
-        let device = Device::new(fd, Watcher::new().input());
-        //
-        let pending_events = Vec::new();
-        // Return
-        Self {
-            device,
-            id,
-            rumble,
-            norm,
-            zero,
-            flat,
-            pending_events,
-        }
-    }
-
-    pub(super) fn id(&self) -> u64 {
-        self.id
-    }
-
-    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
-        if let Some(e) = self.pending_events.pop() {
-            return Poll::Ready(e);
-        }
-
-        // Read an event.
-        let mut ev = MaybeUninit::<EvdevEv>::uninit();
-        let ev = {
-            let bytes = unsafe {
-                read(
-                    self.device.raw(),
-                    ev.as_mut_ptr().cast(),
-                    size_of::<EvdevEv>(),
-                )
-            };
-            if bytes <= 0 {
-                let errno = unsafe { *__errno_location() };
-                if errno == 19 {
-                    return Poll::Ready(Event::Disconnect);
-                }
-                assert_eq!(errno, 11);
-                // Register waker for this device
-                self.device.register_waker(cx.waker());
-                // If no new controllers found, return pending.
-                return Poll::Pending;
-            }
-            assert_eq!(size_of::<EvdevEv>() as isize, bytes);
-            unsafe { ev.assume_init() }
-        };
-
-        // Convert the event (may produce multiple stick events).
-        linux_evdev_to_stick_event(&mut self.pending_events, ev);
-
-        // Tail call recursion!
-        self.poll(cx)
-    }
-
-    pub(super) fn name(&self) -> String {
-        let fd = self.device.raw();
-        let mut a = MaybeUninit::<[c_char; 256]>::uninit();
-        assert_ne!(
-            unsafe { ioctl(fd, 0x80FF_4506, a.as_mut_ptr().cast()) },
-            -1
-        );
-        let a = unsafe { a.assume_init() };
-        let name = unsafe { std::ffi::CStr::from_ptr(a.as_ptr()) };
-        name.to_string_lossy().to_string()
-    }
-
-    pub(super) fn rumble(&mut self, left: f32, right: f32) {
-        if self.rumble >= 0 {
-            joystick_ff(self.device.raw(), self.rumble, left, right);
-        }
-    }
-
-    /// Use default unsigned axis range
-    pub(super) fn pressure(&self, input: f64) -> f64 {
-        input * (1.0 / 255.0)
-    }
-
-    /// Use full joystick axis range.
-    pub(super) fn axis(&self, input: f64) -> f64 {
-        let input = (input - self.zero) * self.norm;
-        if input.abs() <= self.flat {
-            0.0
-        } else {
-            input
-        }
-    }
-}
-
-impl Drop for Ctlr {
-    fn drop(&mut self) {
-        let fd = self.device.raw();
-        self.device.old();
-        assert_ne!(unsafe { close(fd) }, -1);
-    }
-}
-
 // From: https://github.com/torvalds/linux/blob/master/include/uapi/linux/input.h
 
 #[repr(C)]
@@ -781,4 +519,304 @@ fn joystick_haptic(fd: RawFd, id: i16, strong: f32, weak: f32) -> i16 {
     } else {
         a.id
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/// Gamepad / Other HID
+struct Controller {
+    // Async device handle
+    device: Device,
+    // Hexadecimal controller type ID
+    id: u64,
+    // Rumble effect id.
+    rumble: i16,
+    /// Signed axis multiplier
+    norm: f64,
+    /// Signed axis zero
+    zero: f64,
+    /// Don't process near 0
+    flat: f64,
+    ///
+    pending_events: Vec<Event>,
+    ///
+    name: String,
+}
+
+impl Controller {
+    fn new(fd: c_int) -> Self {
+        // Enable evdev async.
+        assert_ne!(unsafe { fcntl(fd, 0x4, 0x800) }, -1);
+
+        // Get the hardware id of this controller.
+        let mut id = MaybeUninit::<u64>::uninit();
+        assert_ne!(
+            unsafe { ioctl(fd, 0x_8008_4502, id.as_mut_ptr().cast()) },
+            -1
+        );
+        let id = unsafe { id.assume_init() }.to_be();
+
+        // Get the min and max absolute values for axis.
+        let mut a = MaybeUninit::<AbsInfo>::uninit();
+        assert_ne!(
+            unsafe { ioctl(fd, 0x_8018_4540, a.as_mut_ptr().cast()) },
+            -1
+        );
+        let a = unsafe { a.assume_init() };
+        let norm = (a.maximum as f64 - a.minimum as f64) * 0.5;
+        let zero = a.minimum as f64 + norm;
+        // Invert so multiplication can be used instead of division
+        let norm = norm.recip();
+        let flat = a.flat as f64 * norm;
+
+        // Query the controller for haptic support.
+        let rumble = joystick_haptic(fd, -1, 0.0, 0.0);
+        // Construct device from fd, looking for input events.
+        let device = Device::new(fd, Watcher::new().input());
+        //
+        let pending_events = Vec::new();
+
+        // Get Name
+        let fd = device.raw();
+        let mut a = MaybeUninit::<[c_char; 256]>::uninit();
+        assert_ne!(
+            unsafe { ioctl(fd, 0x80FF_4506, a.as_mut_ptr().cast()) },
+            -1
+        );
+        let a = unsafe { a.assume_init() };
+        let name = unsafe { std::ffi::CStr::from_ptr(a.as_ptr()) };
+        let name = name.to_string_lossy().to_string();
+
+        // Return
+        Self {
+            device,
+            id,
+            rumble,
+            norm,
+            zero,
+            flat,
+            pending_events,
+            name,
+        }
+    }
+}
+
+impl super::Controller for Controller {
+    fn id(&self) -> u64 {
+        self.id
+    }
+
+    fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
+        if let Some(e) = self.pending_events.pop() {
+            return Poll::Ready(e);
+        }
+
+        // Read an event.
+        let mut ev = MaybeUninit::<EvdevEv>::uninit();
+        let ev = {
+            let bytes = unsafe {
+                read(
+                    self.device.raw(),
+                    ev.as_mut_ptr().cast(),
+                    size_of::<EvdevEv>(),
+                )
+            };
+            if bytes <= 0 {
+                let errno = unsafe { *__errno_location() };
+                if errno == 19 {
+                    return Poll::Ready(Event::Disconnect);
+                }
+                assert_eq!(errno, 11);
+                // Register waker for this device
+                self.device.register_waker(cx.waker());
+                // If no new controllers found, return pending.
+                return Poll::Pending;
+            }
+            assert_eq!(size_of::<EvdevEv>() as isize, bytes);
+            unsafe { ev.assume_init() }
+        };
+
+        // Convert the event (may produce multiple stick events).
+        linux_evdev_to_stick_event(&mut self.pending_events, ev);
+
+        // Check if events should be dropped.
+        if !ENABLED.load(std::sync::atomic::Ordering::Relaxed) {
+            self.pending_events.clear();
+        }
+
+        // Tail call recursion!
+        self.poll(cx)
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rumble(&mut self, left: f32, right: f32) {
+        if self.rumble >= 0 {
+            joystick_ff(self.device.raw(), self.rumble, left, right);
+        }
+    }
+
+    /// Use default unsigned axis range
+    fn pressure(&self, input: f64) -> f64 {
+        input * (1.0 / 255.0)
+    }
+
+    /// Use full joystick axis range.
+    fn axis(&self, input: f64) -> f64 {
+        let input = (input - self.zero) * self.norm;
+        if input.abs() <= self.flat {
+            0.0
+        } else {
+            input
+        }
+    }
+}
+
+impl Drop for Controller {
+    fn drop(&mut self) {
+        let fd = self.device.raw();
+        self.device.old();
+        assert_ne!(unsafe { close(fd) }, -1);
+    }
+}
+
+struct Listener {
+    device: Device,
+    read_dir: Option<Box<std::fs::ReadDir>>,
+    remap: Remap,
+}
+
+impl Listener {
+    fn new(remap: Remap) -> Self {
+        const CLOEXEC: c_int = 0o2000000;
+        const NONBLOCK: c_int = 0o0004000;
+        const CREATE: c_uint = 0x00000100;
+        const DIR: &[u8] = b"/dev/input/by-id/\0";
+
+        // Create an inotify.
+        let listen = unsafe { inotify_init1(NONBLOCK | CLOEXEC) };
+        if listen == -1 {
+            panic!("Couldn't create inotify!");
+        }
+
+        // Start watching the controller directory.
+        if unsafe { inotify_add_watch(listen, DIR.as_ptr(), CREATE) } == -1 {
+            panic!("Couldn't add inotify watch!");
+        }
+
+        Self {
+            // Create watcher, and register with fd as a "device".
+            device: Device::new(listen, Watcher::new().input()),
+            //
+            read_dir: Some(Box::new(read_dir("/dev/input/by-id/").unwrap())),
+            //
+            remap,
+        }
+    }
+
+    fn controller(
+        remap: &Remap,
+        mut filename: String,
+    ) -> Poll<crate::Controller> {
+        if filename.ends_with("-event-joystick") {
+            filename.push('\0');
+            let mut timeout = 1024; // Quit after 1024 tries with no access
+            let fd = loop {
+                timeout -= 1;
+                let fd = unsafe {
+                    open(filename.as_ptr(), 2 /*read&write*/)
+                };
+                let errno = unsafe { *__errno_location() };
+                if errno != 13 || fd != -1 {
+                    break fd;
+                }
+                if timeout == 0 {
+                    break -1;
+                }
+            };
+            if fd != -1 {
+                return Poll::Ready(crate::Controller::new(
+                    Box::new(Controller::new(fd)),
+                    remap,
+                ));
+            }
+        }
+        Poll::Pending
+    }
+}
+
+impl super::Listener for Listener {
+    fn poll(&mut self, cx: &mut Context<'_>) -> Poll<crate::Controller> {
+        // Read the directory for ctrls if initialization hasn't completed yet.
+        if let Some(ref mut read_dir) = &mut self.read_dir {
+            for dir_entry in read_dir.flatten() {
+                let file = dir_entry.path();
+                let path = file.as_path().to_string_lossy().to_string();
+                if let Poll::Ready(controller) =
+                    Self::controller(&self.remap, path)
+                {
+                    return Poll::Ready(controller);
+                }
+            }
+            self.read_dir = None;
+        }
+
+        // Read the Inotify Event.
+        let mut ev = MaybeUninit::<InotifyEv>::zeroed();
+        let read = unsafe {
+            read(
+                self.device.raw(),
+                ev.as_mut_ptr().cast(),
+                size_of::<InotifyEv>(),
+            )
+        };
+        if read > 0 {
+            let ev = unsafe { ev.assume_init() };
+            let len = unsafe { strlen(&ev.name[0]) };
+            let filename = String::from_utf8_lossy(&ev.name[..len]);
+            let path = format!("/dev/input/by-id/{}", filename);
+            if let Poll::Ready(controller) = Self::controller(&self.remap, path)
+            {
+                return Poll::Ready(controller);
+            }
+        }
+
+        // Register waker for this device
+        self.device.register_waker(cx.waker());
+        Poll::Pending
+    }
+}
+
+impl Drop for Listener {
+    fn drop(&mut self) {
+        let fd = self.device.raw();
+        self.device.old();
+        assert_ne!(unsafe { close(fd) }, -1);
+    }
+}
+
+static ENABLED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(true);
+
+struct Global;
+
+impl super::Global for Global {
+    /// Enable all events (when window comes in focus).
+    fn enable(&self) {
+        ENABLED.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+    /// Disable all events (when window leaves focus).
+    fn disable(&self) {
+        ENABLED.store(false, std::sync::atomic::Ordering::Relaxed);
+    }
+    /// Create a new listener.
+    fn listener(&self, remap: Remap) -> Box<dyn super::Listener> {
+        Box::new(Listener::new(remap))
+    }
+}
+
+pub(super) fn global() -> Box<dyn super::Global> {
+    Box::new(Global)
 }
