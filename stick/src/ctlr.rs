@@ -286,6 +286,7 @@ impl Debug for Controller {
 }
 
 impl Controller {
+    #[allow(unused)]
     pub(crate) fn new(
         raw: Box<dyn crate::sys::Controller>,
         remap: &Remap,
