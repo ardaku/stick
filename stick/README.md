@@ -1,6 +1,6 @@
 # Stick
 
-#### Platform-agnostic asynchronous gamepad, joystick and flightstick library for Rust
+#### Platform-agnostic asynchronous gamepad, joystick and flightstick library
 
 [![tests](https://github.com/libcala/stick/workflows/tests/badge.svg)](https://github.com/libcala/stick/actions?query=workflow%3Atests)
 [![Docs](https://docs.rs/stick/badge.svg)](https://docs.rs/stick)

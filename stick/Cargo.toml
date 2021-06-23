@@ -19,7 +19,7 @@ authors = [
 ]
 license = "Apache-2.0 OR MIT OR BSL-1.0"
 
-description = "Platform-agnostic asynchronous gamepad, joystick and flighstick library for Rust"
+description = "Platform-agnostic asynchronous gamepad, joystick and flighstick library"
 repository = "https://github.com/libcala/stick"
 documentation = "https://docs.rs/stick"
 homepage = "https://github.com/libcala/stick/blob/main/CHANGELOG.md"
