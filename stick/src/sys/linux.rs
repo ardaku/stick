@@ -23,7 +23,11 @@ use std::task::{Context, Poll};
 // https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
 
 // Convert Linux BTN press to stick Event.
-fn linux_btn_to_stick_event(pending: &mut Vec<Event>, btn: c_ushort, pushed: bool) {
+fn linux_btn_to_stick_event(
+    pending: &mut Vec<Event>,
+    btn: c_ushort,
+    pushed: bool,
+) {
     pending.push(match btn {
         0x120 /* BTN_TRIGGER */ => Event::Trigger(pushed),
         0x121 /* BTN_THUMB */ => Event::ActionM(pushed),
@@ -113,7 +117,11 @@ fn linux_btn_to_stick_event(pending: &mut Vec<Event>, btn: c_ushort, pushed: boo
 }
 
 // Convert Linux REL axis to stick Event.
-fn linux_rel_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_int) {
+fn linux_rel_to_stick_event(
+    pending: &mut Vec<Event>,
+    axis: c_ushort,
+    value: c_int,
+) {
     match axis {
 		0x00 /* REL_X */ => pending.push(Event::MouseX(value as f64)),
 		0x01 /* REL_Y */ => pending.push(Event::MouseY(value as f64)),
@@ -157,7 +165,11 @@ fn linux_rel_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_i
 }
 
 // Convert Linux ABS axis to stick Event.
-fn linux_abs_to_stick_event(pending: &mut Vec<Event>, axis: c_ushort, value: c_int) {
+fn linux_abs_to_stick_event(
+    pending: &mut Vec<Event>,
+    axis: c_ushort,
+    value: c_int,
+) {
     match axis {
 		0x00 /* ABS_X */ => pending.push(Event::JoyX(value as f64)),
 		0x01 /* ABS_Y */ => pending.push(Event::JoyY(value as f64)),
@@ -525,7 +537,7 @@ struct Controller {
     zero: f64,
     /// Don't process near 0
     flat: f64,
-    /// 
+    ///
     pending_events: Vec<Event>,
     ///
     name: String,
@@ -785,7 +797,8 @@ impl Drop for Listener {
     }
 }
 
-static ENABLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+static ENABLED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(true);
 
 struct Global;
 

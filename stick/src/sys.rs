@@ -8,8 +8,8 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
+use crate::{Event, Remap};
 use std::task::{Context, Poll};
-use crate::{Remap, Event};
 
 #[cfg_attr(target_arch = "wasm32", path = "sys/web.rs")]
 #[cfg_attr(
@@ -31,10 +31,15 @@ use crate::{Remap, Event};
     ),
     cfg_attr(target_os = "fuchsia", path = "sys/fuchsia.rs"),
     cfg_attr(target_os = "redox", path = "sys/redox.rs"),
-    cfg_attr(target_os = "dive", path = "sys/dive.rs"),
+    cfg_attr(target_os = "dive", path = "sys/dive.rs")
 )]
 #[allow(unsafe_code)]
 mod ffi;
+
+/// Global state for when the system implementation can fail.
+struct FakeGlobal;
+
+impl Global for FakeGlobal {}
 
 /// A Listener that never returns any controllers for unsupported platforms.
 struct FakeListener;
@@ -54,14 +59,15 @@ pub(crate) trait Listener {
 /// Controller Implementation
 pub(crate) trait Controller {
     /// The hardware identifier for this controller.
-    fn id(&self) -> u64 { 0 }
+    fn id(&self) -> u64 {
+        0
+    }
     /// Poll for events.
     fn poll(&mut self, _cx: &mut Context<'_>) -> Poll<Event> {
         Poll::Pending
     }
     /// Stereo rumble effect (left is low frequency, right is high frequency).
-    fn rumble(&mut self, _left: f32, _right: f32) {
-    }
+    fn rumble(&mut self, _left: f32, _right: f32) {}
     /// Get the name of this controller.
     fn name(&self) -> &str {
         "Unknown"
@@ -77,11 +83,11 @@ pub(crate) trait Controller {
 }
 
 /// Thread local global state implementation.
-pub(crate) trait Global {
+pub(crate) trait Global: std::any::Any {
     /// Enable all events (when window comes in focus).
-    fn enable(&self) { }
+    fn enable(&self) {}
     /// Disable all events (when window leaves focus).
-    fn disable(&self) { }
+    fn disable(&self) {}
     /// Create a new listener.
     fn listener(&self, _remap: Remap) -> Box<dyn Listener> {
         Box::new(FakeListener)

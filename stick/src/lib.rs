@@ -26,15 +26,15 @@
 //! use pasts::Loop;
 //! use std::task::Poll::{self, Pending, Ready};
 //! use stick::{Controller, Event, Listener};
-//! 
+//!
 //! type Exit = usize;
-//! 
+//!
 //! struct State {
 //!     listener: Listener,
 //!     controllers: Vec<Controller>,
 //!     rumble: (f32, f32),
 //! }
-//! 
+//!
 //! impl State {
 //!     fn connect(&mut self, controller: Controller) -> Poll<Exit> {
 //!         println!(
@@ -46,7 +46,7 @@
 //!         self.controllers.push(controller);
 //!         Pending
 //!     }
-//! 
+//!
 //!     fn event(&mut self, id: usize, event: Event) -> Poll<Exit> {
 //!         let player = id + 1;
 //!         println!("p{}: {}", player, event);
@@ -74,22 +74,22 @@
 //!         Pending
 //!     }
 //! }
-//! 
+//!
 //! async fn event_loop() {
 //!     let mut state = State {
 //!         listener: Listener::default(),
 //!         controllers: Vec::new(),
 //!         rumble: (0.0, 0.0),
 //!     };
-//! 
+//!
 //!     let player_id = Loop::new(&mut state)
 //!         .when(|s| &mut s.listener, State::connect)
 //!         .poll(|s| &mut s.controllers, State::event)
 //!         .await;
-//! 
+//!
 //!     println!("p{} ended the session", player_id);
 //! }
-//! 
+//!
 //! fn main() {
 //!     pasts::block_on(event_loop());
 //! }
@@ -127,11 +127,11 @@ extern crate lazy_static;
 
 mod ctlr;
 mod event;
+mod focus;
 mod listener;
 mod sys;
-mod focus;
 
 pub use ctlr::{Controller, Remap};
 pub use event::Event;
-pub use listener::Listener;
 pub use focus::{focus, unfocus};
+pub use listener::Listener;

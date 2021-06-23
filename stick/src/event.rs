@@ -121,7 +121,7 @@ pub enum Event {
     Trigger(bool),
     /// Flightstick Side Bumper Button
     Bumper(bool),
-    /// Flightstick Top Middle Action Button 
+    /// Flightstick Top Middle Action Button
     ActionM(bool),
     /// Flightstick Top Left Action Button
     ActionL(bool),

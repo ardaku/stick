@@ -93,10 +93,10 @@ fn name_to_hex(name: &str) -> &str {
         "AutopilotPath" => "3C",
         "AutopilotAlt" => "3D",
         "EngineMotorL" => "3E",
-        "EngineMotorR" => "3F",        
-        "EngineFuelFlowL" => "40",        
+        "EngineMotorR" => "3F",
+        "EngineFuelFlowL" => "40",
         "EngineFuelFlowR" => "41",
-        "EngineIgnitionL" => "42",        
+        "EngineIgnitionL" => "42",
         "EngineIgnitionR" => "43",
         "SpeedbrakeBackward" => "44",
         "SpeedbrakeForward" => "45",
@@ -132,13 +132,18 @@ pub(super) fn main() {
     let mut out = String::new();
 
     println!("Loading Linux TOML Controller Mappings…");
-    for file in std::fs::read_dir(LINUX).expect("Missing database").flatten() {
+    for file in std::fs::read_dir(LINUX)
+        .expect("Missing database")
+        .flatten()
+    {
         let path = file.path();
         let file = std::fs::read_to_string(&path).expect("Open file failed");
         let file: Map = toml::from_str(&file).unwrap();
 
         // ID of Controller
-        out.push_str(&path.as_path().file_name().unwrap().to_str().unwrap()[..16]);
+        out.push_str(
+            &path.as_path().file_name().unwrap().to_str().unwrap()[..16],
+        );
 
         // Name of Controller.
         out.push_str(&file.name);
@@ -215,14 +220,17 @@ pub(super) fn main() {
 
     out.clear();
 
-    for line in std::fs::read_to_string(SDL).expect("Missing database").lines() {
+    for line in std::fs::read_to_string(SDL)
+        .expect("Missing database")
+        .lines()
+    {
         if line.is_empty() || line.starts_with("#") {
             continue;
         }
-        
+
         // ID of Controller
         let guid = line.get(0..32).unwrap();
-        // Skip over emulated joysticks.        
+        // Skip over emulated joysticks.
         if guid.get(2..8) != Some("000000")
             || guid.get(12..16) != Some("0000")
             || guid.get(20..24) != Some("0000")
@@ -300,7 +308,8 @@ pub(super) fn main() {
                 "a12" => name_to_hex("ThrottleL"),
                 "a13" => name_to_hex("ThrottleR"),
                 "a14" => name_to_hex("ScrollX"),
-                "+a0" | "+a1" | "+a2" | "+a3" | "+a4" | "+a5" | "-a0" | "-a1" | "-a2" | "-a3" | "-a4" | "-a5" => continue,
+                "+a0" | "+a1" | "+a2" | "+a3" | "+a4" | "+a5" | "-a0"
+                | "-a1" | "-a2" | "-a3" | "-a4" | "-a5" => continue,
                 "Linux" => continue,
                 // ?
                 "b122" => name_to_hex("Down"),
@@ -311,7 +320,7 @@ pub(super) fn main() {
                 "b136" => continue,
                 _in => panic!("Unknown input {}", _in),
             };
-            
+
             let js_out = match js_out {
                 "a" => "02",
                 "b" => "03",
@@ -340,9 +349,9 @@ pub(super) fn main() {
                 "paddle2" => "52",
                 _out => panic!("Unknown output {}", _out),
             };
-            
+
             out.push_str(js_in);
-            out.push_str(js_out);           
+            out.push_str(js_out);
             // FIXME: Tweaks
             out.push(';');
         }

@@ -12,11 +12,8 @@
 
 //! This file's code is based on https://github.com/Lokathor/rusty-xinput
 
-use super::{SysListener, SysController};
-use crate::Event;
+use crate::{Event, Remap};
 use std::fmt::{self, Debug, Formatter};
-use std::future::Future;
-use std::pin::Pin;
 use std::sync::Arc;
 use std::task::Waker;
 use std::task::{Context, Poll};
@@ -456,13 +453,6 @@ impl XInputState {
 }
 
 impl XInputHandle {
-    /// Enables or disables XInput.
-    ///
-    /// See the [MSDN documentation for XInputEnable](https://docs.microsoft.com/en-us/windows/desktop/api/xinput/nf-xinput-xinputenable).
-    pub(crate) fn enable(&self, enable: bool) -> () {
-        unsafe { (self.xinput_enable)(enable as BOOL) };
-    }
-
     /// Polls the controller port given for the current controller state.
     ///
     /// # Notes
@@ -638,69 +628,9 @@ fn register_wake_timeout(delay: u32, waker: &Waker) {
     }
 }
 
-pub(crate) struct Hub {
-    connected: u64,
-    to_check: u8,
-}
+////////////////////////////////////////////////////////////////////////////////
 
-impl Hub {
-    pub(super) fn new() -> Self {
-        Hub {
-            connected: 0,
-            to_check: 0,
-        }
-    }
-
-    pub(super) fn enable(flag: bool) {
-        if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
-            handle.enable(flag);
-        }
-    }
-}
-
-impl Future for Hub {
-    type Output = (usize, Event);
-
-    fn poll(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Self::Output> {
-        if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
-            let id = self.to_check;
-            let mask = 1 << id;
-            self.to_check = self.to_check + 1;
-            // direct input only allows for 4 controllers
-            if self.to_check > 3 {
-                self.to_check = 0;
-            }
-            let was_connected = (self.connected & mask) != 0;
-
-            if let Ok(_) = handle.get_state(id as u32) {
-                if !was_connected {
-                    // we have a new device!
-                    self.connected = self.connected | mask;
-
-                    return Poll::Ready((
-                        usize::MAX,
-                        Event::Connect(Box::new(crate::Controller(Ctlr::new(
-                            id,
-                        )))),
-                    ));
-                }
-            } else {
-                if was_connected {
-                    // a device has been unplugged
-                    self.connected = self.connected & !mask;
-                }
-            }
-        }
-        register_wake_timeout(100, cx.waker());
-
-        Poll::Pending
-    }
-}
-
-pub(crate) struct Ctlr {
+pub(crate) struct Controller {
     device_id: u8,
     pending_events: Vec<Event>,
     last_packet: DWORD,
@@ -712,7 +642,7 @@ pub(crate) struct Ctlr {
     trigger_right: u8,
 }
 
-impl Ctlr {
+impl Controller {
     #[allow(unused)]
     fn new(device_id: u8) -> Self {
         Self {
@@ -727,12 +657,15 @@ impl Ctlr {
             trigger_right: 0,
         }
     }
+}
 
-    pub(super) fn id(&self) -> [u8; 8] {
-        [0x20 /*windows*/, 0, 0, 0, 0, 0, 0, 0]
+impl super::Controller for Controller {
+    fn id(&self) -> u64 {
+        0 // FIXME
     }
 
-    pub(super) fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
+    /// Poll for events.
+    fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
         if let Some(e) = self.pending_events.pop() {
             return Poll::Ready(e);
         }
@@ -805,92 +738,52 @@ impl Ctlr {
                 while let Ok(Some(keystroke)) =
                     handle.get_keystroke(self.device_id as u32)
                 {
+                    let held = keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN != 0;
+
                     // ignore key repeat events
                     if keystroke.Flags & XINPUT_KEYSTROKE_REPEAT == 0 {
                         match keystroke.VirtualKey {
                             VK_PAD_START => {
-                                self.pending_events.push(Event::Next(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::MenuR(held))
                             }
                             VK_PAD_BACK => {
-                                self.pending_events.push(Event::Prev(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::MenuL(held))
                             }
                             VK_PAD_A => {
-                                self.pending_events.push(Event::ActionA(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::ActionA(held))
                             }
                             VK_PAD_B => {
-                                self.pending_events.push(Event::ActionB(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::ActionB(held))
                             }
                             VK_PAD_X => {
-                                self.pending_events.push(Event::ActionC(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::ActionC(held))
                             }
                             VK_PAD_Y => {
-                                self.pending_events.push(Event::ActionH(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::ActionH(held))
                             }
                             VK_PAD_LSHOULDER => {
-                                self.pending_events.push(Event::BumperL(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::BumperL(held))
                             }
                             VK_PAD_RSHOULDER => {
-                                self.pending_events.push(Event::BumperR(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::BumperR(held))
                             }
                             VK_PAD_LTHUMB_PRESS => {
-                                self.pending_events.push(Event::JoyPush(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::Joy(held))
                             }
                             VK_PAD_RTHUMB_PRESS => {
-                                self.pending_events.push(Event::CamPush(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::Cam(held))
                             }
                             VK_PAD_DPAD_UP => {
-                                self.pending_events.push(Event::DpadUp(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::Up(held))
                             }
                             VK_PAD_DPAD_DOWN => {
-                                self.pending_events.push(Event::DpadDown(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::Down(held))
                             }
                             VK_PAD_DPAD_LEFT => {
-                                self.pending_events.push(Event::DpadLeft(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::Left(held))
                             }
                             VK_PAD_DPAD_RIGHT => {
-                                self.pending_events.push(Event::DpadRight(
-                                    keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN
-                                        != 0,
-                                ))
+                                self.pending_events.push(Event::Right(held))
                             }
                             _ => (),
                         }
@@ -913,19 +806,102 @@ impl Ctlr {
         Poll::Pending
     }
 
-    pub(super) fn name(&self) -> String {
-        String::from("Xinput device")
-    }
-
-    pub(super) fn rumble(&mut self, left: f32, right: f32) {
-        if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
-            handle
+    /// Stereo rumble effect (left is low frequency, right is high frequency).
+    fn rumble(&mut self, left: f32, right: f32) {
+        super::GLOBAL.with(|g| {
+            <dyn std::any::Any>::downcast_ref::<Global>(&*g)
+                .unwrap()
+                .xinput
                 .set_state(
                     self.device_id as u32,
                     (u16::MAX as f32 * left) as u16,
                     (u16::MAX as f32 * right) as u16,
                 )
-                .unwrap();
+                .unwrap()
+        });
+    }
+
+    /// Get the name of this controller.
+    fn name(&self) -> &str {
+        "Unknown"
+    }
+}
+
+pub(crate) struct Listener {
+    connected: u64,
+    to_check: u8,
+    remap: Remap,
+}
+
+impl Listener {
+    pub(super) fn new(remap: Remap) -> Self {
+        Self {
+            connected: 0,
+            to_check: 0,
+            remap,
         }
+    }
+}
+
+impl super::Listener for Listener {
+    fn poll(&mut self, cx: &mut Context<'_>) -> Poll<crate::Controller> {
+        if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
+            let id = self.to_check;
+            let mask = 1 << id;
+            self.to_check = self.to_check + 1;
+            // direct input only allows for 4 controllers
+            if self.to_check > 3 {
+                self.to_check = 0;
+            }
+            let was_connected = (self.connected & mask) != 0;
+
+            if let Ok(_) = handle.get_state(id as u32) {
+                if !was_connected {
+                    // we have a new device!
+                    self.connected = self.connected | mask;
+
+                    return Poll::Ready(crate::Controller::new(
+                        Box::new(Controller::new(id)),
+                        &self.remap,
+                    ));
+                }
+            } else {
+                if was_connected {
+                    // a device has been unplugged
+                    self.connected = self.connected & !mask;
+                }
+            }
+        }
+        register_wake_timeout(100, cx.waker());
+
+        Poll::Pending
+    }
+}
+
+struct Global {
+    xinput: XInputHandle,
+}
+
+impl super::Global for Global {
+    /// Enable all events (when window comes in focus).
+    fn enable(&self) {
+        unsafe { (self.xinput.xinput_enable)(true as _) };
+    }
+    /// Disable all events (when window leaves focus).
+    fn disable(&self) {
+        unsafe { (self.xinput.xinput_enable)(false as _) };
+    }
+    /// Create a new listener.
+    fn listener(&self, remap: Remap) -> Box<dyn super::Listener> {
+        Box::new(Listener::new(remap))
+    }
+}
+
+pub(super) fn global() -> Box<dyn super::Global> {
+    // Windows implementation may fail.
+    if let Ok(xinput) = XInputHandle::load_default() {
+        Box::new(Global { xinput })
+    } else {
+        Box::new(super::FakeGlobal)
     }
 }

@@ -13,8 +13,8 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
-use std::task::{Context, Poll};
 use std::rc::Rc;
+use std::task::{Context, Poll};
 
 use crate::Event;
 
@@ -161,11 +161,13 @@ impl Remap {
     #[allow(unused_mut)]
     pub fn new() -> Self {
         let mut remapper = Remap(HashMap::new());
-        #[cfg(all(feature = "gcdb", target_os = "linux"))] {
+        #[cfg(all(feature = "gcdb", target_os = "linux"))]
+        {
             let data = include_str!("../sdlgc_linux.sdb");
             remapper = remapper.load(data).unwrap();
         }
-        #[cfg(all(feature = "sdb", target_os = "linux"))] {
+        #[cfg(all(feature = "sdb", target_os = "linux"))]
+        {
             let data = include_str!("../remap_linux.sdb");
             remapper = remapper.load(data).unwrap();
         }
@@ -196,39 +198,67 @@ impl Remap {
                 while let Some(tweak) = event.get(cursor..)?.chars().next() {
                     match tweak {
                         'd' => {
-                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
-                            deadzone = event.get(cursor+1..cursor+1+end)?.parse::<f64>().ok()?;
+                            let end = event
+                                .get(cursor + 1..)?
+                                .find(char::is_lowercase)
+                                .unwrap_or(event.get(cursor + 1..)?.len());
+                            deadzone = event
+                                .get(cursor + 1..cursor + 1 + end)?
+                                .parse::<f64>()
+                                .ok()?;
                             cursor += end + 1;
                         }
                         's' => {
-                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
-                            scale = event.get(cursor+1..cursor+1+end)?.parse::<f64>().ok()?.recip();
+                            let end = event
+                                .get(cursor + 1..)?
+                                .find(char::is_lowercase)
+                                .unwrap_or(event.get(cursor + 1..)?.len());
+                            scale = event
+                                .get(cursor + 1..cursor + 1 + end)?
+                                .parse::<f64>()
+                                .ok()?
+                                .recip();
                             cursor += end + 1;
                         }
                         'a' => {
-                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
-                            max = event.get(cursor+1..cursor+1+end)?.parse::<i32>().ok()?;
+                            let end = event
+                                .get(cursor + 1..)?
+                                .find(char::is_lowercase)
+                                .unwrap_or(event.get(cursor + 1..)?.len());
+                            max = event
+                                .get(cursor + 1..cursor + 1 + end)?
+                                .parse::<i32>()
+                                .ok()?;
                             cursor += end + 1;
                         }
                         'i' => {
-                            let end = event.get(cursor+1..)?.find(char::is_lowercase).unwrap_or(event.get(cursor+1..)?.len());
-                            min = event.get(cursor+1..cursor+1+end)?.parse::<i32>().ok()?;
+                            let end = event
+                                .get(cursor + 1..)?
+                                .find(char::is_lowercase)
+                                .unwrap_or(event.get(cursor + 1..)?.len());
+                            min = event
+                                .get(cursor + 1..cursor + 1 + end)?
+                                .parse::<i32>()
+                                .ok()?;
                             cursor += end + 1;
                         }
                         _ => return None,
                     }
                 }
 
-                maps.insert(in_, Map {
-                    out, deadzone, scale, max, min, 
-                });
+                maps.insert(
+                    in_,
+                    Map {
+                        out,
+                        deadzone,
+                        scale,
+                        max,
+                        min,
+                    },
+                );
             }
 
-            self.0.insert(id, Rc::new(Info {
-                name,
-                maps,
-                type_,
-            }));
+            self.0.insert(id, Rc::new(Info { name, maps, type_ }));
         }
 
         Some(self)
@@ -239,7 +269,7 @@ impl Remap {
 pub struct Controller {
     // Shared remapping.
     remap: Rc<Info>,
-    // 
+    //
     raw: Box<dyn crate::sys::Controller>,
     // Button states
     btns: u128,
@@ -256,15 +286,14 @@ impl Debug for Controller {
 }
 
 impl Controller {
-    pub(crate) fn new(raw: Box<dyn crate::sys::Controller>, remap: &Remap) -> Self {
+    pub(crate) fn new(
+        raw: Box<dyn crate::sys::Controller>,
+        remap: &Remap,
+    ) -> Self {
         let btns = 0;
         let nums = 0;
         let axis = [0.0; Axs::Count as usize];
-        let remap = remap
-            .0
-            .get(&raw.id())
-            .cloned()
-            .unwrap_or_default();
+        let remap = remap.0.get(&raw.id()).cloned().unwrap_or_default();
         Self {
             remap,
             raw,
@@ -322,11 +351,20 @@ impl Controller {
     }
 
     #[allow(clippy::float_cmp)] // imprecision should be consistent
-    fn axis(&mut self, ev: u8, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
+    fn axis(
+        &mut self,
+        ev: u8,
+        a: Axs,
+        f: fn(f64) -> Event,
+        v: f64,
+    ) -> Poll<Event> {
         let map = self.remap.maps.get(&ev);
         let v = if let Some(map) = map {
             let v = if map.min != 0 || map.max != 0 {
-                (((v - f64::from(map.min)) / f64::from(map.max - map.min)) * 2.0 - 1.0).clamp(-1.0, 1.0)
+                (((v - f64::from(map.min)) / f64::from(map.max - map.min))
+                    * 2.0
+                    - 1.0)
+                    .clamp(-1.0, 1.0)
             } else {
                 self.raw.axis(v).clamp(-1.0, 1.0)
             };
@@ -348,11 +386,18 @@ impl Controller {
     }
 
     #[allow(clippy::float_cmp)] // imprecision should be consistent
-    fn pressure(&mut self, ev: u8, a: Axs, f: fn(f64) -> Event, v: f64) -> Poll<Event> {
+    fn pressure(
+        &mut self,
+        ev: u8,
+        a: Axs,
+        f: fn(f64) -> Event,
+        v: f64,
+    ) -> Poll<Event> {
         let map = self.remap.maps.get(&ev);
         let v = if let Some(map) = map {
             let v = if map.min != 0 || map.max != 0 {
-                ((v - f64::from(map.min)) / f64::from(map.max - map.min)).clamp(0.0, 1.0)
+                ((v - f64::from(map.min)) / f64::from(map.max - map.min))
+                    .clamp(0.0, 1.0)
             } else {
                 self.raw.pressure(v).clamp(0.0, 1.0)
             };
@@ -385,7 +430,7 @@ impl Controller {
         } else {
             event
         };
-        // 
+        //
         use Event::*;
         match event {
             Disconnect => Poll::Ready(Disconnect),
@@ -448,29 +493,55 @@ impl Controller {
             Bumper(p) => self.button(Btn::Bumper, Bumper, p),
             Pinky(p) => self.button(Btn::Pinky, Pinky, p),
             PinkyForward(p) => self.button(Btn::PinkyForward, PinkyForward, p),
-            PinkyBackward(p) => self.button(Btn::PinkyBackward, PinkyBackward, p),
+            PinkyBackward(p) => {
+                self.button(Btn::PinkyBackward, PinkyBackward, p)
+            }
             FlapsUp(p) => self.button(Btn::FlapsUp, FlapsUp, p),
             FlapsDown(p) => self.button(Btn::FlapsDown, FlapsDown, p),
             BoatForward(p) => self.button(Btn::BoatForward, BoatForward, p),
             BoatBackward(p) => self.button(Btn::BoatBackward, BoatBackward, p),
-            AutopilotPath(p) => self.button(Btn::AutopilotPath, AutopilotPath, p),
+            AutopilotPath(p) => {
+                self.button(Btn::AutopilotPath, AutopilotPath, p)
+            }
             AutopilotAlt(p) => self.button(Btn::AutopilotAlt, AutopilotAlt, p),
             EngineMotorL(p) => self.button(Btn::EngineMotorL, EngineMotorL, p),
             EngineMotorR(p) => self.button(Btn::EngineMotorR, EngineMotorR, p),
-            EngineFuelFlowL(p) => self.button(Btn::EngineFuelFlowL, EngineFuelFlowL, p),
-            EngineFuelFlowR(p) => self.button(Btn::EngineFuelFlowR, EngineFuelFlowR, p),
-            EngineIgnitionL(p) => self.button(Btn::EngineIgnitionL, EngineIgnitionL, p),
-            EngineIgnitionR(p) => self.button(Btn::EngineIgnitionR, EngineIgnitionR, p),
-            SpeedbrakeBackward(p) => self.button(Btn::SpeedbrakeBackward, SpeedbrakeBackward, p),
-            SpeedbrakeForward(p) => self.button(Btn::SpeedbrakeForward, SpeedbrakeForward, p),
-            ChinaBackward(p) => self.button(Btn::ChinaBackward, ChinaBackward, p),
+            EngineFuelFlowL(p) => {
+                self.button(Btn::EngineFuelFlowL, EngineFuelFlowL, p)
+            }
+            EngineFuelFlowR(p) => {
+                self.button(Btn::EngineFuelFlowR, EngineFuelFlowR, p)
+            }
+            EngineIgnitionL(p) => {
+                self.button(Btn::EngineIgnitionL, EngineIgnitionL, p)
+            }
+            EngineIgnitionR(p) => {
+                self.button(Btn::EngineIgnitionR, EngineIgnitionR, p)
+            }
+            SpeedbrakeBackward(p) => {
+                self.button(Btn::SpeedbrakeBackward, SpeedbrakeBackward, p)
+            }
+            SpeedbrakeForward(p) => {
+                self.button(Btn::SpeedbrakeForward, SpeedbrakeForward, p)
+            }
+            ChinaBackward(p) => {
+                self.button(Btn::ChinaBackward, ChinaBackward, p)
+            }
             ChinaForward(p) => self.button(Btn::ChinaForward, ChinaForward, p),
             Apu(p) => self.button(Btn::Apu, Apu, p),
-            RadarAltimeter(p) => self.button(Btn::RadarAltimeter, RadarAltimeter, p),
-            LandingGearSilence(p) => self.button(Btn::LandingGearSilence, LandingGearSilence, p),
+            RadarAltimeter(p) => {
+                self.button(Btn::RadarAltimeter, RadarAltimeter, p)
+            }
+            LandingGearSilence(p) => {
+                self.button(Btn::LandingGearSilence, LandingGearSilence, p)
+            }
             Eac(p) => self.button(Btn::Eac, Eac, p),
-            AutopilotToggle(p) => self.button(Btn::AutopilotToggle, AutopilotToggle, p),
-            ThrottleButton(p) => self.button(Btn::ThrottleButton, ThrottleButton, p),
+            AutopilotToggle(p) => {
+                self.button(Btn::AutopilotToggle, AutopilotToggle, p)
+            }
+            ThrottleButton(p) => {
+                self.button(Btn::ThrottleButton, ThrottleButton, p)
+            }
             MouseX(v) => self.axis(ev, Axs::MouseX, MouseX, v),
             MouseY(v) => self.axis(ev, Axs::MouseY, MouseY, v),
             ScrollX(v) => self.axis(ev, Axs::ScrollX, ScrollX, v),
