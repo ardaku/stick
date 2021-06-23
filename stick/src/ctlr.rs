@@ -248,7 +248,13 @@ impl Remap {
 
                 maps.insert(
                     in_,
-                    Map { deadzone, scale, max, min, out },
+                    Map {
+                        deadzone,
+                        scale,
+                        max,
+                        min,
+                        out,
+                    },
                 );
             }
 

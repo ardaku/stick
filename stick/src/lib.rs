@@ -121,10 +121,6 @@
 #[macro_use]
 extern crate log;
 
-#[cfg(target_os = "windows")]
-#[macro_use]
-extern crate lazy_static;
-
 mod ctlr;
 mod event;
 mod focus;
