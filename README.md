@@ -26,10 +26,10 @@ type = "xbox"
 [remap]
 TriggerR = {} # Ignore events
 TriggerL = {}
-HatUp = Up # Map hat to dpad when you're not using a flightstick
-HatDown = Down
-HatLeft = Left
-HatRight = Right
+HatUp = "Up" # Map hat to dpad when you're not using a flightstick
+HatDown = "Down"
+HatLeft = "Left"
+HatRight = "Right"
 CamX = { event = "CamX", deadzone = 0.075 } # Adjust deadzones
 CamY = { event = "CamY", deadzone = 0.075 }
 JoyZ = { event = "TriggerR", max = 1024 } # Set higher-precision axis ranges (usually 255)
