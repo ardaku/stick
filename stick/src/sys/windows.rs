@@ -331,18 +331,15 @@ impl XInputHandle {
         }
 
         // this is safe because no other code can be loading xinput at the same time as us.
-        if opt_xinput_enable.is_some()
-            && opt_xinput_get_state.is_some()
-            && opt_xinput_set_state.is_some()
-            && opt_xinput_get_capabilities.is_some()
+        if let (Some(xinput_enable), Some(xinput_get_state), Some(xinput_set_state), Some(xinput_get_capabilities)) = (opt_xinput_enable, opt_xinput_get_state, opt_xinput_set_state, opt_xinput_get_capabilities)
         {
             debug!("All function pointers loaded successfully.");
             Ok(XInputHandle {
                 handle: Arc::new(xinput_handle),
-                xinput_enable: opt_xinput_enable.unwrap(),
-                xinput_get_state: opt_xinput_get_state.unwrap(),
-                xinput_set_state: opt_xinput_set_state.unwrap(),
-                xinput_get_capabilities: opt_xinput_get_capabilities.unwrap(),
+                xinput_enable,
+                xinput_get_state,
+                xinput_set_state,
+                xinput_get_capabilities,
                 opt_xinput_get_keystroke,
                 opt_xinput_get_battery_information,
                 opt_xinput_get_dsound_audio_device_guids,
@@ -487,7 +484,7 @@ impl XInputHandle {
             let return_status =
                 unsafe { (self.xinput_get_state)(user_index, &mut output) };
             match return_status {
-                ERROR_SUCCESS => return Ok(XInputState { raw: output }),
+                ERROR_SUCCESS => Ok(XInputState { raw: output }),
                 ERROR_DEVICE_NOT_CONNECTED => {
                     Err(XInputUsageError::DeviceNotConnected)
                 }
@@ -578,7 +575,7 @@ impl XInputHandle {
     }
 }
 
-type LPTIMECALLBACK = extern "C" fn(
+type LpTimeCallback = extern "C" fn(
     timer_id: u32,
     msg: u32,
     dw_user: usize,
@@ -595,7 +592,7 @@ extern "system" {
     fn timeSetEvent(
         delay: u32,
         resolution: u32,
-        lpTimeProc: LPTIMECALLBACK,
+        lpTimeProc: LpTimeCallback,
         dw_user: usize,
         fu_event: u32,
     ) -> u32;
@@ -683,14 +680,12 @@ impl super::Controller for Controller {
                         ),
                         XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
                     );
-                    if nx != self.joy_x {
-                        self.joy_x = nx;
-                        self.pending_events.push(Event::JoyX(nx));
-                    }
-                    if ny != self.joy_y {
-                        self.joy_y = ny;
-                        self.pending_events.push(Event::JoyY(ny));
-                    }
+
+					self.joy_x = nx;
+					self.pending_events.push(Event::JoyX(nx));
+
+					self.joy_y = ny;
+					self.pending_events.push(Event::JoyY(ny));
 
                     let (nx, ny) = XInputState::normalize_raw_stick_value(
                         (
@@ -699,14 +694,12 @@ impl super::Controller for Controller {
                         ),
                         XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
                     );
-                    if nx != self.cam_x {
-                        self.cam_x = nx;
-                        self.pending_events.push(Event::CamX(nx));
-                    }
-                    if ny != self.cam_y {
-                        self.cam_y = ny;
-                        self.pending_events.push(Event::CamY(ny));
-                    }
+
+					self.cam_x = nx;
+					self.pending_events.push(Event::CamX(nx));
+
+					self.cam_y = ny;
+					self.pending_events.push(Event::CamY(ny));
 
                     let t = if state.raw.Gamepad.bLeftTrigger
                         > XINPUT_GAMEPAD_TRIGGER_THRESHOLD
@@ -848,28 +841,26 @@ impl super::Listener for Listener {
         if let Ok(ref handle) = *GLOBAL_XINPUT_HANDLE {
             let id = self.to_check;
             let mask = 1 << id;
-            self.to_check = self.to_check + 1;
+            self.to_check += 1;
             // direct input only allows for 4 controllers
             if self.to_check > 3 {
                 self.to_check = 0;
             }
             let was_connected = (self.connected & mask) != 0;
 
-            if let Ok(_) = handle.get_state(id as u32) {
+            if handle.get_state(id as u32).is_ok() {
                 if !was_connected {
                     // we have a new device!
-                    self.connected = self.connected | mask;
+                    self.connected |= mask;
 
                     return Poll::Ready(crate::Controller::new(
                         Box::new(Controller::new(id)),
                         &self.remap,
                     ));
                 }
-            } else {
-                if was_connected {
-                    // a device has been unplugged
-                    self.connected = self.connected & !mask;
-                }
+            } else if was_connected {
+				// a device has been unplugged
+				self.connected &= !mask;
             }
         }
         register_wake_timeout(100, cx.waker());

@@ -224,7 +224,7 @@ pub(super) fn main() {
         .expect("Missing database")
         .lines()
     {
-        if line.is_empty() || line.starts_with("#") {
+        if line.is_empty() || line.starts_with('#') {
             continue;
         }
 

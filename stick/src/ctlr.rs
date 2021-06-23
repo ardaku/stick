@@ -158,7 +158,7 @@ impl Default for Remap {
 
 impl Remap {
     /// Create new remapper.
-    #[allow(unused_mut)]
+    #[allow(unused_mut, clippy::let_and_return)]
     pub fn new() -> Self {
         let mut remapper = Remap(HashMap::new());
         #[cfg(all(feature = "gcdb", target_os = "linux"))]
@@ -248,13 +248,7 @@ impl Remap {
 
                 maps.insert(
                     in_,
-                    Map {
-                        out,
-                        deadzone,
-                        scale,
-                        max,
-                        min,
-                    },
+                    Map { deadzone, scale, max, min, out },
                 );
             }
 
