@@ -25,15 +25,15 @@ use winapi::shared::winerror::{
     ERROR_DEVICE_NOT_CONNECTED, ERROR_EMPTY, ERROR_SUCCESS,
 };
 use winapi::um::libloaderapi::{FreeLibrary, GetProcAddress, LoadLibraryW};
-use winapi::um::xinput::*;
+use winapi::um::xinput;
 
 type XInputEnableFunc = unsafe extern "system" fn(BOOL);
 type XInputGetStateFunc =
-    unsafe extern "system" fn(DWORD, *mut XINPUT_STATE) -> DWORD;
+    unsafe extern "system" fn(DWORD, *mut xinput::XINPUT_STATE) -> DWORD;
 type XInputSetStateFunc =
-    unsafe extern "system" fn(DWORD, *mut XINPUT_VIBRATION) -> DWORD;
+    unsafe extern "system" fn(DWORD, *mut xinput::XINPUT_VIBRATION) -> DWORD;
 type XInputGetCapabilitiesFunc =
-    unsafe extern "system" fn(DWORD, DWORD, *mut XINPUT_CAPABILITIES) -> DWORD;
+    unsafe extern "system" fn(DWORD, DWORD, *mut xinput::XINPUT_CAPABILITIES) -> DWORD;
 
 // Removed in xinput1_4.dll.
 type XInputGetDSoundAudioDeviceGuidsFunc =
@@ -41,11 +41,11 @@ type XInputGetDSoundAudioDeviceGuidsFunc =
 
 // Added in xinput1_3.dll.
 type XInputGetKeystrokeFunc =
-    unsafe extern "system" fn(DWORD, DWORD, PXINPUT_KEYSTROKE) -> DWORD;
+    unsafe extern "system" fn(DWORD, DWORD, xinput::PXINPUT_KEYSTROKE) -> DWORD;
 type XInputGetBatteryInformationFunc = unsafe extern "system" fn(
     DWORD,
     BYTE,
-    *mut XINPUT_BATTERY_INFORMATION,
+    *mut xinput::XINPUT_BATTERY_INFORMATION,
 ) -> DWORD;
 
 // Added in xinput1_4.dll.
@@ -408,7 +408,7 @@ enum XInputOptionalFnUsageError {
 /// the raw field to get at the inner value.
 struct XInputState {
     /// The raw value we're wrapping.
-    pub(crate) raw: XINPUT_STATE,
+    pub(crate) raw: xinput::XINPUT_STATE,
 }
 
 impl ::std::cmp::PartialEq for XInputState {
@@ -431,29 +431,23 @@ impl ::std::fmt::Debug for XInputState {
 
 impl XInputState {
     /// This helper normalizes a raw stick value using the given deadzone.
-    ///
-    /// If the raw value's 2d length is less than the deadzone the result will be
-    /// `(0.0,0.0)`, otherwise the result is normalized across the range from the
-    /// deadzone point to the maximum value.
-    ///
-    /// The `deadzone` value is clamped to the range 0 to 32,766 (inclusive)
-    /// before use. Negative inputs or maximum value inputs make the normalization
-    /// just work improperly.
     #[inline]
-    pub(crate) fn normalize_raw_stick_value(
-        raw_stick: (i16, i16),
+    fn normalize_raw_stick_value(
+        (x, y): (i16, i16),
         deadzone: i16,
     ) -> (f64, f64) {
-        let deadzone_float = deadzone.max(0).min(i16::MAX - 1) as f64;
-        let raw_float = (raw_stick.0 as f64, raw_stick.1 as f64);
-        let length =
-            (raw_float.0 * raw_float.0 + raw_float.1 * raw_float.1).sqrt();
-        let normalized = (raw_float.0 / length, raw_float.1 / length);
-        if length > deadzone_float {
-            // clip our value to the expected maximum length.
-            let length = length.min(32_767.0);
-            let scale = (length - deadzone_float) / (32_767.0 - deadzone_float);
-            (normalized.0 * scale, normalized.1 * scale)
+		// Clamp the deadzone value to make the normalization work properly
+		let deadzone = deadzone.clamp(0, 32_766);
+		// Convert x and y to range -1 to 1, invert Y axis
+		let x = (x as f64 + 0.5) * (1.0 / 32_767.5);
+		let y = (y as f64 + 0.5) * -(1.0 / 32_767.5);
+		// Convert deadzone to range 0 to 1
+		let deadzone = deadzone as f64 * (1.0 / 32_767.5);
+		// Calculate distance from (0, 0)
+		let distance = (x * x + y * y).sqrt();
+		// Return 0 unless distance is far enough away from deadzone
+        if distance > deadzone {
+			(x, y)
         } else {
             (0.0, 0.0)
         }
@@ -491,7 +485,7 @@ impl XInputHandle {
         if user_index >= 4 {
             Err(XInputUsageError::InvalidControllerID)
         } else {
-            let mut output: XINPUT_STATE = unsafe { ::std::mem::zeroed() };
+            let mut output: xinput::XINPUT_STATE = unsafe { ::std::mem::zeroed() };
             let return_status =
                 unsafe { (self.xinput_get_state)(user_index, &mut output) };
             match return_status {
@@ -534,7 +528,7 @@ impl XInputHandle {
         if user_index >= 4 {
             Err(XInputUsageError::InvalidControllerID)
         } else {
-            let mut input = XINPUT_VIBRATION {
+            let mut input = xinput::XINPUT_VIBRATION {
                 wLeftMotorSpeed: left_motor_speed,
                 wRightMotorSpeed: right_motor_speed,
             };
@@ -559,13 +553,13 @@ impl XInputHandle {
     pub(crate) fn get_keystroke(
         &self,
         user_index: u32,
-    ) -> Result<Option<XINPUT_KEYSTROKE>, XInputOptionalFnUsageError> {
+    ) -> Result<Option<xinput::XINPUT_KEYSTROKE>, XInputOptionalFnUsageError> {
         if user_index >= 4 {
             Err(XInputOptionalFnUsageError::InvalidControllerID)
         } else if let Some(func) = self.opt_xinput_get_keystroke {
             unsafe {
                 let mut keystroke =
-                    std::mem::MaybeUninit::<XINPUT_KEYSTROKE>::uninit();
+                    std::mem::MaybeUninit::<xinput::XINPUT_KEYSTROKE>::uninit();
                 let return_status =
                     (func)(user_index, 0, keystroke.as_mut_ptr());
                 match return_status {
@@ -638,12 +632,6 @@ pub(crate) struct Controller {
     device_id: u8,
     pending_events: Vec<Event>,
     last_packet: DWORD,
-    joy_x: f64,
-    joy_y: f64,
-    cam_x: f64,
-    cam_y: f64,
-    trigger_left: u8,
-    trigger_right: u8,
 }
 
 impl Controller {
@@ -654,12 +642,6 @@ impl Controller {
             device_id,
             pending_events: Vec::new(),
             last_packet: 0,
-            joy_x: 0.0,
-            joy_y: 0.0,
-            cam_x: 0.0,
-            cam_y: 0.0,
-            trigger_left: 0,
-            trigger_right: 0,
         }
     }
 }
@@ -682,103 +664,95 @@ impl super::Controller for Controller {
 
                 let (nx, ny) = XInputState::normalize_raw_stick_value(
                     (state.raw.Gamepad.sThumbRX, state.raw.Gamepad.sThumbRY),
-                    XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
+                    xinput::XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
                 );
 
-                self.joy_x = nx;
-                self.pending_events.push(Event::JoyX(nx));
-
-                self.joy_y = ny;
-                self.pending_events.push(Event::JoyY(ny));
+                self.pending_events.push(Event::CamX(nx));
+                self.pending_events.push(Event::CamY(ny));
 
                 let (nx, ny) = XInputState::normalize_raw_stick_value(
                     (state.raw.Gamepad.sThumbLX, state.raw.Gamepad.sThumbLY),
-                    XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
+                    xinput::XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
                 );
 
-                self.cam_x = nx;
-                self.pending_events.push(Event::CamX(nx));
-
-                self.cam_y = ny;
-                self.pending_events.push(Event::CamY(ny));
+                self.pending_events.push(Event::JoyX(nx));
+                self.pending_events.push(Event::JoyY(ny));
 
                 let t = if state.raw.Gamepad.bLeftTrigger
-                    > XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+                    > xinput::XINPUT_GAMEPAD_TRIGGER_THRESHOLD
                 {
                     state.raw.Gamepad.bLeftTrigger
                 } else {
                     0
                 };
-                if t != self.trigger_left {
-                    self.trigger_left = t;
-                    self.pending_events.push(Event::TriggerL(t as f64 / 255.0));
-                }
+
+				self.pending_events.push(Event::TriggerL(t as f64 / 255.0));
 
                 let t = if state.raw.Gamepad.bRightTrigger
-                    > XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+                    > xinput::XINPUT_GAMEPAD_TRIGGER_THRESHOLD
                 {
                     state.raw.Gamepad.bRightTrigger
                 } else {
                     0
                 };
-                if t != self.trigger_right {
-                    self.trigger_right = t;
-                    self.pending_events.push(Event::TriggerR(t as f64 / 255.0));
-                }
+
+				self.pending_events.push(Event::TriggerR(t as f64 / 255.0));
 
                 while let Ok(Some(keystroke)) =
                     self.xinput.get_keystroke(self.device_id as u32)
                 {
-                    let held = keystroke.Flags & XINPUT_KEYSTROKE_KEYDOWN != 0;
+                    // Ignore key repeat events
+					if keystroke.Flags & xinput::XINPUT_KEYSTROKE_REPEAT != 0 {
+						continue;
+					}
 
-                    // ignore key repeat events
-                    if keystroke.Flags & XINPUT_KEYSTROKE_REPEAT == 0 {
+                    let held = keystroke.Flags & xinput::XINPUT_KEYSTROKE_KEYDOWN != 0;
+
                         match keystroke.VirtualKey {
-                            VK_PAD_START => {
+                            xinput::VK_PAD_START => {
                                 self.pending_events.push(Event::MenuR(held))
                             }
-                            VK_PAD_BACK => {
+                            xinput::VK_PAD_BACK => {
                                 self.pending_events.push(Event::MenuL(held))
                             }
-                            VK_PAD_A => {
+                            xinput::VK_PAD_A => {
                                 self.pending_events.push(Event::ActionA(held))
                             }
-                            VK_PAD_B => {
+                            xinput::VK_PAD_B => {
                                 self.pending_events.push(Event::ActionB(held))
                             }
-                            VK_PAD_X => {
-                                self.pending_events.push(Event::ActionC(held))
-                            }
-                            VK_PAD_Y => {
+                            xinput::VK_PAD_X => {
                                 self.pending_events.push(Event::ActionH(held))
                             }
-                            VK_PAD_LSHOULDER => {
+                            xinput::VK_PAD_Y => {
+                                self.pending_events.push(Event::ActionV(held))
+                            }
+                            xinput::VK_PAD_LSHOULDER => {
                                 self.pending_events.push(Event::BumperL(held))
                             }
-                            VK_PAD_RSHOULDER => {
+                            xinput::VK_PAD_RSHOULDER => {
                                 self.pending_events.push(Event::BumperR(held))
                             }
-                            VK_PAD_LTHUMB_PRESS => {
+                            xinput::VK_PAD_LTHUMB_PRESS => {
                                 self.pending_events.push(Event::Joy(held))
                             }
-                            VK_PAD_RTHUMB_PRESS => {
+                            xinput::VK_PAD_RTHUMB_PRESS => {
                                 self.pending_events.push(Event::Cam(held))
                             }
-                            VK_PAD_DPAD_UP => {
+                            xinput::VK_PAD_DPAD_UP => {
                                 self.pending_events.push(Event::Up(held))
                             }
-                            VK_PAD_DPAD_DOWN => {
+                            xinput::VK_PAD_DPAD_DOWN => {
                                 self.pending_events.push(Event::Down(held))
                             }
-                            VK_PAD_DPAD_LEFT => {
+                            xinput::VK_PAD_DPAD_LEFT => {
                                 self.pending_events.push(Event::Left(held))
                             }
-                            VK_PAD_DPAD_RIGHT => {
+                            xinput::VK_PAD_DPAD_RIGHT => {
                                 self.pending_events.push(Event::Right(held))
                             }
                             _ => (),
                         }
-                    }
                 }
 
                 if let Some(event) = self.pending_events.pop() {
@@ -807,7 +781,7 @@ impl super::Controller for Controller {
 
     /// Get the name of this controller.
     fn name(&self) -> &str {
-        "Unknown"
+        "XInput Controller"
     }
 }
 
