@@ -32,8 +32,11 @@ type XInputGetStateFunc =
     unsafe extern "system" fn(DWORD, *mut xinput::XINPUT_STATE) -> DWORD;
 type XInputSetStateFunc =
     unsafe extern "system" fn(DWORD, *mut xinput::XINPUT_VIBRATION) -> DWORD;
-type XInputGetCapabilitiesFunc =
-    unsafe extern "system" fn(DWORD, DWORD, *mut xinput::XINPUT_CAPABILITIES) -> DWORD;
+type XInputGetCapabilitiesFunc = unsafe extern "system" fn(
+    DWORD,
+    DWORD,
+    *mut xinput::XINPUT_CAPABILITIES,
+) -> DWORD;
 
 // Removed in xinput1_4.dll.
 type XInputGetDSoundAudioDeviceGuidsFunc =
@@ -436,18 +439,18 @@ impl XInputState {
         (x, y): (i16, i16),
         deadzone: i16,
     ) -> (f64, f64) {
-		// Clamp the deadzone value to make the normalization work properly
-		let deadzone = deadzone.clamp(0, 32_766);
-		// Convert x and y to range -1 to 1, invert Y axis
-		let x = (x as f64 + 0.5) * (1.0 / 32_767.5);
-		let y = (y as f64 + 0.5) * -(1.0 / 32_767.5);
-		// Convert deadzone to range 0 to 1
-		let deadzone = deadzone as f64 * (1.0 / 32_767.5);
-		// Calculate distance from (0, 0)
-		let distance = (x * x + y * y).sqrt();
-		// Return 0 unless distance is far enough away from deadzone
+        // Clamp the deadzone value to make the normalization work properly
+        let deadzone = deadzone.clamp(0, 32_766);
+        // Convert x and y to range -1 to 1, invert Y axis
+        let x = (x as f64 + 0.5) * (1.0 / 32_767.5);
+        let y = (y as f64 + 0.5) * -(1.0 / 32_767.5);
+        // Convert deadzone to range 0 to 1
+        let deadzone = deadzone as f64 * (1.0 / 32_767.5);
+        // Calculate distance from (0, 0)
+        let distance = (x * x + y * y).sqrt();
+        // Return 0 unless distance is far enough away from deadzone
         if distance > deadzone {
-			(x, y)
+            (x, y)
         } else {
             (0.0, 0.0)
         }
@@ -485,7 +488,8 @@ impl XInputHandle {
         if user_index >= 4 {
             Err(XInputUsageError::InvalidControllerID)
         } else {
-            let mut output: xinput::XINPUT_STATE = unsafe { ::std::mem::zeroed() };
+            let mut output: xinput::XINPUT_STATE =
+                unsafe { ::std::mem::zeroed() };
             let return_status =
                 unsafe { (self.xinput_get_state)(user_index, &mut output) };
             match return_status {
@@ -553,7 +557,8 @@ impl XInputHandle {
     pub(crate) fn get_keystroke(
         &self,
         user_index: u32,
-    ) -> Result<Option<xinput::XINPUT_KEYSTROKE>, XInputOptionalFnUsageError> {
+    ) -> Result<Option<xinput::XINPUT_KEYSTROKE>, XInputOptionalFnUsageError>
+    {
         if user_index >= 4 {
             Err(XInputOptionalFnUsageError::InvalidControllerID)
         } else if let Some(func) = self.opt_xinput_get_keystroke {
@@ -686,7 +691,7 @@ impl super::Controller for Controller {
                     0
                 };
 
-				self.pending_events.push(Event::TriggerL(t as f64 / 255.0));
+                self.pending_events.push(Event::TriggerL(t as f64 / 255.0));
 
                 let t = if state.raw.Gamepad.bRightTrigger
                     > xinput::XINPUT_GAMEPAD_TRIGGER_THRESHOLD
@@ -696,63 +701,64 @@ impl super::Controller for Controller {
                     0
                 };
 
-				self.pending_events.push(Event::TriggerR(t as f64 / 255.0));
+                self.pending_events.push(Event::TriggerR(t as f64 / 255.0));
 
                 while let Ok(Some(keystroke)) =
                     self.xinput.get_keystroke(self.device_id as u32)
                 {
                     // Ignore key repeat events
-					if keystroke.Flags & xinput::XINPUT_KEYSTROKE_REPEAT != 0 {
-						continue;
-					}
+                    if keystroke.Flags & xinput::XINPUT_KEYSTROKE_REPEAT != 0 {
+                        continue;
+                    }
 
-                    let held = keystroke.Flags & xinput::XINPUT_KEYSTROKE_KEYDOWN != 0;
+                    let held =
+                        keystroke.Flags & xinput::XINPUT_KEYSTROKE_KEYDOWN != 0;
 
-                        match keystroke.VirtualKey {
-                            xinput::VK_PAD_START => {
-                                self.pending_events.push(Event::MenuR(held))
-                            }
-                            xinput::VK_PAD_BACK => {
-                                self.pending_events.push(Event::MenuL(held))
-                            }
-                            xinput::VK_PAD_A => {
-                                self.pending_events.push(Event::ActionA(held))
-                            }
-                            xinput::VK_PAD_B => {
-                                self.pending_events.push(Event::ActionB(held))
-                            }
-                            xinput::VK_PAD_X => {
-                                self.pending_events.push(Event::ActionH(held))
-                            }
-                            xinput::VK_PAD_Y => {
-                                self.pending_events.push(Event::ActionV(held))
-                            }
-                            xinput::VK_PAD_LSHOULDER => {
-                                self.pending_events.push(Event::BumperL(held))
-                            }
-                            xinput::VK_PAD_RSHOULDER => {
-                                self.pending_events.push(Event::BumperR(held))
-                            }
-                            xinput::VK_PAD_LTHUMB_PRESS => {
-                                self.pending_events.push(Event::Joy(held))
-                            }
-                            xinput::VK_PAD_RTHUMB_PRESS => {
-                                self.pending_events.push(Event::Cam(held))
-                            }
-                            xinput::VK_PAD_DPAD_UP => {
-                                self.pending_events.push(Event::Up(held))
-                            }
-                            xinput::VK_PAD_DPAD_DOWN => {
-                                self.pending_events.push(Event::Down(held))
-                            }
-                            xinput::VK_PAD_DPAD_LEFT => {
-                                self.pending_events.push(Event::Left(held))
-                            }
-                            xinput::VK_PAD_DPAD_RIGHT => {
-                                self.pending_events.push(Event::Right(held))
-                            }
-                            _ => (),
+                    match keystroke.VirtualKey {
+                        xinput::VK_PAD_START => {
+                            self.pending_events.push(Event::MenuR(held))
                         }
+                        xinput::VK_PAD_BACK => {
+                            self.pending_events.push(Event::MenuL(held))
+                        }
+                        xinput::VK_PAD_A => {
+                            self.pending_events.push(Event::ActionA(held))
+                        }
+                        xinput::VK_PAD_B => {
+                            self.pending_events.push(Event::ActionB(held))
+                        }
+                        xinput::VK_PAD_X => {
+                            self.pending_events.push(Event::ActionH(held))
+                        }
+                        xinput::VK_PAD_Y => {
+                            self.pending_events.push(Event::ActionV(held))
+                        }
+                        xinput::VK_PAD_LSHOULDER => {
+                            self.pending_events.push(Event::BumperL(held))
+                        }
+                        xinput::VK_PAD_RSHOULDER => {
+                            self.pending_events.push(Event::BumperR(held))
+                        }
+                        xinput::VK_PAD_LTHUMB_PRESS => {
+                            self.pending_events.push(Event::Joy(held))
+                        }
+                        xinput::VK_PAD_RTHUMB_PRESS => {
+                            self.pending_events.push(Event::Cam(held))
+                        }
+                        xinput::VK_PAD_DPAD_UP => {
+                            self.pending_events.push(Event::Up(held))
+                        }
+                        xinput::VK_PAD_DPAD_DOWN => {
+                            self.pending_events.push(Event::Down(held))
+                        }
+                        xinput::VK_PAD_DPAD_LEFT => {
+                            self.pending_events.push(Event::Left(held))
+                        }
+                        xinput::VK_PAD_DPAD_RIGHT => {
+                            self.pending_events.push(Event::Right(held))
+                        }
+                        _ => (),
+                    }
                 }
 
                 if let Some(event) = self.pending_events.pop() {

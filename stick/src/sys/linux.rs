@@ -607,8 +607,14 @@ impl super::Controller for Controller {
     }
 
     fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
+        // Queue
         if let Some(e) = self.pending_events.pop() {
             return Poll::Ready(e);
+        }
+
+        // Early return if a different device woke the executor.
+        if self.device.pending() {
+            return self.device.sleep(cx);
         }
 
         // Read an event.
@@ -627,10 +633,8 @@ impl super::Controller for Controller {
                     return Poll::Ready(Event::Disconnect);
                 }
                 assert_eq!(errno, 11);
-                // Register waker for this device
-                self.device.register_waker(cx.waker());
                 // If no new controllers found, return pending.
-                return Poll::Pending;
+                return self.device.sleep(cx);
             }
             assert_eq!(size_of::<EvdevEv>() as isize, bytes);
             unsafe { ev.assume_init() }
@@ -676,9 +680,7 @@ impl super::Controller for Controller {
 
 impl Drop for Controller {
     fn drop(&mut self) {
-        let fd = self.device.raw();
-        self.device.old();
-        assert_ne!(unsafe { close(fd) }, -1);
+        assert_ne!(unsafe { close(self.device.stop()) }, -1);
     }
 }
 
@@ -783,17 +785,14 @@ impl super::Listener for Listener {
             }
         }
 
-        // Register waker for this device
-        self.device.register_waker(cx.waker());
-        Poll::Pending
+        // Register waker & go to sleep for this device
+        self.device.sleep(cx)
     }
 }
 
 impl Drop for Listener {
     fn drop(&mut self) {
-        let fd = self.device.raw();
-        self.device.old();
-        assert_ne!(unsafe { close(fd) }, -1);
+        assert_eq!(unsafe { close(self.device.stop()) }, 0);
     }
 }
 
