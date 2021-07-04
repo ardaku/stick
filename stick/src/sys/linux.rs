@@ -694,8 +694,8 @@ impl Listener {
     fn new(remap: Remap) -> Self {
         const CLOEXEC: c_int = 0o2000000;
         const NONBLOCK: c_int = 0o0004000;
-        const CREATE: c_uint = 0x00000100;
-        const DIR: &[u8] = b"/dev/input/by-id/\0";
+        const ATTRIB: c_uint = 0x00000004;
+        const DIR: &[u8] = b"/dev/input/\0";
 
         // Create an inotify.
         let listen = unsafe { inotify_init1(NONBLOCK | CLOEXEC) };
@@ -704,7 +704,7 @@ impl Listener {
         }
 
         // Start watching the controller directory.
-        if unsafe { inotify_add_watch(listen, DIR.as_ptr(), CREATE) } == -1 {
+        if unsafe { inotify_add_watch(listen, DIR.as_ptr(), ATTRIB) } == -1 {
             panic!("Couldn't add inotify watch!");
         }
 
@@ -712,7 +712,7 @@ impl Listener {
             // Create watcher, and register with fd as a "device".
             device: Device::new(listen, Watcher::new().input()),
             //
-            read_dir: Some(Box::new(read_dir("/dev/input/by-id/").unwrap())),
+            read_dir: Some(Box::new(read_dir("/dev/input/").unwrap())),
             //
             remap,
         }
@@ -722,21 +722,10 @@ impl Listener {
         remap: &Remap,
         mut filename: String,
     ) -> Poll<crate::Controller> {
-        if filename.ends_with("-event-joystick") {
+        if filename.contains("event") {
             filename.push('\0');
-            let mut timeout = 1024; // Quit after 1024 tries with no access
-            let fd = loop {
-                timeout -= 1;
-                let fd = unsafe {
-                    open(filename.as_ptr(), 2 /*read&write*/)
-                };
-                let errno = unsafe { *__errno_location() };
-                if errno != 13 || fd != -1 {
-                    break fd;
-                }
-                if timeout == 0 {
-                    break -1;
-                }
+            let fd = unsafe {
+                open(filename.as_ptr(), 2 /*read&write*/)
             };
             if fd != -1 {
                 return Poll::Ready(crate::Controller::new(
@@ -778,7 +767,7 @@ impl super::Listener for Listener {
             let ev = unsafe { ev.assume_init() };
             let len = unsafe { strlen(&ev.name[0]) };
             let filename = String::from_utf8_lossy(&ev.name[..len]);
-            let path = format!("/dev/input/by-id/{}", filename);
+            let path = format!("/dev/input/{}", filename);
             if let Poll::Ready(controller) = Self::controller(&self.remap, path)
             {
                 return Poll::Ready(controller);
