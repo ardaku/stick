@@ -484,8 +484,9 @@ fn joystick_ff(fd: RawFd, code: i16, strong: f32, weak: f32) {
             != size_of::<EvdevEv>() as isize
         {
             let errno = *__errno_location();
-            if errno != 19 {
+            if errno != 19 && errno != 9 {
                 // 19 = device unplugged, ignore
+                // 9 = device openned read-only, ignore
                 panic!("Write exited with {}", *__errno_location());
             }
         }
@@ -724,9 +725,17 @@ impl Listener {
     ) -> Poll<crate::Controller> {
         if filename.contains("event") {
             filename.push('\0');
-            let fd = unsafe {
-                open(filename.as_ptr(), 2 /*read&write*/)
-            };
+            // Try read & write first
+            let mut fd = unsafe { open(filename.as_ptr(), 2) };
+            // Try readonly second (bluetooth controller - input device)
+            if fd == -1 {
+                fd = unsafe { open(filename.as_ptr(), 0) };
+            }
+            // Try writeonly third (bluetooth haptic device)
+            if fd == -1 {
+                fd = unsafe { open(filename.as_ptr(), 1) };
+            }
+            // If one succeeded, return that controller.
             if fd != -1 {
                 return Poll::Ready(crate::Controller::new(
                     Box::new(Controller::new(fd)),
