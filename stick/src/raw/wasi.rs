@@ -9,12 +9,6 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-/// Window grab focus, re-enable events if they were disabled.
-pub fn focus() {
-    crate::raw::GLOBAL.with(|g| g.enable());
-}
-
-/// Window ungrab focus, disable events.
-pub fn unfocus() {
-    crate::raw::GLOBAL.with(|g| g.disable());
+pub(super) fn global() -> Box<dyn super::Global> {
+    Box::new(super::FakeGlobal)
 }

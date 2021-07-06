@@ -125,7 +125,7 @@ mod ctlr;
 mod event;
 mod focus;
 mod listener;
-mod sys;
+mod raw;
 
 pub use ctlr::{Controller, Remap};
 pub use event::Event;
