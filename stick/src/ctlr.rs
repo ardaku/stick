@@ -270,7 +270,7 @@ pub struct Controller {
     // Shared remapping.
     remap: Rc<Info>,
     //
-    raw: Box<dyn crate::sys::Controller>,
+    raw: Box<dyn crate::raw::Controller>,
     // Button states
     btns: u128,
     // Number button states
@@ -288,7 +288,7 @@ impl Debug for Controller {
 impl Controller {
     #[allow(unused)]
     pub(crate) fn new(
-        raw: Box<dyn crate::sys::Controller>,
+        raw: Box<dyn crate::raw::Controller>,
         remap: &Remap,
     ) -> Self {
         let btns = 0;

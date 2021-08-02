@@ -8,17 +8,29 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
+#![allow(unsafe_code)]
+
 use crate::{Event, Remap};
 use std::task::{Context, Poll};
 
-#[cfg_attr(target_arch = "wasm32", path = "sys/web.rs")]
 #[cfg_attr(
-    not(target_arch = "wasm32"),
-    cfg_attr(target_os = "linux", path = "sys/linux.rs"),
-    cfg_attr(target_os = "android", path = "sys/android.rs"),
-    cfg_attr(target_os = "macos", path = "sys/macos.rs"),
-    cfg_attr(target_os = "ios", path = "sys/ios.rs"),
-    cfg_attr(target_os = "windows", path = "sys/windows.rs"),
+    any(target_arch = "wasm32", target_arch = "asmjs"),
+    cfg_attr(target_os = "wasi", path = "raw/wasi.rs"),
+    cfg_attr(target_os = "aldro", path = "raw/aldro.rs"),
+    cfg_attr(
+        any(target_os = "unknown", target_os = "emscripten"),
+        path = "raw/dom.rs"
+    )
+)]
+#[cfg_attr(
+    not(any(target_arch = "wasm32", target_arch = "asmjs")),
+    cfg_attr(target_os = "linux", path = "raw/linux.rs"),
+    cfg_attr(target_os = "android", path = "raw/android.rs"),
+    cfg_attr(target_os = "macos", path = "raw/macos.rs"),
+    cfg_attr(target_os = "ios", path = "raw/ios.rs"),
+    cfg_attr(target_os = "windows", path = "raw/windows.rs"),
+    cfg_attr(target_os = "fuchsia", path = "raw/fuchsia.rs"),
+    cfg_attr(target_os = "redox", path = "raw/redox.rs"),
     cfg_attr(
         any(
             target_os = "freebsd",
@@ -27,13 +39,9 @@ use std::task::{Context, Poll};
             target_os = "openbsd",
             target_os = "netbsd"
         ),
-        path = "sys/bsd.rs",
-    ),
-    cfg_attr(target_os = "fuchsia", path = "sys/fuchsia.rs"),
-    cfg_attr(target_os = "redox", path = "sys/redox.rs"),
-    cfg_attr(target_os = "dive", path = "sys/dive.rs")
+        path = "raw/bsd.rs",
+    )
 )]
-#[allow(unsafe_code)]
 mod ffi;
 
 /// Global state for when the system implementation can fail.
