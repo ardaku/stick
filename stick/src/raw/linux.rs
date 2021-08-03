@@ -29,6 +29,11 @@ fn linux_btn_to_stick_event(
     pushed: bool,
 ) {
     pending.push(match btn {
+        0x08B /* KEY_MENU */ => Event::Context(pushed),
+
+        0x09E /* KEY_BACK */ => Event::PaddleLeft(pushed),
+        0x09F /* KEY_FORWARD */ => Event::PaddleRight(pushed),
+
         0x120 /* BTN_TRIGGER */ => Event::Trigger(pushed),
         0x121 /* BTN_THUMB */ => Event::ActionM(pushed),
         0x122 /* BTN_THUMB2 */ => Event::Bumper(pushed),

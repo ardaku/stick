@@ -1,0 +1,14 @@
+name = "Microsoft Xbox Wireless Controller"
+type = "xbox"
+
+[remap]
+ActionH = "BumperL"
+ActionD = "BumperR"
+BumperL = "MenuL"
+BumperR = "MenuR"
+JoyZ = "TriggerL"
+CamZ = "TriggerR"
+ActionC = "ActionH"
+TriggerL = "Joy"
+TriggerR = "Cam"
+Context = "Exit"

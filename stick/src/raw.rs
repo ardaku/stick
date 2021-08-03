@@ -16,7 +16,7 @@ use std::task::{Context, Poll};
 #[cfg_attr(
     any(target_arch = "wasm32", target_arch = "asmjs"),
     cfg_attr(target_os = "wasi", path = "raw/wasi.rs"),
-    cfg_attr(target_os = "aldro", path = "raw/aldro.rs"),
+    cfg_attr(target_os = "ardaku", path = "raw/ardaku.rs"),
     cfg_attr(
         any(target_os = "unknown", target_os = "emscripten"),
         path = "raw/dom.rs"

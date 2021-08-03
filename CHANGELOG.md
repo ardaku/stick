@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 ### Added
  - Support For WASM **WIP**
 
+## [0.12.2] - 2021-08-03
+### Added
+ - Support for KEY\_MENU event on Linux.
+ - A joystick mapping for wireless XBox controller
+
+### Fixed
+ - A bug in xtask bytecode generation for some events.
+
+## [0.12.1] - 2021-08-02
+### Added
+ - Support for KEY\_BACK and KEY\_FORWARD events on Linux.
+
 ## [0.12.0] - 2021-07-07
 ### Added
  - You can now import your own mappings at runtime with `Remap`
