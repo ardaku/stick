@@ -29,6 +29,8 @@ fn linux_btn_to_stick_event(
     pushed: bool,
 ) {
     pending.push(match btn {
+        0x08B /* KEY_MENU */ => Event::Context(pushed),
+
         0x09E /* KEY_BACK */ => Event::PaddleLeft(pushed),
         0x09F /* KEY_FORWARD */ => Event::PaddleRight(pushed),
 
