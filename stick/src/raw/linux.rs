@@ -291,7 +291,7 @@ fn linux_abs_to_stick_event(
     }
 }
 
-// Convert Linux ABS axis to stick Event.
+// Convert Linux MSC event to stick Event.
 fn linux_msc_to_stick_event(
     pending: &mut Vec<Event>,
     msc_event: c_ushort,
