@@ -230,6 +230,8 @@ pub enum Event {
     ScrollY(f64),
     /// Scroll Button on a mouse
     Scroll(bool),
+    /// Timestamp event for the number of microseconds since last reset
+    Timestamp(u32),
 }
 
 impl Event {
@@ -335,6 +337,7 @@ impl Event {
             0x5B => Event::TrimDown(value != 0.0),
             0x5C => Event::TrimLeft(value != 0.0),
             0x5D => Event::TrimRight(value != 0.0),
+            0x5E => Event::Timestamp(value as u32),
             n => Event::Number((n & !0x80) as i8, value != 0.0),
         }
     }
@@ -438,6 +441,7 @@ impl Event {
             TrimDown(p) => (0x5B, f64::from(u8::from(p))),
             TrimLeft(p) => (0x5C, f64::from(u8::from(p))),
             TrimRight(p) => (0x5D, f64::from(u8::from(p))),
+            Timestamp(p) => (0x5E, p as f64),
         }
     }
 }
@@ -554,6 +558,7 @@ impl std::fmt::Display for Event {
             ActionL(p) => write!(f, "ActionL {}", pushed(p)),
             ActionR(p) => write!(f, "ActionR {}", pushed(p)),
             Pinky(p) => write!(f, "Pinky {}", pushed(p)),
+            Timestamp(p) => write!(f, "Timestamp {}μs", p),
         }
     }
 }

@@ -555,6 +555,7 @@ impl Controller {
             TrimDown(p) => self.button(Btn::TrimDown, TrimDown, p),
             TrimLeft(p) => self.button(Btn::TrimLeft, TrimLeft, p),
             TrimRight(p) => self.button(Btn::TrimRight, TrimRight, p),
+            Timestamp(p) => Poll::Ready(Timestamp(p)),
         }
     }
 }

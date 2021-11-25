@@ -291,19 +291,56 @@ fn linux_abs_to_stick_event(
     }
 }
 
+// Convert Linux ABS axis to stick Event.
+fn linux_msc_to_stick_event(
+    pending: &mut Vec<Event>,
+    msc_event: c_ushort,
+    msc_value: c_int,
+) {
+    match msc_event {
+        0x00 /* MSC_SERIAL */ => {
+            eprintln!("Unknown Event: MSC_SERIAL");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+        }
+        0x01 /* MSC_PULSELED */ => {
+            eprintln!("Unknown Event: MSC_PULSELED");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+        }
+        0x02 /* MSC_GESTURE */ => {
+            eprintln!("Unknown Event: MSC_GESTURE");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+        }
+        0x03 /* MSC_RAW */ => {
+            eprintln!("Unknown Event: MSC_RAW");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+        }
+        0x04 /* MSC_SCAN */ => {
+            eprintln!("Unknown Event: MSC_SCAN");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+        }
+        0x05 /* MSC_TIMESTAMP */ => pending.push(Event::Timestamp(msc_value as u32)),
+
+        // there is no 0x06 defined
+
+        0x06 /* MSC_MAX */ => {
+            eprintln!("Unknown Event: MSC_MAX");
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+        }
+
+        _unknown => {
+            eprintln!("Unknown Linux MSC {}", _unknown);
+            eprintln!("Report at https://github.com/libcala/stick/issues");
+        }
+    }
+}
+
 fn linux_evdev_to_stick_event(pending: &mut Vec<Event>, e: EvdevEv) {
     match e.ev_type {
         0x00 /* SYN */ => {}, // Ignore Syn Input Events
         0x01 /* BTN */ => linux_btn_to_stick_event(pending, e.ev_code, e.ev_value != 0),
         0x02 /* REL */ => linux_rel_to_stick_event(pending, e.ev_code, e.ev_value),
         0x03 /* ABS */ => linux_abs_to_stick_event(pending, e.ev_code, e.ev_value),
-        0x04 /* MSC */ => {
-            if e.ev_code != 4 { // Ignore Misc./Scan Events
-                let (code, val) = (e.ev_code, e.ev_value);
-                eprintln!("Unknown Linux Misc Code: {}, Value: {}", code, val);
-                eprintln!("Report at https://github.com/libcala/stick/issues");
-            }
-        }
+        0x04 /* MSC */ => linux_msc_to_stick_event(pending, e.ev_code, e.ev_value),
         0x15 /* FF */ => {}, // Ignore Force Feedback Input Events
         _unknown => {
             eprintln!("Unknown Linux Event Type: {}", _unknown);
