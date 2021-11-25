@@ -322,7 +322,7 @@ fn linux_msc_to_stick_event(
 
         // there is no 0x06 defined
 
-        0x06 /* MSC_MAX */ => {
+        0x07 /* MSC_MAX */ => {
             eprintln!("Unknown Event: MSC_MAX");
             eprintln!("Report at https://github.com/libcala/stick/issues");
         }
