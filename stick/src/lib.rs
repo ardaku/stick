@@ -110,13 +110,25 @@
 #[macro_use]
 extern crate log;
 
+// Platform-specific implementation
+mod platform {
+    #![allow(clippy::module_inception)]
+
+    mod platform;
+
+    pub(crate) use platform::{connect, platform, PlatformController, Support};
+}
+
+mod connector;
 mod ctlr;
 mod event;
 mod focus;
-mod listener;
-mod raw;
+// mod listener;
+// mod raw;
 
+pub use connector::Connector;
 pub use ctlr::{Controller, Remap};
 pub use event::Event;
 pub use focus::{focus, unfocus};
-pub use listener::Listener;
+
+// pub use listener::Listener;

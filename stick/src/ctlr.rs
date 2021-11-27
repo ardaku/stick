@@ -3,11 +3,16 @@ use std::{
     fmt::Debug,
     future::Future,
     pin::Pin,
-    sync::Arc,
+    rc::Rc,
     task::{Context, Poll},
 };
 
-use crate::Event;
+use lookit::It;
+
+use crate::{
+    platform::{connect, platform, PlatformController, Support},
+    Event,
+};
 
 #[repr(i8)]
 enum Btn {
@@ -266,13 +271,19 @@ pub struct Controller {
     // Shared remapping.
     remap: Arc<Info>,
     //
-    raw: Box<dyn crate::raw::Controller>,
+    raw: PlatformController,
     // Button states
     btns: u128,
     // Number button states
     nums: u128,
     // Axis states:
     axis: [f64; Axs::Count as usize],
+    // Unique platform-specific controller ID.
+    id: u64,
+    // Name of the controller.
+    name: String,
+    // Is the platform controller ready?  If so, keep polling.
+    ready: bool,
 }
 
 impl Debug for Controller {
@@ -283,31 +294,33 @@ impl Debug for Controller {
 
 impl Controller {
     #[allow(unused)]
-    pub(crate) fn new(
-        raw: Box<dyn crate::raw::Controller>,
-        remap: &Remap,
-    ) -> Self {
+    pub(crate) fn new(which: It, remap: &Remap) -> Option<Self> {
         let btns = 0;
         let nums = 0;
         let axis = [0.0; Axs::Count as usize];
-        let remap = remap.0.get(&raw.id()).cloned().unwrap_or_default();
-        Self {
+        let (id, name, raw) = connect(which)?;
+        let remap = remap.0.get(&id).cloned().unwrap_or_default();
+        let ready = true;
+        Some(Self {
             remap,
             raw,
             btns,
             nums,
             axis,
-        }
+            id,
+            name,
+            ready,
+        })
     }
 
     /// Get a unique identifier for the specific model of gamepad.
     pub fn id(&self) -> u64 {
-        self.raw.id()
+        self.id
     }
 
     /// Get the name of this Pad.
     pub fn name(&self) -> &str {
-        self.raw.name()
+        &self.name
     }
 
     /// Turn on/off haptic force feedback.
@@ -319,7 +332,7 @@ impl Controller {
     /// located on the left, and the second is typically high frequency and is
     /// located on the right (controllers may vary).
     pub fn rumble<R: Rumble>(&mut self, power: R) {
-        self.raw.rumble(power.left(), power.right());
+        platform().rumble(&mut self.raw, power.left(), power.right());
     }
 
     fn button(&mut self, b: Btn, f: fn(bool) -> Event, p: bool) -> Poll<Event> {
@@ -363,7 +376,7 @@ impl Controller {
                     - 1.0)
                     .clamp(-1.0, 1.0)
             } else {
-                self.raw.axis(v).clamp(-1.0, 1.0)
+                v.clamp(-1.0, 1.0)
             };
             if !map.deadzone.is_nan() && v.abs() <= map.deadzone {
                 0.0
@@ -371,7 +384,7 @@ impl Controller {
                 v
             }
         } else {
-            self.raw.axis(v).clamp(-1.0, 1.0)
+            v.clamp(-1.0, 1.0)
         };
         let axis = a as usize;
         if self.axis[axis] == v {
@@ -396,7 +409,7 @@ impl Controller {
                 ((v - f64::from(map.min)) / f64::from(map.max - map.min))
                     .clamp(0.0, 1.0)
             } else {
-                self.raw.pressure(v).clamp(0.0, 1.0)
+                v.clamp(0.0, 1.0)
             };
             if !map.deadzone.is_nan() && v <= map.deadzone {
                 0.0
@@ -404,7 +417,7 @@ impl Controller {
                 v
             }
         } else {
-            self.raw.pressure(v).clamp(0.0, 1.0)
+            v.clamp(0.0, 1.0)
         };
         let axis = a as usize;
         if self.axis[axis] == v {
@@ -567,16 +580,23 @@ impl Future for Controller {
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Event> {
         let mut this = self.as_mut();
 
-        if let Poll::Ready(event) = this.raw.poll(cx) {
-            let out = Self::process(&mut this, event);
-            if out.is_pending() {
-                Self::poll(self, cx)
-            } else {
-                out
+        if this.ready {
+            if let Some(event) = platform().event(&mut this.raw) {
+                let out = Self::process(&mut *this, event);
+                return if out.is_pending() {
+                    Self::poll(self, cx)
+                } else {
+                    out
+                };
             }
-        } else {
-            Poll::Pending
         }
+
+        this.ready = Pin::new(&mut this.raw.device).poll(cx).is_ready();
+        if !this.ready {
+            return Poll::Pending;
+        }
+
+        Self::poll(self, cx)
     }
 }
 
