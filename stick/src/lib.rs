@@ -1,10 +1,9 @@
-// Stick
-// Copyright © 2017-2021 Jeron Aldaron Lau.
+// Copyright © 2017-2021 The Stick Crate Developers.
 //
 // Licensed under any of:
 // - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-// - MIT License (https://mit-license.org/)
 // - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
+// - MIT License (https://mit-license.org/)
 // At your option (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
@@ -121,13 +120,25 @@
 #[macro_use]
 extern crate log;
 
+// Platform-specific implementation
+mod platform {
+    #![allow(clippy::module_inception)]
+
+    mod platform;
+
+    pub(crate) use platform::{connect, platform, PlatformController, Support};
+}
+
+mod connector;
 mod ctlr;
 mod event;
 mod focus;
-mod listener;
-mod raw;
+// mod listener;
+// mod raw;
 
+pub use connector::Connector;
 pub use ctlr::{Controller, Remap};
 pub use event::Event;
 pub use focus::{focus, unfocus};
-pub use listener::Listener;
+
+// pub use listener::Listener;

@@ -8,6 +8,10 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-pub(super) fn global() -> Box<dyn super::Global> {
-    Box::new(super::FakeGlobal)
+compile_error!(include_str!(concat!(env!("OUT_DIR"), "/unsupported.rs")));
+
+pub(super) type Device<T> = core::marker::PhantomData<T>;
+
+pub(super) fn start() -> Device<Device<crate::packet::Midi>> {
+    core::marker::PhantomData
 }
