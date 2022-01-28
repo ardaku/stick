@@ -10,16 +10,12 @@ CamZ = "CamY"
 ActionV = "ActionH"
 ActionH = "ActionV"
 
-# Wheel under the buttons
-Brake = "Wheel" # X-axis being named 'Wheel' fits better than 'Brake'
-# Y-axis already dubbed 'Gas', which seems fair enough
-
 # Rear buttons
-15       = "ActionL" # Left Nub, diagonally between and bumpers
-14       = "ActionR" # Right Nub
+15 = "ActionL" # Left Nub, diagonally between and bumpers
+14 = "ActionR" # Right Nub
 
 # Underside
-12         = "PinkyLeft" # Left Grip
+11 = "PinkyLeft" # Right Under
 # Right Grip already dubbed PinkyRight
-13         = "PaddleLeft" # Left Under
-11         = "PaddleRight" # Right Under
+13 = "PaddleLeft" # Left Under
+12 = "PaddleRight" # Left Grip
