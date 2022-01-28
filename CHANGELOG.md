@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 ### Added
  - Support For WASM **WIP**
 
+## [0.12.3] - 2022-01-27
+### Added
+ - Support for buttons on Flydigi Apex 2 (thanks to
+   [zeddidragon](https://github.com/zeddidragon)!)
+
 ## [0.12.2] - 2021-08-03
 ### Added
  - Support for KEY\_MENU event on Linux.
