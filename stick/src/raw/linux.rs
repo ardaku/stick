@@ -66,6 +66,8 @@ fn linux_btn_to_stick_event(
         0x13C /* BTN_MODE */ => Event::Exit(pushed),
         0x13D /* BTN_THUMBL */ => Event::Joy(pushed),
         0x13E /* BTN_THUMBR */ => Event::Cam(pushed),
+        0x13F /* BTN_PINKYR */ => Event::PinkyRight(pushed),
+        0x140 /* BTN_PINKYL */ => Event::PinkyLeft(pushed),
 
         0x220 /* BTN_DPAD_UP */ => Event::Up(pushed),
 		0x221 /* BTN_DPAD_DOWN */ => Event::Down(pushed),
