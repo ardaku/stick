@@ -1,0 +1,25 @@
+name = "Flydigi Apex 2 (Wired)"
+type = "flight" # Not remotely a flightstick, but can't be plugged into any of the consoles either
+
+[remap]
+# Sticks
+JoyZ = "CamX"
+CamZ = "CamY"
+
+# Face buttons flipped in function
+ActionV = "ActionH"
+ActionH = "ActionV"
+
+# Wheel under the buttons
+Brake = "Wheel" # X-axis being named 'Wheel' fits better than 'Brake'
+# Y-axis already dubbed 'Gas', which seems fair enough
+
+# Rear buttons
+15       = "ActionL" # Left Nub, diagonally between and bumpers
+14       = "ActionR" # Right Nub
+
+# Underside
+12         = "PinkyLeft" # Left Grip
+# Right Grip already dubbed PinkyRight
+13         = "PaddleLeft" # Left Under
+11         = "PaddleRight" # Right Under
