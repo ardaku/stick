@@ -124,6 +124,8 @@ fn name_to_hex(name: &str) -> &str {
         "TrimDown" => "5B",
         "TrimLeft" => "5C",
         "TrimRight" => "5D",
+        "ActionWheelX" => "5E",
+        "ActionWheelY" => "5F",
         _unknown => panic!("Unknown: {}", _unknown),
     }
 }

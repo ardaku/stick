@@ -117,7 +117,9 @@ enum Axs {
     MouseY = 18,
     ScrollX = 19,
     ScrollY = 20,
-    Count = 21,
+    ActionWheelX = 21,
+    ActionWheelY = 22,
+    Count, // Inferred correctly as long as it's last
 }
 
 #[derive(Debug)]
@@ -555,6 +557,8 @@ impl Controller {
             TrimDown(p) => self.button(Btn::TrimDown, TrimDown, p),
             TrimLeft(p) => self.button(Btn::TrimLeft, TrimLeft, p),
             TrimRight(p) => self.button(Btn::TrimRight, TrimRight, p),
+            ActionWheelX(v) => self.axis(ev, Axs::ActionWheelX, ActionWheelX, v),
+            ActionWheelY(v) => self.axis(ev, Axs::ActionWheelY, ActionWheelY, v),
         }
     }
 }

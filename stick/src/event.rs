@@ -230,6 +230,10 @@ pub enum Event {
     ScrollY(f64),
     /// Scroll Button on a mouse
     Scroll(bool),
+    /// Horizontal axis under the action buttons - between -1.0 and 1.0
+    ActionWheelX(f64),
+    /// Vertical axis under the action buttons - between -1.0 and 1.0
+    ActionWheelY(f64),
 }
 
 impl Event {
@@ -335,6 +339,8 @@ impl Event {
             0x5B => Event::TrimDown(value != 0.0),
             0x5C => Event::TrimLeft(value != 0.0),
             0x5D => Event::TrimRight(value != 0.0),
+            0x5E => Event::ActionWheelX(value),
+            0x5F => Event::ActionWheelY(value),
             n => Event::Number((n & !0x80) as i8, value != 0.0),
         }
     }
@@ -438,6 +444,8 @@ impl Event {
             TrimDown(p) => (0x5B, f64::from(u8::from(p))),
             TrimLeft(p) => (0x5C, f64::from(u8::from(p))),
             TrimRight(p) => (0x5D, f64::from(u8::from(p))),
+            ActionWheelX(v) => (0x5E, v),
+            ActionWheelY(v) => (0x5F, v),
         }
     }
 }
@@ -554,6 +562,8 @@ impl std::fmt::Display for Event {
             ActionL(p) => write!(f, "ActionL {}", pushed(p)),
             ActionR(p) => write!(f, "ActionR {}", pushed(p)),
             Pinky(p) => write!(f, "Pinky {}", pushed(p)),
+            ActionWheelX(v) => write!(f, "ActionWheelX {}", v),
+            ActionWheelY(v) => write!(f, "ActionWheelY {}", v),
         }
     }
 }

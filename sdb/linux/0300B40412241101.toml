@@ -6,6 +6,10 @@ type = "gamepad"
 JoyZ = "CamX"
 CamZ = "CamY"
 
+# Wheel
+Brake = "ActionWheelX"
+Gas = "ActionWheelY"
+
 # Face buttons flipped in function
 ActionV = "ActionH"
 ActionH = "ActionV"
