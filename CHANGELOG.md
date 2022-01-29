@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 ### Added
  - Support For WASM **WIP**
 
+## [0.12.4] - 2022-01-29
+### Added
+ - Mappings for Flydigi Apex 2 (thanks to
+   [zeddidragon](https://github.com/zeddidragon)!)
+ - Generic `gamepad` controller type (thanks to
+   [zeddidragon](https://github.com/zeddidragon)!)
+ - `Event::ActionWheelX` and `Event::ActionWheelY` (thanks to
+   [zeddidragon](https://github.com/zeddidragon)!)
+
 ## [0.12.3] - 2022-01-27
 ### Added
  - Support for buttons on Flydigi Apex 2 (thanks to
@@ -29,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 ### Added
  - You can now import your own mappings at runtime with `Remap`
  - Default evdev id guessing
- - Windows support
+ - Windows support (thanks to [dparnell](https://github.com/dparnell)!)
  - Support adjusting left and right rumble separately.
  - `focus()` for enabling events (enabled by default).
  - `unfocus()` - for disabling events when window is not in focus.

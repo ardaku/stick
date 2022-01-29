@@ -42,6 +42,7 @@ Type can be any of the following:
  - `flight` - A Flightstick
  - `playstation` - A PlayStation Gamepad (W3 Standard Gamepad Compliant)
  - `nintendo` - A Nintendo Gamepad (W3 Standard Gamepad Compliant)
+ - `gamepad` - A generic Gamepad (W3 Standard Gamepad Compliant)
 
 ## License
 Licensed under any of
