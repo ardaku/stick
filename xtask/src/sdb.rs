@@ -154,6 +154,7 @@ pub(super) fn main() {
             "xbox" => 'x',
             "playstation" => 'p',
             "nintendo" => 'n',
+            "gamepad" => 'g',
             "flight" => 'f',
             _type => panic!("Unknown type: {}", _type),
         };

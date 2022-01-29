@@ -1,5 +1,5 @@
 name = "Flydigi Apex 2 (Wired)"
-type = "flight" # Not remotely a flightstick, but can't be plugged into any of the consoles either
+type = "gamepad"
 
 [remap]
 # Sticks
