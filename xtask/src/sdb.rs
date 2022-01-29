@@ -124,6 +124,8 @@ fn name_to_hex(name: &str) -> &str {
         "TrimDown" => "5B",
         "TrimLeft" => "5C",
         "TrimRight" => "5D",
+        "ActionWheelX" => "5E",
+        "ActionWheelY" => "5F",
         _unknown => panic!("Unknown: {}", _unknown),
     }
 }
@@ -154,6 +156,7 @@ pub(super) fn main() {
             "xbox" => 'x',
             "playstation" => 'p',
             "nintendo" => 'n',
+            "gamepad" => 'g',
             "flight" => 'f',
             _type => panic!("Unknown type: {}", _type),
         };
