@@ -14,7 +14,6 @@
 
 use crate::{Event, Remap};
 use std::fmt::{self, Debug, Formatter};
-use std::rc::Rc;
 use std::sync::Arc;
 use std::task::Waker;
 use std::task::{Context, Poll};
@@ -159,7 +158,7 @@ impl XInputHandle {
     /// * `xinput1_1.dll`
     /// * `xinput9_1_0.dll`
     pub(crate) fn load_default(
-    ) -> Result<Rc<XInputHandle>, XInputLoadingFailure> {
+    ) -> Result<Arc<XInputHandle>, XInputLoadingFailure> {
         let xinput14 = "xinput1_4.dll";
         let xinput13 = "xinput1_3.dll";
         let xinput12 = "xinput1_2.dll";
@@ -170,7 +169,7 @@ impl XInputHandle {
             [xinput14, xinput13, xinput12, xinput11, xinput91].iter()
         {
             if let Ok(handle) = XInputHandle::load(lib_name) {
-                return Ok(Rc::new(handle));
+                return Ok(Arc::new(handle));
             }
         }
 
@@ -633,7 +632,7 @@ fn register_wake_timeout(delay: u32, waker: &Waker) {
 ////////////////////////////////////////////////////////////////////////////////
 
 pub(crate) struct Controller {
-    xinput: Rc<XInputHandle>,
+    xinput: Arc<XInputHandle>,
     device_id: u8,
     pending_events: Vec<Event>,
     last_packet: DWORD,
@@ -641,7 +640,7 @@ pub(crate) struct Controller {
 
 impl Controller {
     #[allow(unused)]
-    fn new(device_id: u8, xinput: Rc<XInputHandle>) -> Self {
+    fn new(device_id: u8, xinput: Arc<XInputHandle>) -> Self {
         Self {
             xinput,
             device_id,
@@ -792,14 +791,14 @@ impl super::Controller for Controller {
 }
 
 pub(crate) struct Listener {
-    xinput: Rc<XInputHandle>,
+    xinput: Arc<XInputHandle>,
     connected: u64,
     to_check: u8,
     remap: Remap,
 }
 
 impl Listener {
-    fn new(remap: Remap, xinput: Rc<XInputHandle>) -> Self {
+    fn new(remap: Remap, xinput: Arc<XInputHandle>) -> Self {
         Self {
             xinput,
             connected: 0,
@@ -842,7 +841,7 @@ impl super::Listener for Listener {
 }
 
 struct Global {
-    xinput: Rc<XInputHandle>,
+    xinput: Arc<XInputHandle>,
 }
 
 impl super::Global for Global {
