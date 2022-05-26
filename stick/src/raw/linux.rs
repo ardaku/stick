@@ -29,10 +29,23 @@ fn linux_btn_to_stick_event(
     pushed: bool,
 ) {
     pending.push(match btn {
+        0x01C /* KEY_ENTER */ => Event::Enter(pushed),
+
         0x08B /* KEY_MENU */ => Event::Context(pushed),
+
+        0x096 /* KEY_SLEEP */ => Event::Sleep(pushed),
 
         0x09E /* KEY_BACK */ => Event::PaddleLeft(pushed),
         0x09F /* KEY_FORWARD */ => Event::PaddleRight(pushed),
+
+        0x0A1 /* KEY_EJECT */ => Event::Eject(pushed),
+
+        0x0D4 /* KEY_PAIR */ => Event::Pair(pushed),
+
+        0x0F1 /* KEY_LANG2 */ => Event::Lang2(pushed),
+        0x0F2 /* KEY_LANG1 */ => Event::Lang1(pushed),
+
+        0x100 /* BTN_MIC_PUSH */ => Event::MicPush(pushed),
 
         0x120 /* BTN_TRIGGER */ => Event::Trigger(pushed),
         0x121 /* BTN_THUMB */ => Event::ActionM(pushed),
@@ -68,6 +81,15 @@ fn linux_btn_to_stick_event(
         0x13E /* BTN_THUMBR */ => Event::Cam(pushed),
         0x13F /* BTN_PINKYR */ => Event::PinkyRight(pushed),
         0x140 /* BTN_PINKYL */ => Event::PinkyLeft(pushed),
+
+        0x16A /* BTN_THROTTLE */ => Event::ThrottleButton(pushed),
+
+        0x16E /* BTN_HOME */ => Event::Home(pushed),
+
+        0x179 /* BTN_LANDING_GEAR_SILENCE */ => Event::LandingGearSilence(pushed),
+
+        0x192 /* BTN_CHINA_FORWARD */ => Event::ChinaForward(pushed),
+        0x193 /* BTN_CHINA_BACKWARD */ => Event::ChinaBackward(pushed),
 
         0x220 /* BTN_DPAD_UP */ => Event::Up(pushed),
 		0x221 /* BTN_DPAD_DOWN */ => Event::Down(pushed),

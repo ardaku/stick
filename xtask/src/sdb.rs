@@ -126,6 +126,13 @@ fn name_to_hex(name: &str) -> &str {
         "TrimRight" => "5D",
         "ActionWheelX" => "5E",
         "ActionWheelY" => "5F",
+        "Enter" => "60",
+        "Sleep" => "61",
+        "Eject" => "62",
+        "Pair" => "63",
+        "Lang1" => "64",
+        "Lang2" => "65",
+        "Home" => "66",
         _unknown => panic!("Unknown: {}", _unknown),
     }
 }

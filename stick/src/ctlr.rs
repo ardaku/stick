@@ -92,6 +92,13 @@ enum Btn {
     TrimDown = 69,
     TrimRight = 70,
     TrimLeft = 71,
+    Enter = 72,
+    Sleep = 73,
+    Eject = 74,
+    Pair = 75,
+    Lang1 = 76,
+    Lang2 = 77,
+    Home = 78,
 }
 
 #[repr(i8)]
@@ -437,7 +444,10 @@ impl Controller {
         use Event::*;
         match event {
             Disconnect => Poll::Ready(Disconnect),
+            Enter(p) => self.button(Btn::Enter, Enter, p),
             Exit(p) => self.button(Btn::Exit, Exit, p),
+            Sleep(p) => self.button(Btn::Sleep, Sleep, p),
+            Eject(p) => self.button(Btn::Eject, Eject, p),
             MenuL(p) => self.button(Btn::MenuL, MenuL, p),
             MenuR(p) => self.button(Btn::MenuR, MenuR, p),
             ActionA(p) => self.button(Btn::ActionA, ActionA, p),
@@ -559,6 +569,10 @@ impl Controller {
             TrimRight(p) => self.button(Btn::TrimRight, TrimRight, p),
             ActionWheelX(v) => self.axis(ev, Axs::ActionWheelX, ActionWheelX, v),
             ActionWheelY(v) => self.axis(ev, Axs::ActionWheelY, ActionWheelY, v),
+            Pair(p) => self.button(Btn::Pair, Pair, p),
+            Lang1(p) => self.button(Btn::Lang1, Lang1, p),
+            Lang2(p) => self.button(Btn::Lang2, Lang2, p),
+            Home(p) => self.button(Btn::Home, Home, p),
         }
     }
 }

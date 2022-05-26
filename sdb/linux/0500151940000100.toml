@@ -1,0 +1,38 @@
+name = "Flydigi Apex 2 (Bluetooth)"
+type = "gamepad"
+
+[remap]
+# Sticks
+JoyZ = "CamX"
+CamZ = "CamY"
+
+# Wheel
+Brake = "ActionWheelX"
+Gas = "ActionWheelY"
+
+# Dpad
+PovUp = "Up"
+PovDown = "Down"
+PovLeft = "Left"
+PovRight = "Right"
+
+# Face buttons flipped in function
+ActionV = "ActionH"
+ActionH = "ActionV"
+MicPush = "ActionC"
+Enter = "ActionD"
+
+# Rear buttons
+Sleep = "ActionL" # Left Nub, diagonally between and bumpers
+Lang2 = "ActionR" # Right Nub
+
+# Meta buttons
+# Pair is already Pair
+# Home is already Home
+ThrottleButton = "Exit"
+
+# Underside
+ChinaForward = "PinkyLeft" # Left Grip
+Eject = "PinkyRight" # Right Grip
+LandingGearSilence = "PaddleLeft" # Left Under
+ChinaBackward = "PaddleRight" # Right Under
