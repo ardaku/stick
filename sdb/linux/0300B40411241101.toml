@@ -1,4 +1,4 @@
-name = "Flydigi Apex 2 (Wired)"
+name = "Flydigi Apex 2 (Wireless)"
 type = "gamepad"
 
 [remap]
@@ -19,13 +19,15 @@ PovRight = "Right"
 # Face buttons flipped in function
 ActionV = "ActionH"
 ActionH = "ActionV"
+PinkyRight = "ActionC"
+11 = "ActionD"
 
 # Rear buttons
 15 = "ActionL" # Left Nub, diagonally between and bumpers
 14 = "ActionR" # Right Nub
 
 # Underside
-11 = "PinkyLeft" # Right Under
-# Right Grip already dubbed PinkyRight
-13 = "PaddleLeft" # Left Under
-12 = "PaddleRight" # Left Grip
+13 = "PinkyLeft" # Left Grip
+12 = "PinkyRight" # Right Grip
+ActionD = "PaddleLeft" # Left Under
+ActionC = "PaddleRight" # Right Under
