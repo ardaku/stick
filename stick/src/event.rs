@@ -27,8 +27,8 @@ pub enum Event {
     Lang1(bool),
     /// Language 2
     Lang2(bool),
-    /// Pair
-    Pair(bool),
+    /// Mode
+    Mode(bool),
     /// Eject
     Eject(bool),
     /// A / 1 / 4 / Circle.  Action A (Primary action).
@@ -358,7 +358,7 @@ impl Event {
             0x60 => Event::Enter(value != 0.0),
             0x61 => Event::Sleep(value != 0.0),
             0x62 => Event::Eject(value != 0.0),
-            0x63 => Event::Pair(value != 0.0),
+            0x63 => Event::Mode(value != 0.0),
             0x64 => Event::Lang1(value != 0.0),
             0x65 => Event::Lang2(value != 0.0),
             0x66 => Event::Home(value != 0.0),
@@ -470,7 +470,7 @@ impl Event {
             Enter(p) => (0x60, f64::from(u8::from(p))),
             Sleep(p) => (0x61, f64::from(u8::from(p))),
             Eject(p) => (0x62, f64::from(u8::from(p))),
-            Pair(p) => (0x63, f64::from(u8::from(p))),
+            Mode(p) => (0x63, f64::from(u8::from(p))),
             Lang1(p) => (0x64, f64::from(u8::from(p))),
             Lang2(p) => (0x65, f64::from(u8::from(p))),
             Home(p) => (0x66, f64::from(u8::from(p))),
@@ -595,7 +595,7 @@ impl std::fmt::Display for Event {
             Enter(p) => write!(f, "Enter {}", pushed(p)),
             Sleep(p) => write!(f, "Sleep {}", pushed(p)),
             Eject(p) => write!(f, "Eject {}", pushed(p)),
-            Pair(p) => write!(f, "Pair {}", pushed(p)),
+            Mode(p) => write!(f, "Mode {}", pushed(p)),
             Lang1(p) => write!(f, "Lang1 {}", pushed(p)),
             Lang2(p) => write!(f, "Lang2 {}", pushed(p)),
             Home(p) => write!(f, "Home {}", pushed(p)),

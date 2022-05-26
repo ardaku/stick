@@ -40,7 +40,7 @@ fn linux_btn_to_stick_event(
 
         0x0A1 /* KEY_EJECT */ => Event::Eject(pushed),
 
-        0x0D4 /* KEY_PAIR */ => Event::Pair(pushed),
+        0x0D4 /* KEY_MODE */ => Event::Mode(pushed),
 
         0x0F1 /* KEY_LANG2 */ => Event::Lang2(pushed),
         0x0F2 /* KEY_LANG1 */ => Event::Lang1(pushed),

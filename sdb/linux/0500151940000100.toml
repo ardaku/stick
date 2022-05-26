@@ -27,7 +27,7 @@ Sleep = "ActionL" # Left Nub, diagonally between and bumpers
 Lang2 = "ActionR" # Right Nub
 
 # Meta buttons
-# Pair is already Pair
+# Mode is already Mode
 # Home is already Home
 ThrottleButton = "Exit"
 
