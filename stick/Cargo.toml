@@ -37,7 +37,7 @@ winapi = { version = "0.3", features = ["libloaderapi", "xinput", "winerror"] }
 log = { version = "0.4", default-features = false }
 
 [dev-dependencies]
-pasts = "0.8"
+pasts = "0.12"
 
 [package.metadata.docs.rs]
 all-features = true
