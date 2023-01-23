@@ -30,7 +30,7 @@ readme = "README.md"
 edition = "2018"
 
 [target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
-smelling_salts = "0.4"
+smelling_salts = "0.11"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["libloaderapi", "xinput", "winerror"] }
