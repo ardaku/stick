@@ -59,13 +59,13 @@ impl Listener for FakeListener {
 }
 
 /// Controller Listener Implementation
-pub(crate) trait Listener {
+pub(crate) trait Listener: Send {
     /// Poll for controllers.
     fn poll(&mut self, cx: &mut Context<'_>) -> Poll<crate::Controller>;
 }
 
 /// Controller Implementation
-pub(crate) trait Controller {
+pub(crate) trait Controller: Send {
     /// The hardware identifier for this controller.
     fn id(&self) -> u64 {
         0

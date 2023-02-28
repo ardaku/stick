@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use crate::Event;
@@ -150,7 +150,7 @@ impl Default for Info {
 
 /// Controller remapping information
 #[derive(Debug)]
-pub struct Remap(HashMap<u64, Rc<Info>>);
+pub struct Remap(HashMap<u64, Arc<Info>>);
 
 impl Default for Remap {
     fn default() -> Self {
@@ -260,7 +260,7 @@ impl Remap {
                 );
             }
 
-            self.0.insert(id, Rc::new(Info { name, maps, type_ }));
+            self.0.insert(id, Arc::new(Info { name, maps, type_ }));
         }
 
         Some(self)
@@ -270,7 +270,7 @@ impl Remap {
 /// A gamepad, flightstick, or other controller.
 pub struct Controller {
     // Shared remapping.
-    remap: Rc<Info>,
+    remap: Arc<Info>,
     //
     raw: Box<dyn crate::raw::Controller>,
     // Button states
@@ -557,8 +557,12 @@ impl Controller {
             TrimDown(p) => self.button(Btn::TrimDown, TrimDown, p),
             TrimLeft(p) => self.button(Btn::TrimLeft, TrimLeft, p),
             TrimRight(p) => self.button(Btn::TrimRight, TrimRight, p),
-            ActionWheelX(v) => self.axis(ev, Axs::ActionWheelX, ActionWheelX, v),
-            ActionWheelY(v) => self.axis(ev, Axs::ActionWheelY, ActionWheelY, v),
+            ActionWheelX(v) => {
+                self.axis(ev, Axs::ActionWheelX, ActionWheelX, v)
+            }
+            ActionWheelY(v) => {
+                self.axis(ev, Axs::ActionWheelY, ActionWheelY, v)
+            }
         }
     }
 }
