@@ -117,7 +117,7 @@ fn linux_btn_to_stick_event(
 
         _unknown => {
             eprintln!("Unknown Linux Button {}", _unknown);
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
             return;
         }
     })
@@ -134,39 +134,39 @@ fn linux_rel_to_stick_event(
 		0x01 /* REL_Y */ => pending.push(Event::MouseY(value as f64)),
 		0x02 /* REL_Z */ => {
             eprintln!("FIXME: REL_Z");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x03 /* REL_RX */ => {
             eprintln!("FIXME: REL_RX");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x04 /* REL_RY */ => {
             eprintln!("FIXME: REL_RY");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x05 /* REL_RZ */ => {
             eprintln!("FIXME: REL_RZ");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x06 /* REL_HWHEEL */ => {
             eprintln!("FIXME: REL_HWHEEL");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x07 /* REL_DIAL */ => {
             eprintln!("FIXME: REL_DIAL");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x08 /* REL_WHEEL */ => {
             eprintln!("FIXME: REL_WHEEL");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x09 /* REL_MISC */ => {
             eprintln!("FIXME: REL_MISC");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
         _unknown => {
             eprintln!("Unknown Linux Axis {}", _unknown);
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
     }
 }
@@ -260,35 +260,35 @@ fn linux_abs_to_stick_event(
         },
 		0x18 /* ABS_PRESSURE */ => {
             eprintln!("Unknown Event: ABS_PRESSURE");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x19 /* ABS_DISTANCE */ => {
             eprintln!("Unknown Event: ABS_DISTANCE");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x1a /* ABS_TILT_X */ => {
             eprintln!("Unknown Event: ABS_TILT_X");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x1b /* ABS_TILT_Y */ => {
             eprintln!("Unknown Event: ABS_TILT_Y");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x1c /* ABS_TOOL_WIDTH */ => {
             eprintln!("Unknown Event: ABS_TOOL_WIDTH");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x20 /* ABS_VOLUME */ => {
             eprintln!("Unknown Event: ABS_VOLUME");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
 		0x28 /* ABS_MISC */ => {
             eprintln!("Unknown Event: ABS_MISC");
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
         _unknown => {
             eprintln!("Unknown Linux Axis {}", _unknown);
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
     }
 }
@@ -303,13 +303,13 @@ fn linux_evdev_to_stick_event(pending: &mut Vec<Event>, e: EvdevEv) {
             if e.ev_code != 4 { // Ignore Misc./Scan Events
                 let (code, val) = (e.ev_code, e.ev_value);
                 eprintln!("Unknown Linux Misc Code: {}, Value: {}", code, val);
-                eprintln!("Report at https://github.com/libcala/stick/issues");
+                eprintln!("Report at https://github.com/ardaku/stick/issues");
             }
         }
         0x15 /* FF */ => {}, // Ignore Force Feedback Input Events
         _unknown => {
             eprintln!("Unknown Linux Event Type: {}", _unknown);
-            eprintln!("Report at https://github.com/libcala/stick/issues");
+            eprintln!("Report at https://github.com/ardaku/stick/issues");
         }
     }
 }

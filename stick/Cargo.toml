@@ -20,9 +20,9 @@ authors = [
 license = "Apache-2.0 OR MIT OR BSL-1.0"
 
 description = "Platform-agnostic asynchronous gamepad, joystick and flighstick library"
-repository = "https://github.com/libcala/stick"
+repository = "https://github.com/ardaku/stick"
 documentation = "https://docs.rs/stick"
-homepage = "https://github.com/libcala/stick/blob/main/CHANGELOG.md"
+homepage = "https://github.com/ardaku/stick/blob/stable/CHANGELOG.md"
 include = ["Cargo.toml", "README.md", "src/", "*.sdb"]
 categories = ["hardware-support", "asynchronous", "game-development"]
 keywords = ["ux", "joystick", "gamepad", "platform-agnostic", "controller"]

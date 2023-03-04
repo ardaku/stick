@@ -2,7 +2,7 @@
 
 #### Platform-agnostic asynchronous gamepad, joystick and flightstick library
 
-[![tests](https://github.com/libcala/stick/workflows/tests/badge.svg)](https://github.com/libcala/stick/actions?query=workflow%3Atests)
+[![tests](https://github.com/ardaku/stick/workflows/tests/badge.svg)](https://github.com/ardaku/stick/actions?query=workflow%3Atests)
 [![Docs](https://docs.rs/stick/badge.svg)](https://docs.rs/stick)
 [![crates.io](https://img.shields.io/crates/v/stick.svg)](https://crates.io/crates/stick)
 
@@ -85,15 +85,15 @@ email at [aldaronlau@gmail.com][13].
 
 [0]: https://docs.rs/stick
 [1]: https://crates.io/crates/stick
-[2]: https://github.com/libcala/stick/actions?query=workflow%3Atests
-[3]: https://github.com/libcala/stick/blob/main/CHANGELOG.md
-[4]: https://github.com/libcala/stick/
+[2]: https://github.com/ardaku/stick/actions?query=workflow%3Atests
+[3]: https://github.com/ardaku/stick/blob/stable/CHANGELOG.md
+[4]: https://github.com/ardaku/stick/
 [5]: https://docs.rs/stick#getting-started
 [6]: https://aldaronlau.com/
-[7]: https://github.com/libcala/stick/blob/main/LICENSE_APACHE_2_0.txt
+[7]: https://github.com/ardaku/stick/blob/stable/LICENSE_APACHE_2_0.txt
 [8]: https://www.apache.org/licenses/LICENSE-2.0
-[9]: https://github.com/libcala/stick/blob/main/LICENSE_MIT.txt
+[9]: https://github.com/ardaku/stick/blob/stable/LICENSE_MIT.txt
 [10]: https://mit-license.org/
-[11]: https://github.com/libcala/whoami/stick/main/LICENSE_BOOST_1_0.txt
+[11]: https://github.com/ardaku/stick/blob/stable/LICENSE_BOOST_1_0.txt
 [12]: https://www.boost.org/LICENSE_1_0.txt
 [13]: mailto:aldaronlau@gmail.com

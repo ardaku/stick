@@ -213,7 +213,7 @@ Thanks to everyone who contributed to make this version of stick possible!
  - [Chronophylos](https://github.com/Chronophylos)
 
  - Thanks to everyone who helped test joysticks at
-   [https://github.com/libcala/stick/issues/5](https://github.com/libcala/stick/issues/5)!
+   [https://github.com/ardaku/stick/issues/5](https://github.com/ardaku/stick/issues/5)!
 
 ## [0.8.0] - 2020-05-03
 ### Added

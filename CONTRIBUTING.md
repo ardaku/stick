@@ -22,6 +22,6 @@ the library will be out a few days after a report.  Features requests will not
 complete as fast.  If you have any questions, design critques, or want me to
 find you something to work on based on your skill level, you can email me at
 [jeronlau@plopgrizzly.com](mailto:jeronlau@plopgrizzly.com).  Otherwise,
-[here's a link to the issues on GitHub](https://github.com/libcala/stick/issues),
+[here's a link to the issues on GitHub](https://github.com/ardaku/stick/issues),
 and, as always, make sure to read and follow the
-[Code of Conduct](https://github.com/libcala/stick/blob/main/CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/ardaku/stick/blob/stable/CODE_OF_CONDUCT.md).
