@@ -10,29 +10,36 @@
 
 #![allow(unsafe_code)]
 
-use lookit::It;
+use crate::Event;
+use std::task::{Poll, Context};
 
 // Choose platform driver implementation.
 #[allow(unused_attributes)]
 #[cfg_attr(target_os = "linux", path = "../linux/linux.rs")]
+#[cfg_attr(target_os = "windows", path = "../windows/windows.rs")]
 #[path = "unsupported.rs"]
 mod driver;
 
-// Import the device type from the target platform.
-pub(crate) use driver::Controller as PlatformController;
+/// Controller ID.
+pub(crate) struct CtlrId(u32);
 
-// Single required method for each platform.
-pub(crate) fn connect(it: It) -> Option<(u64, String, PlatformController)> {
-    driver::connect(it)
-}
-
+/// Required platform support trait.
 pub(crate) trait Support {
+	/// Window gained focus, start receiving events.
     fn enable(self);
+	/// Window lost focus, stop receiving events.
     fn disable(self);
-    fn rumble(self, controller: &mut PlatformController, left: f32, right: f32);
-    fn event(self, device: &mut PlatformController) -> Option<crate::Event>;
+	/// Set left and right rumble value for controller.
+    fn rumble(self, ctlr: &CtlrId, left: f32, right: f32);
+	/// Attempt getting a new event from a connected controller.
+    fn event(self, ctlr: &CtlrId, cx: &mut Context<'_>) -> Poll<Event>;
+	/// Attempt connecting to a new controller.
+	fn connect(self, cx: &mut Context<'_>) -> Poll<(u64, String, CtlrId)>;
 }
 
+/// Get platform support implementation.
+///
+/// Each platform must implement this function to work.
 pub(crate) fn platform() -> impl Support {
     driver::platform()
 }

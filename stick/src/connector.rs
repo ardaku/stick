@@ -9,10 +9,18 @@
 // modified, or distributed except according to those terms.
 
 use crate::{Controller, Remap};
-use lookit::Lookit;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
+
+use lookit::Lookit;
+
+#[cfg(windows)]
+mod lookit {
+	#[derive(Debug)]
+	pub(crate) struct Lookit {
+	}
+}
 
 /// Future that you can `.await` to connect to
 /// [`Controller`](crate::Controller)s

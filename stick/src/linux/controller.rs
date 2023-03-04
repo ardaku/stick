@@ -27,6 +27,8 @@ pub(crate) struct Controller {
 }
 
 pub(crate) fn connect(it: It) -> Option<(u64, String, Controller)> {
+	// Some controllers may not have haptic force feedback while others might
+	// ONLY have haptic force feedback and no controls.
     let file = it.file_open() // Try Read & Write first
         .or_else(|it| it.file_open_r()) // Then Readonly second
         .or_else(|it| it.file_open_w()) // Then Writeonly third

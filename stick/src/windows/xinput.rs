@@ -8,9 +8,7 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
-//! This file's code is based on https://github.com/Lokathor/rusty-xinput
-
-use crate::{Event, Remap};
+use crate::Event;
 use std::fmt::{self, Debug, Formatter};
 use std::rc::Rc;
 use std::sync::Arc;
@@ -24,6 +22,7 @@ use winapi::shared::winerror::{
 };
 use winapi::um::libloaderapi::{FreeLibrary, GetProcAddress, LoadLibraryW};
 use winapi::um::xinput;
+use super::Controller;
 
 type XInputEnableFunc = unsafe extern "system" fn(BOOL);
 type XInputGetStateFunc =
@@ -67,9 +66,9 @@ impl Drop for ScopedHMODULE {
 
 /// A handle to a loaded XInput DLL.
 #[derive(Clone)]
-struct XInputHandle {
+pub(super) struct XInputHandle {
     handle: Arc<ScopedHMODULE>,
-    xinput_enable: XInputEnableFunc,
+    pub(super) xinput_enable: XInputEnableFunc,
     xinput_get_state: XInputGetStateFunc,
     xinput_set_state: XInputSetStateFunc,
     xinput_get_capabilities: XInputGetCapabilitiesFunc,
@@ -620,7 +619,7 @@ extern "C" fn waker_callback(
     }
 }
 
-fn register_wake_timeout(delay: u32, waker: &Waker) {
+pub(super) fn register_wake_timeout(delay: u32, waker: &Waker) {
     unsafe {
         let waker = std::mem::transmute::<&Waker, usize>(waker);
 
@@ -628,241 +627,120 @@ fn register_wake_timeout(delay: u32, waker: &Waker) {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+/// Poll for events.
+pub(super) fn poll(controller: &mut Controller, cx: &mut Context<'_>) -> Poll<Event> {
+	if let Some(e) = controller.pending_events.pop() {
+		return Poll::Ready(e);
+	}
 
-pub(crate) struct Controller {
-    xinput: Rc<XInputHandle>,
-    device_id: u8,
-    pending_events: Vec<Event>,
-    last_packet: DWORD,
-}
+	if let Ok(state) = controller.xinput.get_state(controller.device_id as u32) {
+		if state.raw.dwPacketNumber != controller.last_packet {
+			// we have a new packet from the controller
+			controller.last_packet = state.raw.dwPacketNumber;
 
-impl Controller {
-    #[allow(unused)]
-    fn new(device_id: u8, xinput: Rc<XInputHandle>) -> Self {
-        Self {
-            xinput,
-            device_id,
-            pending_events: Vec::new(),
-            last_packet: 0,
-        }
-    }
-}
+			let (nx, ny) = XInputState::normalize_raw_stick_value(
+				(state.raw.Gamepad.sThumbRX, state.raw.Gamepad.sThumbRY),
+				xinput::XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
+			);
 
-impl super::Controller for Controller {
-    fn id(&self) -> u64 {
-        0 // FIXME
-    }
+			controller.pending_events.push(Event::CamX(nx));
+			controller.pending_events.push(Event::CamY(ny));
 
-    /// Poll for events.
-    fn poll(&mut self, cx: &mut Context<'_>) -> Poll<Event> {
-        if let Some(e) = self.pending_events.pop() {
-            return Poll::Ready(e);
-        }
+			let (nx, ny) = XInputState::normalize_raw_stick_value(
+				(state.raw.Gamepad.sThumbLX, state.raw.Gamepad.sThumbLY),
+				xinput::XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
+			);
 
-        if let Ok(state) = self.xinput.get_state(self.device_id as u32) {
-            if state.raw.dwPacketNumber != self.last_packet {
-                // we have a new packet from the controller
-                self.last_packet = state.raw.dwPacketNumber;
+			controller.pending_events.push(Event::JoyX(nx));
+			controller.pending_events.push(Event::JoyY(ny));
 
-                let (nx, ny) = XInputState::normalize_raw_stick_value(
-                    (state.raw.Gamepad.sThumbRX, state.raw.Gamepad.sThumbRY),
-                    xinput::XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,
-                );
+			let t = if state.raw.Gamepad.bLeftTrigger
+				> xinput::XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+			{
+				state.raw.Gamepad.bLeftTrigger
+			} else {
+				0
+			};
 
-                self.pending_events.push(Event::CamX(nx));
-                self.pending_events.push(Event::CamY(ny));
+			controller.pending_events.push(Event::TriggerL(t as f64 / 255.0));
 
-                let (nx, ny) = XInputState::normalize_raw_stick_value(
-                    (state.raw.Gamepad.sThumbLX, state.raw.Gamepad.sThumbLY),
-                    xinput::XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,
-                );
+			let t = if state.raw.Gamepad.bRightTrigger
+				> xinput::XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+			{
+				state.raw.Gamepad.bRightTrigger
+			} else {
+				0
+			};
 
-                self.pending_events.push(Event::JoyX(nx));
-                self.pending_events.push(Event::JoyY(ny));
+			controller.pending_events.push(Event::TriggerR(t as f64 / 255.0));
 
-                let t = if state.raw.Gamepad.bLeftTrigger
-                    > xinput::XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-                {
-                    state.raw.Gamepad.bLeftTrigger
-                } else {
-                    0
-                };
+			while let Ok(Some(keystroke)) =
+				controller.xinput.get_keystroke(controller.device_id as u32)
+			{
+				// Ignore key repeat events
+				if keystroke.Flags & xinput::XINPUT_KEYSTROKE_REPEAT != 0 {
+					continue;
+				}
 
-                self.pending_events.push(Event::TriggerL(t as f64 / 255.0));
+				let held =
+					keystroke.Flags & xinput::XINPUT_KEYSTROKE_KEYDOWN != 0;
 
-                let t = if state.raw.Gamepad.bRightTrigger
-                    > xinput::XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-                {
-                    state.raw.Gamepad.bRightTrigger
-                } else {
-                    0
-                };
+				match keystroke.VirtualKey {
+					xinput::VK_PAD_START => {
+						controller.pending_events.push(Event::MenuR(held))
+					}
+					xinput::VK_PAD_BACK => {
+						controller.pending_events.push(Event::MenuL(held))
+					}
+					xinput::VK_PAD_A => {
+						controller.pending_events.push(Event::ActionA(held))
+					}
+					xinput::VK_PAD_B => {
+						controller.pending_events.push(Event::ActionB(held))
+					}
+					xinput::VK_PAD_X => {
+						controller.pending_events.push(Event::ActionH(held))
+					}
+					xinput::VK_PAD_Y => {
+						controller.pending_events.push(Event::ActionV(held))
+					}
+					xinput::VK_PAD_LSHOULDER => {
+						controller.pending_events.push(Event::BumperL(held))
+					}
+					xinput::VK_PAD_RSHOULDER => {
+						controller.pending_events.push(Event::BumperR(held))
+					}
+					xinput::VK_PAD_LTHUMB_PRESS => {
+						controller.pending_events.push(Event::Joy(held))
+					}
+					xinput::VK_PAD_RTHUMB_PRESS => {
+						controller.pending_events.push(Event::Cam(held))
+					}
+					xinput::VK_PAD_DPAD_UP => {
+						controller.pending_events.push(Event::Up(held))
+					}
+					xinput::VK_PAD_DPAD_DOWN => {
+						controller.pending_events.push(Event::Down(held))
+					}
+					xinput::VK_PAD_DPAD_LEFT => {
+						controller.pending_events.push(Event::Left(held))
+					}
+					xinput::VK_PAD_DPAD_RIGHT => {
+						controller.pending_events.push(Event::Right(held))
+					}
+					_ => (),
+				}
+			}
 
-                self.pending_events.push(Event::TriggerR(t as f64 / 255.0));
+			if let Some(event) = controller.pending_events.pop() {
+				return Poll::Ready(event);
+			}
+		}
+	} else {
+		// the device has gone
+		return Poll::Ready(Event::Disconnect);
+	}
 
-                while let Ok(Some(keystroke)) =
-                    self.xinput.get_keystroke(self.device_id as u32)
-                {
-                    // Ignore key repeat events
-                    if keystroke.Flags & xinput::XINPUT_KEYSTROKE_REPEAT != 0 {
-                        continue;
-                    }
-
-                    let held =
-                        keystroke.Flags & xinput::XINPUT_KEYSTROKE_KEYDOWN != 0;
-
-                    match keystroke.VirtualKey {
-                        xinput::VK_PAD_START => {
-                            self.pending_events.push(Event::MenuR(held))
-                        }
-                        xinput::VK_PAD_BACK => {
-                            self.pending_events.push(Event::MenuL(held))
-                        }
-                        xinput::VK_PAD_A => {
-                            self.pending_events.push(Event::ActionA(held))
-                        }
-                        xinput::VK_PAD_B => {
-                            self.pending_events.push(Event::ActionB(held))
-                        }
-                        xinput::VK_PAD_X => {
-                            self.pending_events.push(Event::ActionH(held))
-                        }
-                        xinput::VK_PAD_Y => {
-                            self.pending_events.push(Event::ActionV(held))
-                        }
-                        xinput::VK_PAD_LSHOULDER => {
-                            self.pending_events.push(Event::BumperL(held))
-                        }
-                        xinput::VK_PAD_RSHOULDER => {
-                            self.pending_events.push(Event::BumperR(held))
-                        }
-                        xinput::VK_PAD_LTHUMB_PRESS => {
-                            self.pending_events.push(Event::Joy(held))
-                        }
-                        xinput::VK_PAD_RTHUMB_PRESS => {
-                            self.pending_events.push(Event::Cam(held))
-                        }
-                        xinput::VK_PAD_DPAD_UP => {
-                            self.pending_events.push(Event::Up(held))
-                        }
-                        xinput::VK_PAD_DPAD_DOWN => {
-                            self.pending_events.push(Event::Down(held))
-                        }
-                        xinput::VK_PAD_DPAD_LEFT => {
-                            self.pending_events.push(Event::Left(held))
-                        }
-                        xinput::VK_PAD_DPAD_RIGHT => {
-                            self.pending_events.push(Event::Right(held))
-                        }
-                        _ => (),
-                    }
-                }
-
-                if let Some(event) = self.pending_events.pop() {
-                    return Poll::Ready(event);
-                }
-            }
-        } else {
-            // the device has gone
-            return Poll::Ready(Event::Disconnect);
-        }
-
-        register_wake_timeout(10, cx.waker());
-        Poll::Pending
-    }
-
-    /// Stereo rumble effect (left is low frequency, right is high frequency).
-    fn rumble(&mut self, left: f32, right: f32) {
-        self.xinput
-            .set_state(
-                self.device_id as u32,
-                (u16::MAX as f32 * left) as u16,
-                (u16::MAX as f32 * right) as u16,
-            )
-            .unwrap()
-    }
-
-    /// Get the name of this controller.
-    fn name(&self) -> &str {
-        "XInput Controller"
-    }
-}
-
-pub(crate) struct Listener {
-    xinput: Rc<XInputHandle>,
-    connected: u64,
-    to_check: u8,
-    remap: Remap,
-}
-
-impl Listener {
-    fn new(remap: Remap, xinput: Rc<XInputHandle>) -> Self {
-        Self {
-            xinput,
-            connected: 0,
-            to_check: 0,
-            remap,
-        }
-    }
-}
-
-impl super::Listener for Listener {
-    fn poll(&mut self, cx: &mut Context<'_>) -> Poll<crate::Controller> {
-        let id = self.to_check;
-        let mask = 1 << id;
-        self.to_check += 1;
-        // direct input only allows for 4 controllers
-        if self.to_check > 3 {
-            self.to_check = 0;
-        }
-        let was_connected = (self.connected & mask) != 0;
-
-        if self.xinput.get_state(id as u32).is_ok() {
-            if !was_connected {
-                // we have a new device!
-                self.connected |= mask;
-
-                return Poll::Ready(crate::Controller::new(
-                    Box::new(Controller::new(id, self.xinput.clone())),
-                    &self.remap,
-                ));
-            }
-        } else if was_connected {
-            // a device has been unplugged
-            self.connected &= !mask;
-        }
-
-        register_wake_timeout(100, cx.waker());
-
-        Poll::Pending
-    }
-}
-
-struct Global {
-    xinput: Rc<XInputHandle>,
-}
-
-impl super::Global for Global {
-    /// Enable all events (when window comes in focus).
-    fn enable(&self) {
-        unsafe { (self.xinput.xinput_enable)(true as _) };
-    }
-    /// Disable all events (when window leaves focus).
-    fn disable(&self) {
-        unsafe { (self.xinput.xinput_enable)(false as _) };
-    }
-    /// Create a new listener.
-    fn listener(&self, remap: Remap) -> Box<dyn super::Listener> {
-        Box::new(Listener::new(remap, self.xinput.clone()))
-    }
-}
-
-pub(super) fn global() -> Box<dyn super::Global> {
-    // Windows implementation may fail.
-    if let Ok(xinput) = XInputHandle::load_default() {
-        Box::new(Global { xinput })
-    } else {
-        Box::new(super::FakeGlobal)
-    }
+	register_wake_timeout(10, cx.waker());
+	Poll::Pending
 }
