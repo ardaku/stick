@@ -4,9 +4,10 @@ All notable changes to `stick` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
-## [0.13.0] - Unreleased
-### Added
- - Support For WASM **WIP**
+## [0.13.0] - 2023-03-03
+### Changed
+ - `Controller` is now `Send`
+ - `Listener` is now `Send`
 
 ## [0.12.4] - 2022-01-29
 ### Added
