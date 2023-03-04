@@ -116,7 +116,7 @@ mod platform {
 
     mod platform;
 
-    pub(crate) use platform::{connect, platform, PlatformController, Support};
+    pub(crate) use platform::{platform, CtlrId, Support};
 }
 
 mod connector;

@@ -8,6 +8,12 @@ use lookit::Lookit;
 
 use crate::{Controller, Remap};
 
+#[cfg(windows)]
+mod lookit {
+    #[derive(Debug)]
+    pub(crate) struct Lookit {}
+}
+
 /// Future that you can `.await` to connect to
 /// [`Controller`](crate::Controller)s
 #[derive(Debug)]

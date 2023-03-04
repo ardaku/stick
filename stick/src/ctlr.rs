@@ -10,9 +10,21 @@ use std::{
 use lookit::It;
 
 use crate::{
-    platform::{connect, platform, PlatformController, Support},
+    platform::{platform, CtlrId, Support},
     Event,
 };
+
+#[cfg(windows)]
+pub(crate) mod lookit {
+    #[derive(Debug)]
+    pub(crate) struct It {}
+
+    impl It {
+        pub fn id(&self) -> u8 {
+            todo!()
+        }
+    }
+}
 
 #[repr(i8)]
 enum Btn {
@@ -271,7 +283,7 @@ pub struct Controller {
     // Shared remapping.
     remap: Arc<Info>,
     //
-    raw: PlatformController,
+    raw: CtlrId,
     // Button states
     btns: u128,
     // Number button states
@@ -298,7 +310,7 @@ impl Controller {
         let btns = 0;
         let nums = 0;
         let axis = [0.0; Axs::Count as usize];
-        let (id, name, raw) = connect(which)?;
+        let (id, name, raw) = platform().connect(which)?;
         let remap = remap.0.get(&id).cloned().unwrap_or_default();
         let ready = true;
         Some(Self {
@@ -581,7 +593,7 @@ impl Future for Controller {
         let mut this = self.as_mut();
 
         if this.ready {
-            if let Some(event) = platform().event(&mut this.raw) {
+            if let Poll::Ready(event) = platform().event(&mut this.raw) {
                 let out = Self::process(&mut *this, event);
                 return if out.is_pending() {
                     Self::poll(self, cx)
