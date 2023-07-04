@@ -240,7 +240,7 @@ pub(super) fn main() {
         // Name of Controller.
         let mut iter = line[33..].split(',');
         let name = iter.next().expect("No name");
-        out.push_str(&name);
+        out.push_str(name);
         out.push('\t');
 
         // Type of controller

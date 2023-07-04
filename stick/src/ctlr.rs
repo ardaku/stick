@@ -114,6 +114,7 @@ enum Axs {
 #[derive(Debug)]
 struct Map {
     deadzone: f64,
+    #[allow(dead_code)] // FIXME
     scale: f64,
     max: i32,
     min: i32,
@@ -122,8 +123,10 @@ struct Map {
 
 #[derive(Debug)]
 struct Info {
+    #[allow(dead_code)] // FIXME
     name: String,
     maps: HashMap<u8, Map>,
+    #[allow(dead_code)] // FIXME
     type_: char,
 }
 
@@ -563,7 +566,7 @@ impl Future for Controller {
         let mut this = self.as_mut();
 
         if let Poll::Ready(event) = this.raw.poll(cx) {
-            let out = Self::process(&mut *this, event);
+            let out = Self::process(&mut this, event);
             if out.is_pending() {
                 Self::poll(self, cx)
             } else {
