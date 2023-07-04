@@ -280,7 +280,16 @@ pub(super) fn main() {
                 "b20" => name_to_hex("ActionH"),
                 "b21" => name_to_hex("ActionD"),
                 "b22" => name_to_hex("BumperL"),
+                "b23" => continue, // FIXME
+                "b24" => continue, // FIXME
+                "b25" => continue, // FIXME
+                "b26" => continue, // FIXME
+                "b30" => continue, // Not a gamepad?
                 "b32" => continue, // Not a gamepad?
+                "b33" => continue, // Not a gamepad?
+                "b36" => continue, // Not a gamepad?
+                "b52" => continue, // Not a gamepad?
+                "b53" => continue, // Not a gamepad?
                 "h0.1" => name_to_hex("PovUp"),
                 "h0.2" => name_to_hex("PovRight"),
                 "h0.4" => name_to_hex("PovDown"),
@@ -337,8 +346,12 @@ pub(super) fn main() {
                 "dpdown" => "11",
                 "misc1" => "81",
                 "+leftx" | "-leftx" | "+lefty" | "-lefty" => continue,
+                "+rightx" | "-rightx" | "+righty" | "-righty" => continue,
+                "touchpad" => continue,
                 "paddle1" => "51",
                 "paddle2" => "52",
+                "paddle3" => "53",
+                "paddle4" => "54",
                 _out => panic!("Unknown output {}", _out),
             };
 
