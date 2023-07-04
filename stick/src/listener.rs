@@ -9,12 +9,14 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).  This file may not be copied,
 // modified, or distributed except according to those terms.
 
+use std::{
+    fmt::Debug,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
+
 use crate::Remap;
-use std::fmt::Debug;
-use std::future::Future;
-use std::pin::Pin;
-use std::task::Context;
-use std::task::Poll;
 
 /// Listener for when new controllers are plugged in.
 pub struct Listener(Box<dyn crate::raw::Listener>);

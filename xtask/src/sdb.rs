@@ -1,6 +1,6 @@
+use std::{collections::HashMap, fmt::Write};
+
 use serde_derive::Deserialize;
-use std::collections::HashMap;
-use std::fmt::Write;
 
 const LINUX: &str = "./sdb/linux/";
 const _MACOS: &str = "./sdb/macos/";

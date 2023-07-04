@@ -1,7 +1,8 @@
 //! This is the example from the lib.rs documentation.
 
-use pasts::Loop;
 use std::task::Poll::{self, Pending, Ready};
+
+use pasts::Loop;
 use stick::{Controller, Event, Listener};
 
 type Exit = usize;

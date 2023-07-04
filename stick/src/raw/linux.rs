@@ -1,12 +1,18 @@
-use crate::{Event, Remap};
+use std::{
+    cmp::Ordering,
+    convert::TryInto,
+    fs::read_dir,
+    mem::{size_of, MaybeUninit},
+    os::{
+        raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void},
+        unix::io::RawFd,
+    },
+    task::{Context, Poll},
+};
+
 use smelling_salts::{Device, Watcher};
-use std::cmp::Ordering;
-use std::convert::TryInto;
-use std::fs::read_dir;
-use std::mem::{size_of, MaybeUninit};
-use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong, c_ushort, c_void};
-use std::os::unix::io::RawFd;
-use std::task::{Context, Poll};
+
+use crate::{Event, Remap};
 
 // Event codes taken from
 // https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
@@ -327,8 +333,8 @@ struct EvdevEv {
     ev_time: TimeVal,
     ev_type: c_ushort,
     ev_code: c_ushort,
-    // Though in the C header it's defined as uint, define as int because that's
-    // how it's meant to be interpreted.
+    // Though in the C header it's defined as uint, define as int because
+    // that's how it's meant to be interpreted.
     ev_value: c_int,
 }
 
@@ -470,7 +476,7 @@ fn joystick_ff(fd: RawFd, code: i16, strong: f32, weak: f32) {
             tv_sec: 0,
             tv_usec: 0,
         },
-        ev_type: 0x15, /*EV_FF*/
+        ev_type: 0x15, /* EV_FF */
         ev_code,
         ev_value: (strong > 0.0 || weak > 0.0) as _,
     };
@@ -493,7 +499,7 @@ fn joystick_ff(fd: RawFd, code: i16, strong: f32, weak: f32) {
 fn joystick_haptic(fd: RawFd, id: i16, strong: f32, weak: f32) -> i16 {
     let a = &mut FfEffect {
         stype: 0x50,
-        id, /*allocate new effect*/
+        id, /* allocate new effect */
         direction: 0,
         trigger: FfTrigger {
             button: 0,
@@ -800,10 +806,12 @@ impl super::Global for Global {
     fn enable(&self) {
         ENABLED.store(true, std::sync::atomic::Ordering::Relaxed);
     }
+
     /// Disable all events (when window leaves focus).
     fn disable(&self) {
         ENABLED.store(false, std::sync::atomic::Ordering::Relaxed);
     }
+
     /// Create a new listener.
     fn listener(&self, remap: Remap) -> Box<dyn super::Listener> {
         Box::new(Listener::new(remap))

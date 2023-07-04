@@ -1,7 +1,8 @@
 #![allow(unsafe_code)]
 
-use crate::{Event, Remap};
 use std::task::{Context, Poll};
+
+use crate::{Event, Remap};
 
 #[cfg_attr(
     any(target_arch = "wasm32", target_arch = "asmjs"),

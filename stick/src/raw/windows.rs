@@ -12,19 +12,26 @@
 
 //! This file's code is based on https://github.com/Lokathor/rusty-xinput
 
-use crate::{Event, Remap};
-use std::fmt::{self, Debug, Formatter};
-use std::sync::Arc;
-use std::task::Waker;
-use std::task::{Context, Poll};
-use winapi::shared::guiddef::GUID;
-use winapi::shared::minwindef::{BOOL, BYTE, DWORD, HMODULE, UINT};
-use winapi::shared::ntdef::LPWSTR;
-use winapi::shared::winerror::{
-    ERROR_DEVICE_NOT_CONNECTED, ERROR_EMPTY, ERROR_SUCCESS,
+use std::{
+    fmt::{self, Debug, Formatter},
+    sync::Arc,
+    task::{Context, Poll, Waker},
 };
-use winapi::um::libloaderapi::{FreeLibrary, GetProcAddress, LoadLibraryW};
-use winapi::um::xinput;
+
+use winapi::{
+    shared::{
+        guiddef::GUID,
+        minwindef::{BOOL, BYTE, DWORD, HMODULE, UINT},
+        ntdef::LPWSTR,
+        winerror::{ERROR_DEVICE_NOT_CONNECTED, ERROR_EMPTY, ERROR_SUCCESS},
+    },
+    um::{
+        libloaderapi::{FreeLibrary, GetProcAddress, LoadLibraryW},
+        xinput,
+    },
+};
+
+use crate::{Event, Remap};
 
 type XInputEnableFunc = unsafe extern "system" fn(BOOL);
 type XInputGetStateFunc =
@@ -128,25 +135,27 @@ unsafe impl Sync for XInputHandle {}
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 enum XInputLoadingFailure {
     /// No DLL for XInput could be found. This places the system back into an
-    /// "uninitialized" status, and you could potentially try again later if the
-    /// user fiddles with the program's DLL path or whatever.
+    /// "uninitialized" status, and you could potentially try again later if
+    /// the user fiddles with the program's DLL path or whatever.
     NoDLL,
-    /// A DLL was found that matches one of the expected XInput DLL names, but it
-    /// didn't contain both of the expected functions. This is probably a weird
-    /// situation to find. Either way, the xinput status is set to "uninitialized"
-    /// and as with the NoDLL error you could potentially try again.
+    /// A DLL was found that matches one of the expected XInput DLL names, but
+    /// it didn't contain both of the expected functions. This is probably
+    /// a weird situation to find. Either way, the xinput status is set to
+    /// "uninitialized" and as with the NoDLL error you could potentially
+    /// try again.
     NoPointers,
 }
 
 impl XInputHandle {
-    /// Attempts to dynamically load an XInput DLL and get the function pointers.
+    /// Attempts to dynamically load an XInput DLL and get the function
+    /// pointers.
     ///
     /// # Failure
     ///
     /// This can fail in a few ways, as explained in the `XInputLoadingFailure`
-    /// type. The most likely failure case is that the user's system won't have the
-    /// required DLL, in which case you should probably allow them to play with just
-    /// a keyboard/mouse instead.
+    /// type. The most likely failure case is that the user's system won't have
+    /// the required DLL, in which case you should probably allow them to
+    /// play with just a keyboard/mouse instead.
     ///
     /// # Current DLL Names
     ///
@@ -334,7 +343,8 @@ impl XInputHandle {
             }
         }
 
-        // this is safe because no other code can be loading xinput at the same time as us.
+        // this is safe because no other code can be loading xinput at the same
+        // time as us.
         if let (
             Some(xinput_enable),
             Some(xinput_get_state),
@@ -373,13 +383,13 @@ enum XInputUsageError {
     InvalidControllerID,
     /// Not really an error, this controller is just missing.
     DeviceNotConnected,
-    /// There was some sort of unexpected error happened, this is the error code
-    /// windows returned.
+    /// There was some sort of unexpected error happened, this is the error
+    /// code windows returned.
     UnknownError(u32),
 }
 
-/// Error that can be returned by functions that are not guaranteed to be present
-/// in earlier XInput versions.
+/// Error that can be returned by functions that are not guaranteed to be
+/// present in earlier XInput versions.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 enum XInputOptionalFnUsageError {
     /// The controller ID you gave was 4 or more.
@@ -388,8 +398,8 @@ enum XInputOptionalFnUsageError {
     DeviceNotConnected,
     /// Function is not present in loaded DLL
     FunctionNotLoaded,
-    /// There was some sort of unexpected error happened, this is the error code
-    /// windows returned.
+    /// There was some sort of unexpected error happened, this is the error
+    /// code windows returned.
     UnknownError(u32),
 }
 
@@ -461,25 +471,26 @@ impl XInputHandle {
     ///
     /// # Notes
     ///
-    /// It is a persistent problem (since ~2007?) with xinput that polling for the
-    /// data of a controller that isn't connected will cause a long delay. In the
-    /// area of 500_000 cpu cycles. That's like 2_000 cache misses in a row.
+    /// It is a persistent problem (since ~2007?) with xinput that polling for
+    /// the data of a controller that isn't connected will cause a long
+    /// delay. In the area of 500_000 cpu cycles. That's like 2_000 cache
+    /// misses in a row.
     ///
     /// Once a controller is detected as not being plugged in you are strongly
     /// advised to not poll for its data again next frame. Instead, you should
     /// probably only poll for one known-missing controller per frame at most.
     ///
-    /// Alternately, you can register for your app to get plug and play events and
-    /// then wait for one of them to come in before you ever poll for a missing
-    /// controller a second time. That's up to you.
+    /// Alternately, you can register for your app to get plug and play events
+    /// and then wait for one of them to come in before you ever poll for a
+    /// missing controller a second time. That's up to you.
     ///
     /// # Errors
     ///
     /// A few things can cause an `Err` value to come back, as explained by the
     /// `XInputUsageError` type.
     ///
-    /// Most commonly, a controller will simply not be connected. Most people don't
-    /// have all four slots plugged in all the time.
+    /// Most commonly, a controller will simply not be connected. Most people
+    /// don't have all four slots plugged in all the time.
     pub(crate) fn get_state(
         &self,
         user_index: u32,
@@ -506,22 +517,24 @@ impl XInputHandle {
 
     /// Allows you to set the rumble speeds of the left and right motors.
     ///
-    /// Valid motor speeds are across the whole `u16` range, and the number is the
-    /// scale of the motor intensity. In other words, 0 is 0%, and 65,535 is 100%.
+    /// Valid motor speeds are across the whole `u16` range, and the number is
+    /// the scale of the motor intensity. In other words, 0 is 0%, and
+    /// 65,535 is 100%.
     ///
-    /// On a 360 controller the left motor is low-frequency and the right motor is
-    /// high-frequency. On other controllers running through xinput this might be
-    /// the case, or the controller might not even have rumble ability at all. If
-    /// rumble is missing from the device you'll still get `Ok` return values, so
-    /// treat rumble as an extra, not an essential.
+    /// On a 360 controller the left motor is low-frequency and the right motor
+    /// is high-frequency. On other controllers running through xinput this
+    /// might be the case, or the controller might not even have rumble
+    /// ability at all. If rumble is missing from the device you'll still
+    /// get `Ok` return values, so treat rumble as an extra, not an
+    /// essential.
     ///
     /// # Errors
     ///
     /// A few things can cause an `Err` value to come back, as explained by the
     /// `XInputUsageError` type.
     ///
-    /// Most commonly, a controller will simply not be connected. Most people don't
-    /// have all four slots plugged in all the time.
+    /// Most commonly, a controller will simply not be connected. Most people
+    /// don't have all four slots plugged in all the time.
     pub(crate) fn set_state(
         &self,
         user_index: u32,
@@ -849,10 +862,12 @@ impl super::Global for Global {
     fn enable(&self) {
         unsafe { (self.xinput.xinput_enable)(true as _) };
     }
+
     /// Disable all events (when window leaves focus).
     fn disable(&self) {
         unsafe { (self.xinput.xinput_enable)(false as _) };
     }
+
     /// Create a new listener.
     fn listener(&self, remap: Remap) -> Box<dyn super::Listener> {
         Box::new(Listener::new(remap, self.xinput.clone()))
