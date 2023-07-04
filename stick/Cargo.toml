@@ -13,7 +13,7 @@ include = ["Cargo.toml", "README.md", "src/", "*.sdb"]
 categories = ["hardware-support", "asynchronous", "game-development"]
 keywords = ["ux", "joystick", "gamepad", "platform-agnostic", "controller"]
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [target.'cfg(all(not(target_arch="wasm32"),target_os="linux"))'.dependencies]
 smelling_salts = "0.4"

@@ -1,6 +1,5 @@
 use std::{
     cmp::Ordering,
-    convert::TryInto,
     fs::read_dir,
     mem::{size_of, MaybeUninit},
     os::{
