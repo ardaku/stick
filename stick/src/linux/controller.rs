@@ -40,7 +40,7 @@ pub(crate) fn connect(it: It) -> Option<(u64, String, Controller)> {
         name,
         Controller {
             queued: None,
-            stream: stream,
+            stream,
             device: Device::new(device, watcher, true),
             abs_ranges,
             rumble,

@@ -3,7 +3,7 @@ use std::{
     fmt::Debug,
     future::Future,
     pin::Pin,
-    rc::Rc,
+    sync::Arc,
     task::{Context, Poll},
 };
 
