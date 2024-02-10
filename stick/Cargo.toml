@@ -36,3 +36,8 @@ default = ["sdb"]
 gcdb = []
 # Include the stick controller database (button/axis remappings).
 sdb = []
+# Include futures::stream::Stream impl.
+stream = ["dep:futures"]
+
+[dependencies]
+futures = { version = "0.3.30", optional = true }

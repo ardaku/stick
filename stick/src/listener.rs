@@ -36,3 +36,16 @@ impl Future for Listener {
         Pin::new(&mut self.get_mut().0).poll(cx)
     }
 }
+#[cfg(feature = "stream")]
+impl futures::stream::Stream for Listener {
+    type Item = crate::Controller;
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Self::Item>> {
+        match self.poll(cx) {
+            Poll::Ready(c) => Poll::Ready(Some(c)),
+            Poll::Pending => Poll::Pending,
+        }
+    }
+}

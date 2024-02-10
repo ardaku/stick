@@ -580,6 +580,23 @@ impl Future for Controller {
     }
 }
 
+#[cfg(feature = "stream")]
+impl futures::stream::Stream for Controller {
+    type Item = Event;
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Event>> {
+        match self.poll(cx) {
+            Poll::Pending => Poll::Pending,
+            Poll::Ready(e) => match e {
+                Event::Disconnect => Poll::Ready(None),
+                e => Poll::Ready(Some(e)),
+            },
+        }
+    }
+}
+
 pub trait Rumble {
     fn left(&self) -> f32;
     fn right(&self) -> f32;
