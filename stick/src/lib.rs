@@ -14,12 +14,12 @@
 //! ```rust,no_run
 //! use pasts::Loop;
 //! use std::task::Poll::{self, Pending, Ready};
-//! use stick::{Controller, Event, Listener};
+//! use stick::{Controller, Event, Connector};
 //!
 //! type Exit = usize;
 //!
 //! struct State {
-//!     listener: Listener,
+//!     connector: Connector,
 //!     controllers: Vec<Controller>,
 //!     rumble: (f32, f32),
 //! }
@@ -66,13 +66,13 @@
 //!
 //! async fn event_loop() {
 //!     let mut state = State {
-//!         listener: Listener::default(),
+//!         connector: Connector::default(),
 //!         controllers: Vec::new(),
 //!         rumble: (0.0, 0.0),
 //!     };
 //!
 //!     let player_id = Loop::new(&mut state)
-//!         .when(|s| &mut s.listener, State::connect)
+//!         .when(|s| &mut s.connector, State::connect)
 //!         .poll(|s| &mut s.controllers, State::event)
 //!         .await;
 //!
@@ -110,13 +110,25 @@
 #[macro_use]
 extern crate log;
 
+// Platform-specific implementation
+mod platform {
+    #![allow(clippy::module_inception)]
+
+    mod platform;
+
+    pub(crate) use platform::{platform, CtlrId, Support};
+}
+
+mod connector;
 mod ctlr;
 mod event;
 mod focus;
-mod listener;
-mod raw;
+// mod listener;
+// mod raw;
 
+pub use connector::Connector;
 pub use ctlr::{Controller, Remap};
 pub use event::Event;
 pub use focus::{focus, unfocus};
-pub use listener::Listener;
+
+// pub use listener::Listener;
